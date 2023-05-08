@@ -1,2 +1,6 @@
-# Avionics
-Avionics Subteam Repository
+# Electrical
+Electrical / Software Development
+
+* Circuit CAD
+* Software
+* Electronics
