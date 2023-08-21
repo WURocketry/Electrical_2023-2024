@@ -63,7 +63,7 @@ struct measurement makeMeasurement(){
 void setup() {
   // put your setup code here, to run once:
 
-  Serial.begin(9600);
+  Serial.begin(38400);
   while (!Serial) {
     ;  // wait for serial port to connect. Needed for native USB port only
   }
@@ -174,6 +174,5 @@ void loop() {
     stateVec = stateVec + Kkalman*innovation;
 
   }
-
 
 }
