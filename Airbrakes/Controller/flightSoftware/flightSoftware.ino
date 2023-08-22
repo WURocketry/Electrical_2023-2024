@@ -57,6 +57,8 @@ struct measurement makeMeasurement(){
   return collectedData;
 }
 
+//Struct for holding current measurement
+struct measurement current;
 
 void setup() {
   // put your setup code here, to run once:
@@ -137,14 +139,14 @@ void loop() {
   // put your main code here, to run repeatedly:
 
   //loop runs at 100 hertz
-  //currentTime = micros();
+  currentTime = micros();
 
-  //if((currentTime-previousTime)>kalmanLoopMicros){
-    //timeDiff = currentTime - previousTime-kalmanLoopMicros;
-    //Serial.println(timeDiff);
-    //previousTime = currentTime;
+  if((currentTime-previousTime)>kalmanLoopMicros){
+    timeDiff = currentTime - previousTime;
+    Serial.println(timeDiff);
+    previousTime = currentTime;
 
-    struct measurement current = makeMeasurement();
+    current = makeMeasurement();
 
     measurementVec = {current.altitude,current.xAccel,current.yAccel,current.zAccel};
 
@@ -164,8 +166,8 @@ void loop() {
 
     stateVec = stateVec + Kkalman*innovation;
 
-  //}
+  }
 
-  delay(1000);
+  
 
 }
