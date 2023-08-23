@@ -22,8 +22,6 @@ BLA::Matrix<9> stateVec;
 
 BLA::Matrix<9,9> Fkalman;
 
-BLA::Matrix<9,3> Gkalman;
-
 BLA::Matrix<4,9> Hkalman;
 
 BLA::Matrix<9,9> Pkalman;
@@ -59,6 +57,8 @@ struct measurement makeMeasurement(){
   return collectedData;
 }
 
+//Struct for holding current measurement
+struct measurement current;
 
 void setup() {
   // put your setup code here, to run once:
@@ -69,7 +69,7 @@ void setup() {
   }
 
   // prints title with ending line break
-  Serial.println("Starting program");
+  Serial.println(F("Starting program"));
 
   delay(1000);
 
@@ -84,28 +84,21 @@ void setup() {
              0,0,0,0,0,0,1,0,0,
              0,0,0,0,0,0,0,1,0,
              0,0,0,0,0,0,0,0,1};
-  
-  Gkalman = {1/2*kdt*kdt,0,0,
-             0,1/2*kdt*kdt,0,
-             0,0,1/2*kdt*kdt,
-             kdt,0,0,
-             0,kdt,0,
-             0,0,kdt,
-             1,0,0,
-             0,1,0,
-             0,0,1};
 
   Hkalman = {0,0,1,0,0,0,0,0,0,
              0,0,0,0,0,0,1,0,0,
              0,0,0,0,0,0,0,1,0,
              0,0,0,0,0,0,0,0,1};
 
-  Qkalman = (Gkalman * ~Gkalman);
-
-  //finish creating the Q matrix by multiplying the matrix by the process variation
-  for(int i = 0; i<81; i++){
-    Qkalman(i) = processVar*Qkalman(i);
-  }
+  Qkalman = {processVar*pow(kdt,4)/4,0,0,processVar*pow(kdt,3)/2,0,0,processVar*pow(kdt,2)/2,0,0,
+             0,processVar*pow(kdt,4)/4,0,0,processVar*pow(kdt,3)/2,0,0,processVar*pow(kdt,2)/2,0,
+             0,0,processVar*pow(kdt,4)/4,0,0,processVar*pow(kdt,3)/2,0,0,processVar*pow(kdt,2)/2,
+             processVar*pow(kdt,3)/2,0,0,processVar*pow(kdt,2),0,0,processVar*kdt,0,0,
+             0,processVar*pow(kdt,3)/2,0,0,processVar*pow(kdt,2),0,0,processVar*kdt,0,
+             0,0,processVar*pow(kdt,3)/2,0,0,processVar*pow(kdt,2),0,0,processVar*kdt,
+             processVar*pow(kdt,2)/2,0,0,processVar*kdt,0,0,processVar,0,0,
+             0,processVar*pow(kdt,2)/2,0,0,processVar*kdt,0,0,processVar,0,
+             0,0,processVar*pow(kdt,2)/2,0,0,processVar*kdt,0,0,processVar};
 
   //Serial <<"Qkalman: "<< Qkalman<<"\n";
 
@@ -149,11 +142,11 @@ void loop() {
   currentTime = micros();
 
   if((currentTime-previousTime)>kalmanLoopMicros){
-    timeDiff = currentTime - previousTime-kalmanLoopMicros;
+    timeDiff = currentTime - previousTime;
     Serial.println(timeDiff);
     previousTime = currentTime;
 
-    struct measurement current = makeMeasurement();
+    current = makeMeasurement();
 
     measurementVec = {current.altitude,current.xAccel,current.yAccel,current.zAccel};
 
@@ -174,5 +167,7 @@ void loop() {
     stateVec = stateVec + Kkalman*innovation;
 
   }
+
+  
 
 }
