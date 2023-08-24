@@ -1,6 +1,5 @@
 #include <BasicLinearAlgebra.h>
 
-
 using namespace BLA;
 
 //delta timing variables
@@ -22,8 +21,6 @@ const float accelZVar = pow(2,2);
 BLA::Matrix<9> stateVec;
 
 BLA::Matrix<9,9> Fkalman;
-
-BLA::Matrix<9,3> Gkalman;
 
 BLA::Matrix<4,9> Hkalman;
 
@@ -60,6 +57,8 @@ struct measurement makeMeasurement(){
   return collectedData;
 }
 
+//Struct for holding current measurement
+struct measurement current;
 
 void setup() {
   // put your setup code here, to run once:
@@ -70,7 +69,7 @@ void setup() {
   }
 
   // prints title with ending line break
-  Serial.println("Starting program");
+  Serial.println(F("Starting program"));
 
   delay(1000);
 
@@ -85,31 +84,23 @@ void setup() {
              0,0,0,0,0,0,1,0,0,
              0,0,0,0,0,0,0,1,0,
              0,0,0,0,0,0,0,0,1};
-  
-  Gkalman = {1/2*kdt*kdt,0,0,
-             0,1/2*kdt*kdt,0,
-             0,0,1/2*kdt*kdt,
-             kdt,0,0,
-             0,kdt,0,
-             0,0,kdt,
-             1,0,0,
-             0,1,0,
-             0,0,1};
 
   Hkalman = {0,0,1,0,0,0,0,0,0,
              0,0,0,0,0,0,1,0,0,
              0,0,0,0,0,0,0,1,0,
              0,0,0,0,0,0,0,0,1};
 
-  Qkalman = (Gkalman * ~Gkalman);
+  Qkalman = {processVar*pow(kdt,4)/4,0,0,processVar*pow(kdt,3)/2,0,0,processVar*pow(kdt,2)/2,0,0,
+             0,processVar*pow(kdt,4)/4,0,0,processVar*pow(kdt,3)/2,0,0,processVar*pow(kdt,2)/2,0,
+             0,0,processVar*pow(kdt,4)/4,0,0,processVar*pow(kdt,3)/2,0,0,processVar*pow(kdt,2)/2,
+             processVar*pow(kdt,3)/2,0,0,processVar*pow(kdt,2),0,0,processVar*kdt,0,0,
+             0,processVar*pow(kdt,3)/2,0,0,processVar*pow(kdt,2),0,0,processVar*kdt,0,
+             0,0,processVar*pow(kdt,3)/2,0,0,processVar*pow(kdt,2),0,0,processVar*kdt,
+             processVar*pow(kdt,2)/2,0,0,processVar*kdt,0,0,processVar,0,0,
+             0,processVar*pow(kdt,2)/2,0,0,processVar*kdt,0,0,processVar,0,
+             0,0,processVar*pow(kdt,2)/2,0,0,processVar*kdt,0,0,processVar};
 
-  //finish creating the Q matrix by multiplying the matrix by the process variation
-//   for(int i = 0; i < Qkalman.Rows * Qkalman.Cols; i++){
-//     Qkalman(i) = processVar*Qkalman;
-//   }
-
-  Qkalman = Qkalman * processVar;
-  //Serial <<"Qkalman: "<< Qkalman<<"\n";
+  // Serial <<"Qkalman: "<< Qkalman<<"\n";
 
   Rkalman = {altimeterVar,0,0,0,
              0,accelXVar,0,0,
@@ -146,35 +137,37 @@ void setup() {
 
 void loop() {
   // put your main code here, to run repeatedly:
-
+  
   //loop runs at 100 hertz
   currentTime = micros();
-
   if((currentTime-previousTime)>kalmanLoopMicros){
-    timeDiff = currentTime - previousTime-kalmanLoopMicros;
-    Serial.println(timeDiff);
+    timeDiff = currentTime - previousTime;
     previousTime = currentTime;
 
-    struct measurement current = makeMeasurement();
-
+    current = makeMeasurement();
     measurementVec = {current.altitude,current.xAccel,current.yAccel,current.zAccel};
 
     //kalman filter steps
     stateVec = Fkalman*stateVec;
-
-    Pkalman = Fkalman*(Pkalman*~Fkalman) + Qkalman;
-
-    innovation = measurementVec - Hkalman*stateVec;
-
-    innovationCov = Hkalman*(Pkalman*~Hkalman) + Rkalman;
-
-    //invert matrix inplace for next step
-    Invert(innovationCov);
-
-    Kkalman = Pkalman*(~Hkalman*innovationCov);
-
-    stateVec = stateVec + Kkalman*innovation;
-
+    Serial.println("pkalman");
+    Pkalman = Fkalman*(Pkalman*(~Fkalman));
+    Serial.println("did mult");
+    Pkalman = Pkalman + Qkalman;
+    Serial.println("done");
+    // Serial.println("Getting innovation");
+    // innovation = measurementVec - Hkalman*stateVec;
+    // Serial.println("covariance");
+    // innovationCov = Hkalman*(Pkalman*~Hkalman) + Rkalman;
+    // Serial.println("invert timeeee");
+    // //invert matrix inplace for next step
+    // Invert(innovationCov);
+    // Serial.println("kkalman");
+    // Kkalman = Pkalman*(~Hkalman*innovationCov);
+    // Serial.println("we are so close");
+    // stateVec = stateVec + Kkalman*innovation;
+    // Serial.println("end :)");
   }
+
+  
 
 }
