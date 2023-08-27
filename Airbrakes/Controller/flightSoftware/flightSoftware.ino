@@ -51,7 +51,7 @@ struct measurement makeMeasurement(){
 
   collectedData.xAccel = .1;
   collectedData.yAccel = .1;
-  collectedData.zAccel = .1;
+  collectedData.zAccel = 0;
   collectedData.altitude = 10;
 
   return collectedData;
@@ -72,7 +72,7 @@ void setup() {
   Serial.println(F("Starting program"));
   Serial.println(kdt);
 
-  delay(1000);
+  //delay(1000);
 
   stateVec = {0,0,0,0,0,0,0,0,0};
 
@@ -144,12 +144,12 @@ void loop() {
 
   if((currentTime-previousTime)>=kalmanLoopMicros){
     timeDiff = currentTime - previousTime;
-    Serial.println(timeDiff);
+    //Serial.println(timeDiff);
     previousTime = currentTime;
 
     current = makeMeasurement();
 
-    measurementVec = {current.altitude,current.xAccel,current.yAccel,current.zAccel};
+    measurementVec = {curre>>>>>nt.altitude,current.xAccel,current.yAccel,current.zAccel};
 
     //kalman filter steps
     stateVec = Fkalman*stateVec;
