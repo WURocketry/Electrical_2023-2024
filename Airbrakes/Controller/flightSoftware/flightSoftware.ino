@@ -7,7 +7,7 @@ long currentTime = 0;
 long previousTime = 0;
 long timeDiff = 0;
 
-long kalmanLoopFreq = 1; //Hz
+float kalmanLoopFreq = 100; //Hz
 long kalmanLoopMicros = 1000000/kalmanLoopFreq;
 
 //Kalman filter variables
@@ -70,6 +70,7 @@ void setup() {
 
   // prints title with ending line break
   Serial.println(F("Starting program"));
+  Serial.println(kdt);
 
   delay(1000);
 
@@ -141,7 +142,7 @@ void loop() {
   //loop runs at 100 hertz
   currentTime = micros();
 
-  if((currentTime-previousTime)>kalmanLoopMicros){
+  if((currentTime-previousTime)>=kalmanLoopMicros){
     timeDiff = currentTime - previousTime;
     Serial.println(timeDiff);
     previousTime = currentTime;
@@ -166,8 +167,8 @@ void loop() {
 
     stateVec = stateVec + Kkalman*innovation;
 
-  }
+    Serial << stateVec <<"\n";
 
-  
+  }
 
 }
