@@ -38,7 +38,7 @@ BLA::Matrix<4,4> innovationCov;
 
 BLA::Matrix<9,4> Kkalman;
 
-//helper functions/structs
+//Peripheral helper functions/structs
 struct measurement {
   float xAccel;
   float yAccel;
@@ -59,6 +59,19 @@ struct measurement makeMeasurement(){
 
 //Struct for holding current measurement
 struct measurement current;
+
+//Finite State Machine Variables and State Transition Functions
+
+enum systemState {
+  unknown,
+  detectLaunch,
+  burn,
+  control,
+  coast,
+  landed
+};
+
+systemState currentState = detectLaunch;
 
 void setup() {
   // put your setup code here, to run once:
@@ -149,7 +162,7 @@ void loop() {
 
     current = makeMeasurement();
 
-    measurementVec = {curre>>>>>nt.altitude,current.xAccel,current.yAccel,current.zAccel};
+    measurementVec = {current.altitude,current.xAccel,current.yAccel,current.zAccel};
 
     //kalman filter steps
     stateVec = Fkalman*stateVec;
@@ -168,6 +181,31 @@ void loop() {
     stateVec = stateVec + Kkalman*innovation;
 
     Serial << stateVec <<"\n";
+
+    //switch statement for transition of system modes
+    switch(currentState){
+      case detectLaunch:
+        //if one second has elapsed and not launched, reset kalman filter
+        //if conditions met, transition to burn
+        break;
+      case burn:
+        //if rocket is decelerating, transition to control state
+        break;
+      case control:
+        //wait until apogee is reached, store airbrakes, transition to coast state
+        break;
+      case coast:
+        //if z velocity is very close to zero and altitude is low, then we are landed
+        //transition to landed
+        break;
+      case landed:
+        //if you have gotten here somehow, wait forever
+        break;
+      default:
+        break;
+    }
+
+
 
   }
 
