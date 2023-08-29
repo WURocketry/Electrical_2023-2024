@@ -73,6 +73,22 @@ enum systemState {
 
 systemState currentState = detectLaunch;
 
+void detectLaunchTransition(){
+
+}
+
+void burnTransition(){
+
+}
+
+void controlTransition(){
+
+}
+
+void coastTransition(){
+
+}
+
 void setup() {
   // put your setup code here, to run once:
 
@@ -187,16 +203,20 @@ void loop() {
       case detectLaunch:
         //if one second has elapsed and not launched, reset kalman filter
         //if conditions met, transition to burn
+        detectLaunchTransition();
         break;
       case burn:
         //if rocket is decelerating, transition to control state
+        burnTransition();
         break;
       case control:
         //wait until apogee is reached, store airbrakes, transition to coast state
+        controlTransition();
         break;
       case coast:
         //if z velocity is very close to zero and altitude is low, then we are landed
         //transition to landed
+        coastTransition();
         break;
       case landed:
         //if you have gotten here somehow, wait forever
