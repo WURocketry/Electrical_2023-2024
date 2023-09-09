@@ -3209,6 +3209,28 @@ to be daisy chained easily.&lt;/p&gt;
 <class number="2" name="lowpower" width="0.254" drill="0.381">
 </class>
 </classes>
+<modules>
+<module name="TEST" prefix="" dx="30.48" dy="20.32">
+<ports>
+</ports>
+<variantdefs>
+</variantdefs>
+<parts>
+</parts>
+<sheets>
+<sheet>
+<plain>
+</plain>
+<instances>
+</instances>
+<busses>
+</busses>
+<nets>
+</nets>
+</sheet>
+</sheets>
+</module>
+</modules>
 <parts>
 <part name="PORTENTA_H7" library="ABX00042" deviceset="ABX00042" device=""/>
 <part name="U$10" library="microbuilder" deviceset="GND" device=""/>
