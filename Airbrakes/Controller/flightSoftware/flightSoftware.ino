@@ -64,7 +64,7 @@ struct Measurement current;
 //Finite State Machine Variables and State Transition Functions
 enum class FlightState {
   unknown,
-  awaitLaunch,
+  detectLaunch,
   burn,
   control,
   coast,
@@ -106,7 +106,7 @@ void setup() {
   Serial.println(kdt);
 
   // Initialize FSM state
-  currentState = FlightState::awaitLaunch;
+  currentState = FlightState::detectLaunch;
 
   // Initialize vectors/matrices
   stateVec = {0,0,0,0,0,0,0,0,0};
@@ -203,7 +203,7 @@ void loop() {
 
     //switch statement for transition of system modes
     switch(currentState) {
-      case FlightState::awaitLaunch:
+      case FlightState::detectLaunch:
         //if one second has elapsed and not launched, reset kalman filter
         //if conditions met, transition to burn
         currentState = detectLaunchTransition();
