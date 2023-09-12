@@ -63,22 +63,22 @@
 <description>Footprint of the Altitude 6 Click MikroBus pinout</description>
 <rectangle x1="0" y1="0" x2="27.94" y2="28.575" layer="47"/>
 <dimension x1="-0.635" y1="28.575" x2="-0.635" y2="0" x3="-2.54" y3="14.2875" textsize="1.27" layer="47"/>
-<pad name="TEST0" x="2.54" y="22.86" drill="0.9" shape="square"/>
-<pad name="TEST1" x="2.54" y="20.32" drill="0.9"/>
-<pad name="TEST2" x="2.54" y="17.78" drill="0.9"/>
-<pad name="TEST3" x="2.54" y="15.24" drill="0.9"/>
-<pad name="TEST4" x="2.54" y="12.7" drill="0.9"/>
-<pad name="TEST5" x="2.54" y="10.16" drill="0.9"/>
-<pad name="TEST6" x="2.54" y="7.62" drill="0.9"/>
-<pad name="TEST7" x="2.54" y="5.08" drill="0.9"/>
-<pad name="TEST8" x="25.4" y="22.86" drill="0.9" shape="square"/>
-<pad name="TEST9" x="25.4" y="20.32" drill="0.9"/>
-<pad name="TEST10" x="25.4" y="17.78" drill="0.9"/>
-<pad name="TEST11" x="25.4" y="15.24" drill="0.9"/>
-<pad name="TEST12" x="25.4" y="12.7" drill="0.9"/>
-<pad name="TEST13" x="25.4" y="10.16" drill="0.9"/>
-<pad name="TEST14" x="25.4" y="7.62" drill="0.9"/>
-<pad name="TEST15" x="25.4" y="5.08" drill="0.9"/>
+<pad name="PWM" x="2.54" y="22.86" drill="0.9" shape="square"/>
+<pad name="INT" x="2.54" y="20.32" drill="0.9"/>
+<pad name="RX" x="2.54" y="17.78" drill="0.9"/>
+<pad name="TX" x="2.54" y="15.24" drill="0.9"/>
+<pad name="SCL" x="2.54" y="12.7" drill="0.9"/>
+<pad name="SDA" x="2.54" y="10.16" drill="0.9"/>
+<pad name="5V" x="2.54" y="7.62" drill="0.9"/>
+<pad name="GND_0" x="2.54" y="5.08" drill="0.9"/>
+<pad name="AN" x="25.4" y="22.86" drill="0.9" shape="square"/>
+<pad name="RST" x="25.4" y="20.32" drill="0.9"/>
+<pad name="CS" x="25.4" y="17.78" drill="0.9"/>
+<pad name="SCK" x="25.4" y="15.24" drill="0.9"/>
+<pad name="MISO" x="25.4" y="12.7" drill="0.9"/>
+<pad name="MOSI" x="25.4" y="10.16" drill="0.9"/>
+<pad name="3.3V" x="25.4" y="7.62" drill="0.9"/>
+<pad name="GND_1" x="25.4" y="5.08" drill="0.9"/>
 <dimension x1="-1.27" y1="24.13" x2="-1.27" y2="3.81" x3="0" y3="13.97" textsize="1.27" layer="47"/>
 <dimension x1="0" y1="0" x2="27.94" y2="0" x3="13.97" y3="-2.54" textsize="1.27" layer="47"/>
 <wire x1="0" y1="24.13" x2="3.81" y2="27.94" width="0.127" layer="20" curve="-80.537678"/>
@@ -134,22 +134,22 @@
 <wire x1="30.48" y1="20.32" x2="38.1" y2="20.32" width="0.254" layer="94"/>
 <wire x1="38.1" y1="20.32" x2="38.1" y2="43.18" width="0.254" layer="94"/>
 <wire x1="38.1" y1="43.18" x2="30.48" y2="43.18" width="0.254" layer="94"/>
-<pin name="AN" x="2.54" y="40.64" length="middle" rot="R180"/>
-<pin name="RST" x="2.54" y="38.1" length="middle" rot="R180"/>
-<pin name="CS" x="2.54" y="35.56" length="middle" rot="R180"/>
-<pin name="SCK" x="2.54" y="33.02" length="middle" rot="R180"/>
-<pin name="MISO" x="2.54" y="30.48" length="middle" rot="R180"/>
-<pin name="MOSI" x="2.54" y="27.94" length="middle" rot="R180"/>
-<pin name="3.3V" x="2.54" y="25.4" length="middle" rot="R180"/>
-<pin name="GND_1" x="2.54" y="22.86" length="middle" rot="R180"/>
-<pin name="PWM" x="33.02" y="40.64" length="middle" rot="R180"/>
-<pin name="INT" x="33.02" y="38.1" length="middle" rot="R180"/>
-<pin name="RX" x="33.02" y="35.56" length="middle" rot="R180"/>
-<pin name="TX" x="33.02" y="33.02" length="middle" rot="R180"/>
-<pin name="SCL" x="33.02" y="30.48" length="middle" rot="R180"/>
-<pin name="SDA" x="33.02" y="27.94" length="middle" rot="R180"/>
-<pin name="5V" x="33.02" y="25.4" length="middle" rot="R180"/>
-<pin name="GND_2" x="33.02" y="22.86" length="middle" rot="R180"/>
+<pin name="AN" x="2.54" y="40.64" visible="pad" length="middle" rot="R180"/>
+<pin name="RST" x="2.54" y="38.1" visible="pad" length="middle" swaplevel="1" rot="R180"/>
+<pin name="CS" x="2.54" y="35.56" visible="pad" length="middle" swaplevel="2" rot="R180"/>
+<pin name="SCK" x="2.54" y="33.02" visible="pad" length="middle" swaplevel="3" rot="R180"/>
+<pin name="MISO" x="2.54" y="30.48" visible="pad" length="middle" swaplevel="4" rot="R180"/>
+<pin name="MOSI" x="2.54" y="27.94" visible="pad" length="middle" swaplevel="5" rot="R180"/>
+<pin name="3.3V" x="2.54" y="25.4" visible="pad" length="middle" swaplevel="6" rot="R180"/>
+<pin name="GND_0" x="2.54" y="22.86" visible="pad" length="middle" swaplevel="7" rot="R180"/>
+<pin name="PWM" x="33.02" y="40.64" visible="pad" length="middle" swaplevel="8" rot="R180"/>
+<pin name="INT" x="33.02" y="38.1" visible="pad" length="middle" swaplevel="9" rot="R180"/>
+<pin name="RX" x="33.02" y="35.56" visible="pad" length="middle" swaplevel="10" rot="R180"/>
+<pin name="TX" x="33.02" y="33.02" visible="pad" length="middle" swaplevel="11" rot="R180"/>
+<pin name="SCL" x="33.02" y="30.48" visible="pad" length="middle" swaplevel="12" rot="R180"/>
+<pin name="SDA" x="33.02" y="27.94" visible="pad" length="middle" swaplevel="13" rot="R180"/>
+<pin name="5V" x="33.02" y="25.4" visible="pad" length="middle" swaplevel="14" rot="R180"/>
+<pin name="GND_1" x="33.02" y="22.86" visible="pad" length="middle" swaplevel="15" rot="R180"/>
 </symbol>
 </symbols>
 <devicesets>
@@ -160,6 +160,24 @@
 </gates>
 <devices>
 <device name="" package="MIKROE-ALTITUDE-6-CLICK-PINOUT">
+<connects>
+<connect gate="G$1" pin="3.3V" pad="3.3V"/>
+<connect gate="G$1" pin="5V" pad="5V"/>
+<connect gate="G$1" pin="AN" pad="AN"/>
+<connect gate="G$1" pin="CS" pad="CS"/>
+<connect gate="G$1" pin="GND_0" pad="GND_0"/>
+<connect gate="G$1" pin="GND_1" pad="GND_1"/>
+<connect gate="G$1" pin="INT" pad="INT"/>
+<connect gate="G$1" pin="MISO" pad="MISO"/>
+<connect gate="G$1" pin="MOSI" pad="MOSI"/>
+<connect gate="G$1" pin="PWM" pad="PWM"/>
+<connect gate="G$1" pin="RST" pad="RST"/>
+<connect gate="G$1" pin="RX" pad="RX"/>
+<connect gate="G$1" pin="SCK" pad="SCK"/>
+<connect gate="G$1" pin="SCL" pad="SCL"/>
+<connect gate="G$1" pin="SDA" pad="SDA"/>
+<connect gate="G$1" pin="TX" pad="TX"/>
+</connects>
 <technologies>
 <technology name=""/>
 </technologies>
