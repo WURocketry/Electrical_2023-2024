@@ -1,22 +1,30 @@
 #include <BasicLinearAlgebra.h>
 
-#define KALMAN_LOOP_FREQ 100 // (Hz)
+// Loop rates (Hz)
+#define ONE_SEC_MICROS 1000000
+#define SAMPLE_LOOP_FREQ 400
+#define KALMAN_LOOP_FREQ 100 
+#define CONTROL_LOOP_FREQ 1
 
 using namespace BLA;
 
-//delta timing variables
-unsigned long currentTime = 0;
-unsigned long previousTime = 0;
+// Delta timing variables
+unsigned long currentTime;
+unsigned long previousSampleTime;
+unsigned long previousComputeTime;
+unsigned long previousControlTime;
 
-const long kalmanLoopMicros = 1000000/KALMAN_LOOP_FREQ;
+const long sampleLoopMicros  = ONE_SEC_MICROS/SAMPLE_LOOP_FREQ;
+const long computeLoopMicros = ONE_SEC_MICROS/KALMAN_LOOP_FREQ;
+const long controlLoopMicros = ONE_SEC_MICROS/CONTROL_LOOP_FREQ;
 
-//Kalman filter variables
-const float kdt = 1/KALMAN_LOOP_FREQ; //seconds
-const float processVar = pow(0.5,2);
+// Kalman filter variables
+const float kdt          = 1/KALMAN_LOOP_FREQ; //seconds
+const float processVar   = pow(0.5,2);
 const float altimeterVar = pow(.1,2);
-const float accelXVar = pow(2,2);
-const float accelYVar = pow(2,2);
-const float accelZVar = pow(2,2);
+const float accelXVar    = pow(2,2);
+const float accelYVar    = pow(2,2);
+const float accelZVar    = pow(2,2);
 
 BLA::Matrix<9> stateVec;
 
@@ -38,28 +46,36 @@ BLA::Matrix<4,4> innovationCov;
 
 BLA::Matrix<9,4> Kkalman;
 
-//Peripheral helper functions/structs
+// Peripheral helper functions/structs
+
 struct Measurement {
+  /** 
+   * UFS NOTE: This struct defines format for data used by
+   * this flight software -- but the sampleLoop should use
+   * UFS objects to actually sample data and then pack it into
+   * this struct
+   **/
   float xAccel;
   float yAccel;
   float zAccel;
   float altitude;
+  Measurement() {}
+  Measurement(float xAcc, float yAcc, float zAcc, float alt): 
+    xAccel(xAcc), yAccel(yAcc), zAccel(zAcc), altitude(alt) {}
 };
 
-struct Measurement makeMeasurement() {
-  struct Measurement collectedData;
 
+struct Measurement makeMeasurement() {
   // TODO: placeholder measurement values
-  collectedData.xAccel = .1;
-  collectedData.yAccel = .1;
-  collectedData.zAccel = 0;
-  collectedData.altitude = 10;
+  struct Measurement collectedData(
+    .1, .1, 0, 10
+  );
 
   return collectedData;
 }
 
 //Struct for holding current measurement
-struct Measurement current;
+struct Measurement currentMeasurement;
 
 //Finite State Machine Variables and State Transition Functions
 enum class FlightState {
@@ -70,28 +86,28 @@ enum class FlightState {
   coast,
   landed
 };
-
 FlightState currentState;
 
 /**
  * TODO: Implement flight states of ACE FSM.
  *       Refer to "Airbrakes Controller State Machine"
  *       in GDrive
- */
-FlightState detectLaunchTransition() {
+ **/
 
+FlightState detectLaunchTransition() {
+  return FlightState::unknown;
 }
 
 FlightState burnTransition() {
-
+  return FlightState::unknown;
 }
 
 FlightState controlTransition() {
-
+  return FlightState::unknown;
 }
 
 FlightState coastTransition() {
-
+  return FlightState::unknown;
 }
 
 void setup() {
@@ -136,8 +152,6 @@ void setup() {
              0,processVar*pow(kdt,2)/2,0,0,processVar*kdt,0,0,processVar,0,
              0,0,processVar*pow(kdt,2)/2,0,0,processVar*kdt,0,0,processVar};
 
-  //Serial <<"Qkalman: "<< Qkalman<<"\n";
-
   Rkalman = {altimeterVar,0,0,0,
              0,accelXVar,0,0,
              0,0,accelYVar,0,
@@ -172,16 +186,32 @@ void setup() {
 }
 
 void loop() {
-  //loop runs at 100 hertz
+  /* SAMPLE LOOP (400Hz) */
   currentTime = micros();
+  if (currentTime >= previousSampleTime + sampleLoopMicros) {
+    previousSampleTime = currentTime;
+    
+    /**
+     * TODO: 
+     *  1. Perform sensor samples here (UFS core)
+     *  2. Update sample buffers
+     *  3. Pack into static Measurement struct
+     **/
+    
+  }
 
-  if(currentTime >= previousTime + kalmanLoopMicros) {
-    //Serial.println(currentTime - previousTime);
-    previousTime = currentTime;
+  /* COMPUTE LOOP (100Hz) */
+  currentTime = micros();
+  if (currentTime >= previousComputeTime + computeLoopMicros) {
 
-    current = makeMeasurement();
+    previousComputeTime = currentTime;
 
-    measurementVec = {current.altitude,current.xAccel,current.yAccel,current.zAccel};
+    currentMeasurement = makeMeasurement();
+
+    measurementVec = {currentMeasurement.altitude,
+                      currentMeasurement.xAccel,
+                      currentMeasurement.yAccel,
+                      currentMeasurement.zAccel};
 
     //kalman filter steps
     stateVec = Fkalman*stateVec;
@@ -230,4 +260,18 @@ void loop() {
 
   }
 
+  /* CONTROL LOOP (xHz) */
+  currentTime = micros();
+  if (currentTime >= previousControlTime + controlLoopMicros) {
+    previousControlTime = currentTime;
+
+    /**
+     * TODO: 
+     *  1. Read actuation level from CONTROL loop PID controller
+     *  2. Send corresponding PWM to servo
+     *     a. NOTE: PWM should be set-and-forget to servo, no need
+     *        for blocking
+     */
+
+  }
 }
