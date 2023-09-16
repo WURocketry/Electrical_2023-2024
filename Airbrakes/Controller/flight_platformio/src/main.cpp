@@ -92,22 +92,64 @@ FlightState currentState;
  * TODO: Implement flight states of ACE FSM.
  *       Refer to "Airbrakes Controller State Machine"
  *       in GDrive
+ * 
+ * NOTE: These functions are state TRANSITIONS and 
+ *       do not provide control. 
  **/
+FlightState detectLaunchTransition(FlightState currentState) {
+  /* Transitions: 
+   * this -> burn
+   * this -> detectLaunch 
+   */
 
-FlightState detectLaunchTransition() {
-  return FlightState::unknown;
+  // remain prior to launch (await launch detection)
+  // TODO: determine launchCondition (could be from Kalman)
+  if (launchCondition) {
+    return FlightState::burn;
+  }
+  return currentState;
 }
 
-FlightState burnTransition() {
-  return FlightState::unknown;
+FlightState burnTransition(FlightState currentState) {
+  /* Transitions:
+   * this -> control
+   * this -> burn
+   */
+  // remain until burn acceleration ended
+  // TODO: determine condition
+  if (noBurnAccelCondition) {
+    return FlightState::control;
+  }
+  
+  return currentState;
 }
 
-FlightState controlTransition() {
-  return FlightState::unknown;
+FlightState controlTransition(FlightState currentState) {
+  /* Transitions
+   * this -> coast
+   * this -> burn
+   */
+  // remain until apogee
+  // TODO: determine condition
+  if (apogeeReached) {
+    return FlightState::coast;
+  }
+
+  return currentState;
 }
 
-FlightState coastTransition() {
-  return FlightState::unknown;
+FlightState coastTransition(FlightState currentState) {
+  /* Transitions:
+   * this -> landed
+   * this -> coast
+   */
+  
+  // remain until landing
+  // TOOD: determine condition
+  if (landed) {
+    return FlightState::landed;
+  }
+  return currentState;
 }
 
 void setup() {
@@ -236,25 +278,26 @@ void loop() {
       case FlightState::detectLaunch:
         //if one second has elapsed and not launched, reset kalman filter
         //if conditions met, transition to burn
-        currentState = detectLaunchTransition();
+        currentState = detectLaunchTransition(currentState);
         break;
       case FlightState::burn:
         //if rocket is decelerating, transition to control state
-        currentState = burnTransition();
+        currentState = burnTransition(currentState);
         break;
       case FlightState::control:
         //wait until apogee is reached, store airbrakes, transition to coast state
-        currentState = controlTransition();
+        currentState = controlTransition(currentState);
         break;
       case FlightState::coast:
         //if z velocity is very close to zero and altitude is low, then we are landed
         //transition to landed
-        currentState = coastTransition();
+        currentState = coastTransition(currentState);
         break;
       case FlightState::landed:
-        //if you have gotten here somehow, wait forever
+        //if you have gotten here wait forever
         break;
       default:
+        // should not reach this state
         break;
     }
 

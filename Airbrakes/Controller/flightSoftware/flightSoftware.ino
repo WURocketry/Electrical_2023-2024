@@ -1,3 +1,19 @@
+/*
+ *
+ ***************
+ **** NOTE: ****
+ ***************
+ * This source code is deprecated and here for reference only
+ * 
+ * 
+ * 
+ * 
+ * 
+ * 
+ */
+
+
+
 #include <BasicLinearAlgebra.h>
 
 #define KALMAN_LOOP_FREQ 100 // (Hz)
