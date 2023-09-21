@@ -7,7 +7,7 @@
 <setting keepoldvectorfont="yes"/>
 <setting verticaltext="up"/>
 </settings>
-<grid distance="10" unitdist="mil" unit="mil" style="lines" multiple="1" display="yes" altdistance="5" altunitdist="mil" altunit="mil"/>
+<grid distance="50" unitdist="mil" unit="mil" style="lines" multiple="1" display="yes" altdistance="5" altunitdist="mil" altunit="mil"/>
 <layers>
 <layer number="1" name="Top" color="4" fill="1" visible="yes" active="yes"/>
 <layer number="16" name="Bottom" color="1" fill="1" visible="yes" active="yes"/>
@@ -44,8 +44,15 @@
 <layer number="47" name="Measures" color="7" fill="1" visible="no" active="yes"/>
 <layer number="48" name="Document" color="7" fill="1" visible="yes" active="yes"/>
 <layer number="49" name="Reference" color="7" fill="1" visible="yes" active="yes"/>
+<layer number="50" name="dxf" color="7" fill="1" visible="no" active="no"/>
 <layer number="51" name="tDocu" color="7" fill="1" visible="yes" active="yes"/>
 <layer number="52" name="bDocu" color="7" fill="1" visible="yes" active="yes"/>
+<layer number="53" name="tGND_GNDA" color="7" fill="1" visible="no" active="no"/>
+<layer number="54" name="bGND_GNDA" color="7" fill="1" visible="no" active="no"/>
+<layer number="56" name="wert" color="7" fill="1" visible="no" active="no"/>
+<layer number="57" name="tCAD" color="7" fill="1" visible="no" active="no"/>
+<layer number="59" name="tCarbon" color="7" fill="1" visible="no" active="no"/>
+<layer number="60" name="bCarbon" color="7" fill="1" visible="no" active="no"/>
 <layer number="90" name="Modules" color="5" fill="1" visible="yes" active="yes"/>
 <layer number="91" name="Nets" color="2" fill="1" visible="yes" active="yes"/>
 <layer number="92" name="Busses" color="1" fill="1" visible="yes" active="yes"/>
@@ -55,6 +62,96 @@
 <layer number="96" name="Values" color="7" fill="1" visible="yes" active="yes"/>
 <layer number="97" name="Info" color="7" fill="1" visible="yes" active="yes"/>
 <layer number="98" name="Guide" color="6" fill="1" visible="yes" active="yes"/>
+<layer number="99" name="Muster" color="7" fill="1" visible="no" active="no"/>
+<layer number="100" name="Muster" color="7" fill="1" visible="no" active="no"/>
+<layer number="101" name="Top_Flash" color="7" fill="1" visible="yes" active="yes"/>
+<layer number="102" name="microSD" color="25" fill="1" visible="yes" active="yes"/>
+<layer number="103" name="microSD_conn" color="10" fill="1" visible="yes" active="yes"/>
+<layer number="104" name="Botto_Traces" color="7" fill="1" visible="yes" active="yes"/>
+<layer number="105" name="tPlate" color="7" fill="1" visible="yes" active="yes"/>
+<layer number="106" name="bPlate" color="7" fill="1" visible="yes" active="yes"/>
+<layer number="107" name="Crop" color="7" fill="1" visible="yes" active="yes"/>
+<layer number="108" name="fp8" color="7" fill="1" visible="yes" active="yes"/>
+<layer number="109" name="fp9" color="7" fill="1" visible="yes" active="yes"/>
+<layer number="110" name="fp0" color="7" fill="1" visible="yes" active="yes"/>
+<layer number="111" name="LPC17xx" color="7" fill="1" visible="yes" active="yes"/>
+<layer number="112" name="tSilk" color="7" fill="1" visible="yes" active="yes"/>
+<layer number="113" name="ReferenceLS" color="7" fill="1" visible="no" active="no"/>
+<layer number="114" name="FRNTMAAT1" color="7" fill="1" visible="yes" active="yes"/>
+<layer number="115" name="FRNTMAAT2" color="7" fill="1" visible="yes" active="yes"/>
+<layer number="116" name="Patch_BOT" color="7" fill="1" visible="yes" active="yes"/>
+<layer number="117" name="BACKMAAT1" color="7" fill="1" visible="yes" active="yes"/>
+<layer number="118" name="Rect_Pads" color="7" fill="1" visible="no" active="no"/>
+<layer number="119" name="KAP_TEKEN" color="7" fill="1" visible="yes" active="yes"/>
+<layer number="120" name="KAP_MAAT1" color="7" fill="1" visible="yes" active="yes"/>
+<layer number="121" name="_tsilk" color="7" fill="1" visible="yes" active="yes"/>
+<layer number="122" name="_bsilk" color="7" fill="1" visible="yes" active="yes"/>
+<layer number="123" name="tTestmark" color="7" fill="1" visible="yes" active="yes"/>
+<layer number="124" name="bTestmark" color="7" fill="1" visible="yes" active="yes"/>
+<layer number="125" name="_tNames" color="7" fill="1" visible="yes" active="yes"/>
+<layer number="126" name="_bNames" color="7" fill="1" visible="yes" active="yes"/>
+<layer number="127" name="_tValues" color="7" fill="1" visible="yes" active="yes"/>
+<layer number="128" name="_bValues" color="7" fill="1" visible="yes" active="yes"/>
+<layer number="129" name="top_silk" color="7" fill="1" visible="yes" active="yes"/>
+<layer number="130" name="SMDSTROOK" color="7" fill="1" visible="yes" active="yes"/>
+<layer number="131" name="tAdjust" color="7" fill="1" visible="yes" active="yes"/>
+<layer number="132" name="bAdjust" color="7" fill="1" visible="yes" active="yes"/>
+<layer number="133" name="bottom_silk" color="7" fill="1" visible="yes" active="yes"/>
+<layer number="134" name="silk_top" color="7" fill="1" visible="yes" active="yes"/>
+<layer number="135" name="silk_bottom" color="7" fill="1" visible="yes" active="yes"/>
+<layer number="136" name="silktop" color="7" fill="1" visible="yes" active="yes"/>
+<layer number="137" name="silkbottom" color="7" fill="1" visible="yes" active="yes"/>
+<layer number="139" name="_tKeepout" color="7" fill="1" visible="yes" active="yes"/>
+<layer number="144" name="_Drills" color="7" fill="1" visible="yes" active="yes"/>
+<layer number="145" name="DrillLegend_01-16" color="7" fill="1" visible="yes" active="yes"/>
+<layer number="146" name="DrillLegend_01-20" color="7" fill="1" visible="yes" active="yes"/>
+<layer number="150" name="Notes" color="7" fill="1" visible="yes" active="yes"/>
+<layer number="151" name="HeatSink" color="7" fill="1" visible="yes" active="yes"/>
+<layer number="152" name="_bDocu" color="7" fill="1" visible="yes" active="yes"/>
+<layer number="153" name="FabDoc1" color="6" fill="1" visible="no" active="no"/>
+<layer number="154" name="FabDoc2" color="2" fill="1" visible="no" active="no"/>
+<layer number="155" name="FabDoc3" color="7" fill="15" visible="no" active="no"/>
+<layer number="199" name="Contour" color="7" fill="1" visible="yes" active="yes"/>
+<layer number="200" name="200bmp" color="7" fill="1" visible="yes" active="yes"/>
+<layer number="201" name="201bmp" color="7" fill="1" visible="yes" active="yes"/>
+<layer number="202" name="202bmp" color="7" fill="1" visible="yes" active="yes"/>
+<layer number="203" name="203bmp" color="7" fill="1" visible="yes" active="yes"/>
+<layer number="204" name="204bmp" color="7" fill="1" visible="yes" active="yes"/>
+<layer number="205" name="205bmp" color="7" fill="1" visible="yes" active="yes"/>
+<layer number="206" name="206bmp" color="7" fill="1" visible="yes" active="yes"/>
+<layer number="207" name="207bmp" color="7" fill="1" visible="yes" active="yes"/>
+<layer number="208" name="208bmp" color="7" fill="1" visible="yes" active="yes"/>
+<layer number="209" name="209bmp" color="7" fill="1" visible="yes" active="yes"/>
+<layer number="210" name="210bmp" color="7" fill="1" visible="yes" active="yes"/>
+<layer number="211" name="211bmp" color="7" fill="1" visible="yes" active="yes"/>
+<layer number="212" name="212bmp" color="7" fill="1" visible="yes" active="yes"/>
+<layer number="213" name="213bmp" color="7" fill="1" visible="yes" active="yes"/>
+<layer number="214" name="214bmp" color="7" fill="1" visible="yes" active="yes"/>
+<layer number="215" name="215bmp" color="7" fill="1" visible="yes" active="yes"/>
+<layer number="216" name="216bmp" color="7" fill="1" visible="yes" active="yes"/>
+<layer number="217" name="217bmp" color="7" fill="1" visible="yes" active="yes"/>
+<layer number="218" name="218bmp" color="7" fill="1" visible="yes" active="yes"/>
+<layer number="219" name="219bmp" color="7" fill="1" visible="yes" active="yes"/>
+<layer number="220" name="220bmp" color="7" fill="1" visible="yes" active="yes"/>
+<layer number="221" name="221bmp" color="7" fill="1" visible="yes" active="yes"/>
+<layer number="222" name="222bmp" color="7" fill="1" visible="yes" active="yes"/>
+<layer number="223" name="223bmp" color="7" fill="1" visible="yes" active="yes"/>
+<layer number="224" name="224bmp" color="7" fill="1" visible="yes" active="yes"/>
+<layer number="225" name="225bmp" color="7" fill="1" visible="yes" active="yes"/>
+<layer number="226" name="226bmp" color="7" fill="1" visible="yes" active="yes"/>
+<layer number="227" name="227bmp" color="7" fill="1" visible="yes" active="yes"/>
+<layer number="228" name="228bmp" color="7" fill="1" visible="yes" active="yes"/>
+<layer number="229" name="229bmp" color="7" fill="1" visible="yes" active="yes"/>
+<layer number="230" name="230bmp" color="7" fill="1" visible="yes" active="yes"/>
+<layer number="231" name="Eagle3D_PG1" color="14" fill="1" visible="yes" active="yes"/>
+<layer number="232" name="Eagle3D_PG2" color="14" fill="2" visible="yes" active="yes"/>
+<layer number="233" name="Eagle3D_PG3" color="14" fill="4" visible="yes" active="yes"/>
+<layer number="248" name="Housing" color="7" fill="1" visible="yes" active="yes"/>
+<layer number="249" name="Edge" color="7" fill="1" visible="yes" active="yes"/>
+<layer number="250" name="Descript" color="3" fill="1" visible="no" active="no"/>
+<layer number="251" name="SMDround" color="12" fill="11" visible="no" active="no"/>
+<layer number="254" name="cooling" color="7" fill="1" visible="yes" active="yes"/>
+<layer number="255" name="Accent" color="7" fill="1" visible="yes" active="yes"/>
 </layers>
 <library>
 <packages>
@@ -570,7 +667,8 @@
 <smd name="J2_3" x="7.4" y="-28.84" dx="0.2" dy="0.7" layer="1"/>
 <smd name="J2_1" x="7.8" y="-28.84" dx="0.2" dy="0.7" layer="1"/>
 </package>
-<package name="MODULE_ABX00042_TOP">
+<package name="MODULE_ABX00042_HEADERS">
+<description>Footprint of Portenta H7 top header pinout</description>
 <wire x1="-12.7" y1="-33.02" x2="12.7" y2="-33.02" width="0.127" layer="51"/>
 <wire x1="12.7" y1="-33.02" x2="12.7" y2="33.02" width="0.127" layer="51"/>
 <wire x1="12.7" y1="33.02" x2="-12.7" y2="33.02" width="0.127" layer="51"/>
@@ -583,14 +681,86 @@
 <wire x1="12.95" y1="-33.27" x2="12.95" y2="33.27" width="0.05" layer="39"/>
 <wire x1="12.95" y1="33.27" x2="-12.95" y2="33.27" width="0.05" layer="39"/>
 <wire x1="-12.95" y1="33.27" x2="-12.95" y2="-33.27" width="0.05" layer="39"/>
-<text x="-12.7" y="34.29" size="1.27" layer="25">&gt;NAME</text>
-<text x="-12.7" y="-35.56" size="1.27" layer="27">&gt;VALUE</text>
+<text x="-12.7" y="34.29" size="1.27" layer="25">PORTENTA_H7_HEADERS</text>
+<text x="-12.7" y="-35.56" size="1.27" layer="27">ABX00042</text>
 <hole x="-10.67" y="30.99" drill="2.25"/>
 <hole x="10.67" y="30.99" drill="2.25"/>
 <hole x="10.67" y="-30.99" drill="2.25"/>
 <hole x="-10.67" y="-30.99" drill="2.25"/>
-<dimension x1="-13.462" y1="-33.02" x2="-13.462" y2="33.02" x3="-18.288" y3="0" textsize="1.778" layer="21"/>
-<dimension x1="-12.7" y1="-33.782" x2="12.7" y2="-33.782" x3="0" y3="-38.354" textsize="1.778" layer="21"/>
+<attribute name="NAME" x="-10.92" y="0.9748" size="0.8128" layer="21" font="vector" ratio="10" rot="R90"/>
+<attribute name="NAME" x="-33.53" y="7.9152" size="0.8128" layer="21" font="vector" ratio="10" rot="R270"/>
+<pad name="J1" x="-10.1346" y="10.9474" drill="1" shape="square"/>
+<pad name="J2" x="-10.1346" y="8.4074" drill="1"/>
+<pad name="J3" x="-10.1346" y="5.8674" drill="1"/>
+<pad name="J4" x="-10.1346" y="3.3274" drill="1"/>
+<pad name="J5" x="-10.1346" y="0.7874" drill="1"/>
+<pad name="J6" x="-10.1346" y="-1.7526" drill="1"/>
+<pad name="J7" x="-10.1346" y="-4.2926" drill="1"/>
+<pad name="J8" x="-10.1346" y="-6.8326" drill="1"/>
+<pad name="J9" x="-10.1346" y="-9.3726" drill="1"/>
+<pad name="J10" x="-10.1346" y="-11.9126" drill="1"/>
+<pad name="J11" x="-10.1346" y="-14.4526" drill="1"/>
+<pad name="J12" x="-10.1346" y="-16.9926" drill="1"/>
+<pad name="J13" x="-10.1346" y="-19.5326" drill="1"/>
+<pad name="J14" x="-10.1346" y="-22.0726" drill="1"/>
+<pad name="J15" x="10.1346" y="10.9474" drill="1" shape="square"/>
+<pad name="J16" x="10.1346" y="8.4074" drill="1"/>
+<pad name="J17" x="10.1346" y="5.8674" drill="1"/>
+<pad name="J18" x="10.1346" y="3.3274" drill="1"/>
+<pad name="J19" x="10.1346" y="0.7874" drill="1"/>
+<pad name="J20" x="10.1346" y="-1.7526" drill="1"/>
+<pad name="J21" x="10.1346" y="-4.2926" drill="1"/>
+<pad name="J22" x="10.1346" y="-6.8326" drill="1"/>
+<pad name="J23" x="10.1346" y="-9.3726" drill="1"/>
+<pad name="J24" x="10.1346" y="-11.9126" drill="1"/>
+<pad name="J25" x="10.1346" y="-14.4526" drill="1"/>
+<pad name="J26" x="10.1346" y="-16.9926" drill="1"/>
+<pad name="J27" x="10.1346" y="-19.5326" drill="1"/>
+<pad name="J28" x="10.1346" y="-22.0726" drill="1"/>
+</package>
+<package name="MODUEL_ABX00042_HEADERS_TEST">
+<wire x1="-12.7" y1="-31.75" x2="12.7" y2="-31.75" width="0.127" layer="51"/>
+<wire x1="12.7" y1="-31.75" x2="12.7" y2="34.29" width="0.127" layer="51"/>
+<wire x1="12.7" y1="34.29" x2="-12.7" y2="34.29" width="0.127" layer="51"/>
+<wire x1="-12.7" y1="34.29" x2="-12.7" y2="-31.75" width="0.127" layer="51"/>
+<wire x1="-12.7" y1="-31.75" x2="12.7" y2="-31.75" width="0.127" layer="21"/>
+<wire x1="12.7" y1="-31.75" x2="12.7" y2="34.29" width="0.127" layer="21"/>
+<wire x1="12.7" y1="34.29" x2="-12.7" y2="34.29" width="0.127" layer="21"/>
+<wire x1="-12.7" y1="34.29" x2="-12.7" y2="-31.75" width="0.127" layer="21"/>
+<wire x1="-12.95" y1="-32" x2="12.95" y2="-32" width="0.05" layer="39"/>
+<wire x1="12.95" y1="-32" x2="12.95" y2="34.54" width="0.05" layer="39"/>
+<wire x1="12.95" y1="34.54" x2="-12.95" y2="34.54" width="0.05" layer="39"/>
+<wire x1="-12.95" y1="34.54" x2="-12.95" y2="-32" width="0.05" layer="39"/>
+<text x="-12.7" y="35.56" size="1.27" layer="25">PORTENTA_H7</text>
+<text x="-12.7" y="-34.29" size="1.27" layer="27">ABX00042</text>
+<pad name="J1" x="-10.1346" y="12.2174" drill="1" shape="square"/>
+<pad name="J2" x="-10.1346" y="9.6774" drill="1"/>
+<pad name="J3" x="-10.1346" y="7.1374" drill="1"/>
+<pad name="J4" x="-10.1346" y="4.5974" drill="1"/>
+<pad name="J5" x="-10.1346" y="2.0574" drill="1"/>
+<pad name="J6" x="-10.1346" y="-0.4826" drill="1"/>
+<pad name="J7" x="-10.1346" y="-3.0226" drill="1"/>
+<pad name="J8" x="-10.1346" y="-5.5626" drill="1"/>
+<pad name="J9" x="-10.1346" y="-8.1026" drill="1"/>
+<pad name="J10" x="-10.1346" y="-10.6426" drill="1"/>
+<pad name="J11" x="-10.1346" y="-13.1826" drill="1"/>
+<pad name="J12" x="-10.1346" y="-15.7226" drill="1"/>
+<pad name="J13" x="-10.1346" y="-18.2626" drill="1"/>
+<pad name="J14" x="-10.1346" y="-20.8026" drill="1"/>
+<pad name="J15" x="10.1346" y="12.2174" drill="1" shape="square"/>
+<pad name="J16" x="10.1346" y="9.6774" drill="1"/>
+<pad name="J17" x="10.1346" y="7.1374" drill="1"/>
+<pad name="J18" x="10.1346" y="4.5974" drill="1"/>
+<pad name="J19" x="10.1346" y="2.0574" drill="1"/>
+<pad name="J20" x="10.1346" y="-0.4826" drill="1"/>
+<pad name="J21" x="10.1346" y="-3.0226" drill="1"/>
+<pad name="J22" x="10.1346" y="-5.5626" drill="1"/>
+<pad name="J23" x="10.1346" y="-8.1026" drill="1"/>
+<pad name="J24" x="10.1346" y="-10.6426" drill="1"/>
+<pad name="J25" x="10.1346" y="-13.1826" drill="1"/>
+<pad name="J26" x="10.1346" y="-15.7226" drill="1"/>
+<pad name="J27" x="10.1346" y="-18.2626" drill="1"/>
+<pad name="J28" x="10.1346" y="-20.8026" drill="1"/>
 </package>
 </packages>
 <symbols>
@@ -948,6 +1118,43 @@
 <pin name="PWM_7" x="25.4" y="-27.94" length="middle" rot="R180"/>
 <pin name="ADC_A3" x="-25.4" y="-12.7" length="middle" direction="in"/>
 </symbol>
+<symbol name="ABX00042_PINOUT">
+<description>Pinout schematic capture of the ABX00042 Portenta H7 headers</description>
+<wire x1="0" y1="0" x2="0" y2="40.64" width="0.1524" layer="94"/>
+<wire x1="0" y1="40.64" x2="25.4" y2="40.64" width="0.1524" layer="94"/>
+<wire x1="25.4" y1="40.64" x2="25.4" y2="0" width="0.1524" layer="94"/>
+<wire x1="25.4" y1="0" x2="0" y2="0" width="0.1524" layer="94"/>
+<pin name="ADC_A0" x="-5.08" y="33.02" visible="pin" length="middle"/>
+<pin name="ADC_A1" x="-5.08" y="30.48" visible="pin" length="middle"/>
+<pin name="ADC_A2" x="-5.08" y="27.94" visible="pin" length="middle"/>
+<pin name="ADC_A3" x="-5.08" y="25.4" visible="pin" length="middle"/>
+<pin name="ADC_A4" x="-5.08" y="22.86" visible="pin" length="middle"/>
+<pin name="ADC_A5" x="-5.08" y="20.32" visible="pin" length="middle"/>
+<pin name="ADC_A6" x="-5.08" y="17.78" visible="pin" length="middle"/>
+<pin name="PWM_2" x="-5.08" y="15.24" visible="pin" length="middle"/>
+<pin name="PWM_3" x="-5.08" y="12.7" visible="pin" length="middle"/>
+<pin name="PWM_4" x="-5.08" y="10.16" visible="pin" length="middle"/>
+<pin name="PWM_5" x="-5.08" y="7.62" visible="pin" length="middle"/>
+<pin name="PWM_6" x="-5.08" y="5.08" visible="pin" length="middle"/>
+<pin name="PWM_7" x="-5.08" y="2.54" visible="pin" length="middle"/>
+<pin name="+5V" x="30.48" y="38.1" visible="pin" length="middle" rot="R180"/>
+<pin name="VIN" x="30.48" y="35.56" visible="pin" length="middle" rot="R180"/>
+<pin name="3V3" x="30.48" y="33.02" visible="pin" length="middle" rot="R180"/>
+<pin name="GND" x="30.48" y="30.48" visible="pin" length="middle" rot="R180"/>
+<pin name="AREF" x="-5.08" y="38.1" visible="pin" length="middle"/>
+<pin name="RST" x="30.48" y="27.94" visible="pin" length="middle" rot="R180"/>
+<pin name="UART_TX" x="30.48" y="22.86" visible="pin" length="middle" rot="R180"/>
+<pin name="UART_RX" x="30.48" y="20.32" visible="pin" length="middle" rot="R180"/>
+<pin name="SCL" x="30.48" y="17.78" visible="pin" length="middle" rot="R180"/>
+<pin name="SDA" x="30.48" y="15.24" visible="pin" length="middle" rot="R180"/>
+<pin name="MISO" x="30.48" y="12.7" visible="pin" length="middle" rot="R180"/>
+<pin name="CLK" x="30.48" y="10.16" visible="pin" length="middle" rot="R180"/>
+<pin name="MOSI" x="30.48" y="7.62" visible="pin" length="middle" rot="R180"/>
+<pin name="CS" x="30.48" y="5.08" visible="pin" length="middle" rot="R180"/>
+<pin name="PWM_1" x="30.48" y="2.54" visible="pin" length="middle" rot="R180"/>
+<text x="0" y="40.64" size="1.778" layer="95">PORTENTA_H7_HEADERS</text>
+<text x="0" y="-2.54" size="1.778" layer="95">ABX00042</text>
+</symbol>
 </symbols>
 <devicesets>
 <deviceset name="ABX00042" prefix="U">
@@ -1084,6 +1291,49 @@
 <attribute name="PURCHASE-URL" value="https://www.snapeda.com/api/url_track_click_mouser/?unipart_id=6801596&amp;manufacturer=Arduino&amp;part_name=ABX00042&amp;search_term=None"/>
 <attribute name="SNAPEDA_LINK" value="https://www.snapeda.com/parts/ABX00042/Arduino/view-part/?ref=snap"/>
 </technology>
+</technologies>
+</device>
+</devices>
+</deviceset>
+<deviceset name="ABX00042_HEADERS_IO">
+<description>Device for Portenta H7 pin headers IO</description>
+<gates>
+<gate name="G$1" symbol="ABX00042_PINOUT" x="-12.7" y="-17.78"/>
+</gates>
+<devices>
+<device name="" package="MODULE_ABX00042_HEADERS">
+<connects>
+<connect gate="G$1" pin="+5V" pad="J15"/>
+<connect gate="G$1" pin="3V3" pad="J17"/>
+<connect gate="G$1" pin="ADC_A0" pad="J2"/>
+<connect gate="G$1" pin="ADC_A1" pad="J3"/>
+<connect gate="G$1" pin="ADC_A2" pad="J4"/>
+<connect gate="G$1" pin="ADC_A3" pad="J5"/>
+<connect gate="G$1" pin="ADC_A4" pad="J6"/>
+<connect gate="G$1" pin="ADC_A5" pad="J7"/>
+<connect gate="G$1" pin="ADC_A6" pad="J8"/>
+<connect gate="G$1" pin="AREF" pad="J1"/>
+<connect gate="G$1" pin="CLK" pad="J25"/>
+<connect gate="G$1" pin="CS" pad="J27"/>
+<connect gate="G$1" pin="GND" pad="J18"/>
+<connect gate="G$1" pin="MISO" pad="J24"/>
+<connect gate="G$1" pin="MOSI" pad="J26"/>
+<connect gate="G$1" pin="PWM_1" pad="J28"/>
+<connect gate="G$1" pin="PWM_2" pad="J14"/>
+<connect gate="G$1" pin="PWM_3" pad="J13"/>
+<connect gate="G$1" pin="PWM_4" pad="J12"/>
+<connect gate="G$1" pin="PWM_5" pad="J11"/>
+<connect gate="G$1" pin="PWM_6" pad="J10"/>
+<connect gate="G$1" pin="PWM_7" pad="J9"/>
+<connect gate="G$1" pin="RST" pad="J19"/>
+<connect gate="G$1" pin="SCL" pad="J22"/>
+<connect gate="G$1" pin="SDA" pad="J23"/>
+<connect gate="G$1" pin="UART_RX" pad="J21"/>
+<connect gate="G$1" pin="UART_TX" pad="J20"/>
+<connect gate="G$1" pin="VIN" pad="J16"/>
+</connects>
+<technologies>
+<technology name=""/>
 </technologies>
 </device>
 </devices>
