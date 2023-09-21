@@ -15,6 +15,8 @@
   BSD license, all text above must be included in any redistribution
  ***************************************************************************/
 
+// Some changes from my branch - chase
+
 #include <Wire.h>
 #include <SPI.h>
 #include <Adafruit_Sensor.h>
