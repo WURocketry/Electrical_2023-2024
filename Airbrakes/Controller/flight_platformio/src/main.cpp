@@ -228,6 +228,35 @@ void setup() {
 }
 
 void loop() {
+
+  /* Switch statement for FSM of ACE system modes */
+  switch(currentState) {
+    case FlightState::detectLaunch:
+      //if one second has elapsed and not launched, reset kalman filter
+      //if conditions met, transition to burn
+      currentState = detectLaunchTransition(currentState);
+      break;
+    case FlightState::burn:
+      //if rocket is decelerating, transition to control state
+      currentState = burnTransition(currentState);
+      break;
+    case FlightState::control:
+      //wait until apogee is reached, store airbrakes, transition to coast state
+      currentState = controlTransition(currentState);
+      break;
+    case FlightState::coast:
+      //if z velocity is very close to zero and altitude is low, then we are landed
+      //transition to landed
+      currentState = coastTransition(currentState);
+      break;
+    case FlightState::landed:
+      //if you have gotten here wait forever
+      break;
+    default:
+      // should not reach this state
+      break;
+  }
+
   /* SAMPLE LOOP (400Hz) */
   currentTime = micros();
   if (currentTime >= previousSampleTime + sampleLoopMicros) {
@@ -271,36 +300,6 @@ void loop() {
 
     stateVec = stateVec + Kkalman*innovation;
 
-    Serial << stateVec <<"\n";
-
-    //switch statement for transition of system modes
-    switch(currentState) {
-      case FlightState::detectLaunch:
-        //if one second has elapsed and not launched, reset kalman filter
-        //if conditions met, transition to burn
-        currentState = detectLaunchTransition(currentState);
-        break;
-      case FlightState::burn:
-        //if rocket is decelerating, transition to control state
-        currentState = burnTransition(currentState);
-        break;
-      case FlightState::control:
-        //wait until apogee is reached, store airbrakes, transition to coast state
-        currentState = controlTransition(currentState);
-        break;
-      case FlightState::coast:
-        //if z velocity is very close to zero and altitude is low, then we are landed
-        //transition to landed
-        currentState = coastTransition(currentState);
-        break;
-      case FlightState::landed:
-        //if you have gotten here wait forever
-        break;
-      default:
-        // should not reach this state
-        break;
-    }
-
   }
 
   /* CONTROL LOOP (xHz) */
@@ -310,10 +309,14 @@ void loop() {
 
     /**
      * TODO: 
-     *  1. Read actuation level from CONTROL loop PID controller
-     *  2. Send corresponding PWM to servo
-     *     a. NOTE: PWM should be set-and-forget to servo, no need
-     *        for blocking
+     *  1. Obtain current altitude and current velocity (prediction from 
+     *     K-filter)
+     *  2. Index into VLT for target velocity
+     *  2. Perform PID control to match current velocity to target velocity 
+     *     over timesteps
+     *  3. Send corresponding PWM to servo
+     *     a. NOTE: PWM should be capable of set-and-forget, this loop should
+     *        not be blocking
      */
 
   }
