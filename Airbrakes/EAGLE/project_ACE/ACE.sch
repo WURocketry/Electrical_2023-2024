@@ -685,135 +685,6 @@ to be daisy chained easily.&lt;/p&gt;
 </deviceset>
 </devicesets>
 </library>
-<library name="MIKROE-4903">
-<packages>
-<package name="MIKROE-ALTITUDE-6-CLICK-PINOUT">
-<description>Footprint of the Altitude 6 Click MikroBus pinout</description>
-<rectangle x1="0" y1="0" x2="27.94" y2="28.575" layer="47"/>
-<dimension x1="-0.635" y1="28.575" x2="-0.635" y2="0" x3="-2.54" y3="14.2875" textsize="1.27" layer="47"/>
-<pad name="PWM" x="2.54" y="22.86" drill="0.9" shape="square"/>
-<pad name="INT" x="2.54" y="20.32" drill="0.9"/>
-<pad name="RX" x="2.54" y="17.78" drill="0.9"/>
-<pad name="TX" x="2.54" y="15.24" drill="0.9"/>
-<pad name="SCL" x="2.54" y="12.7" drill="0.9"/>
-<pad name="SDA" x="2.54" y="10.16" drill="0.9"/>
-<pad name="5V" x="2.54" y="7.62" drill="0.9"/>
-<pad name="GND_0" x="2.54" y="5.08" drill="0.9"/>
-<pad name="AN" x="25.4" y="22.86" drill="0.9" shape="square"/>
-<pad name="RST" x="25.4" y="20.32" drill="0.9"/>
-<pad name="CS" x="25.4" y="17.78" drill="0.9"/>
-<pad name="SCK" x="25.4" y="15.24" drill="0.9"/>
-<pad name="MISO" x="25.4" y="12.7" drill="0.9"/>
-<pad name="MOSI" x="25.4" y="10.16" drill="0.9"/>
-<pad name="3.3V" x="25.4" y="7.62" drill="0.9"/>
-<pad name="GND_1" x="25.4" y="5.08" drill="0.9"/>
-<dimension x1="-1.27" y1="24.13" x2="-1.27" y2="3.81" x3="0" y3="13.97" textsize="1.27" layer="47"/>
-<dimension x1="0" y1="0" x2="27.94" y2="0" x3="13.97" y3="-2.54" textsize="1.27" layer="47"/>
-<wire x1="0" y1="24.13" x2="3.81" y2="27.94" width="0.127" layer="21" curve="-80.537678"/>
-<wire x1="27.94" y1="24.13" x2="24.13" y2="27.94" width="0.127" layer="21" curve="80.537678"/>
-<wire x1="27.94" y1="3.81" x2="25.4" y2="1.27" width="0.127" layer="21" curve="-75.963757"/>
-<wire x1="0" y1="3.81" x2="2.54" y2="1.27" width="0.127" layer="21" curve="90"/>
-<wire x1="2.54" y1="1.27" x2="25.4" y2="1.27" width="0.127" layer="21"/>
-<wire x1="27.94" y1="3.81" x2="27.94" y2="24.13" width="0.127" layer="21"/>
-<wire x1="24.13" y1="27.94" x2="3.81" y2="27.94" width="0.127" layer="21"/>
-<wire x1="0" y1="24.13" x2="0" y2="3.81" width="0.127" layer="21"/>
-<text x="21.59" y="22.86" size="0.8128" layer="21">AN</text>
-<text x="21.59" y="20.32" size="0.8128" layer="21">RST</text>
-<text x="21.59" y="17.78" size="0.8128" layer="21">CS</text>
-<text x="21.59" y="15.24" size="0.8128" layer="21">SCK</text>
-<text x="21.59" y="12.7" size="0.8128" layer="21">MISO</text>
-<text x="21.59" y="10.16" size="0.8128" layer="21">MOSI</text>
-<text x="21.59" y="7.62" size="0.8128" layer="21">3.3V</text>
-<text x="21.59" y="5.08" size="0.8128" layer="21">GND</text>
-<text x="3.81" y="22.86" size="0.8128" layer="21">PWM</text>
-<text x="3.81" y="20.32" size="0.8128" layer="21">INT</text>
-<text x="3.81" y="17.78" size="0.8128" layer="21">RX</text>
-<text x="3.81" y="15.24" size="0.8128" layer="21">TX</text>
-<text x="3.81" y="12.7" size="0.8128" layer="21">SCL</text>
-<text x="3.81" y="10.16" size="0.8128" layer="21">SDA</text>
-<text x="3.81" y="7.62" size="0.8128" layer="21">5V</text>
-<text x="3.81" y="5.08" size="0.8128" layer="21">GND</text>
-<text x="14.224" y="25.781" size="0.8128" layer="21">mikro</text>
-<text x="14.224" y="24.511" size="1.016" layer="21">BUS</text>
-<circle x="11.557" y="26.289" radius="0.283978125" width="0.127" layer="21"/>
-<circle x="12.827" y="26.289" radius="0.283978125" width="0.127" layer="21"/>
-<circle x="10.922" y="24.765" radius="0.283978125" width="0.127" layer="21"/>
-<circle x="12.192" y="24.765" radius="0.283978125" width="0.127" layer="21"/>
-<circle x="13.462" y="24.765" radius="0.283978125" width="0.127" layer="21"/>
-<wire x1="10.922" y1="25.019" x2="10.922" y2="25.527" width="0.127" layer="21"/>
-<wire x1="10.922" y1="25.527" x2="11.557" y2="25.527" width="0.127" layer="21"/>
-<wire x1="11.557" y1="25.527" x2="12.192" y2="25.527" width="0.127" layer="21"/>
-<wire x1="12.192" y1="25.527" x2="12.827" y2="25.527" width="0.127" layer="21"/>
-<wire x1="12.827" y1="25.527" x2="13.462" y2="25.527" width="0.127" layer="21"/>
-<wire x1="13.462" y1="25.527" x2="13.462" y2="25.019" width="0.127" layer="21"/>
-<wire x1="12.192" y1="25.019" x2="12.192" y2="25.527" width="0.127" layer="21"/>
-<wire x1="12.827" y1="25.527" x2="12.827" y2="25.908" width="0.127" layer="21"/>
-<wire x1="11.557" y1="25.527" x2="11.557" y2="25.908" width="0.127" layer="21"/>
-</package>
-</packages>
-<symbols>
-<symbol name="MIKROE-ALTITUDE-6-CLICK-PINOUT">
-<description>Schematic capture of Altitude 6 Click MikroBus</description>
-<wire x1="0" y1="22.86" x2="0" y2="0" width="0.254" layer="94"/>
-<wire x1="0" y1="0" x2="7.62" y2="0" width="0.254" layer="94"/>
-<wire x1="7.62" y1="0" x2="7.62" y2="22.86" width="0.254" layer="94"/>
-<wire x1="7.62" y1="22.86" x2="0" y2="22.86" width="0.254" layer="94"/>
-<wire x1="30.48" y1="22.86" x2="30.48" y2="0" width="0.254" layer="94"/>
-<wire x1="30.48" y1="0" x2="38.1" y2="0" width="0.254" layer="94"/>
-<wire x1="38.1" y1="0" x2="38.1" y2="22.86" width="0.254" layer="94"/>
-<wire x1="38.1" y1="22.86" x2="30.48" y2="22.86" width="0.254" layer="94"/>
-<pin name="AN" x="2.54" y="20.32" visible="pad" length="middle" rot="R180"/>
-<pin name="RST" x="2.54" y="17.78" visible="pad" length="middle" swaplevel="1" rot="R180"/>
-<pin name="CS" x="2.54" y="15.24" visible="pad" length="middle" swaplevel="2" rot="R180"/>
-<pin name="SCK" x="2.54" y="12.7" visible="pad" length="middle" swaplevel="3" rot="R180"/>
-<pin name="MISO" x="2.54" y="10.16" visible="pad" length="middle" swaplevel="4" rot="R180"/>
-<pin name="MOSI" x="2.54" y="7.62" visible="pad" length="middle" swaplevel="5" rot="R180"/>
-<pin name="3.3V" x="2.54" y="5.08" visible="pad" length="middle" swaplevel="6" rot="R180"/>
-<pin name="GND_0" x="2.54" y="2.54" visible="pad" length="middle" swaplevel="7" rot="R180"/>
-<pin name="PWM" x="33.02" y="20.32" visible="pad" length="middle" swaplevel="8" rot="R180"/>
-<pin name="INT" x="33.02" y="17.78" visible="pad" length="middle" swaplevel="9" rot="R180"/>
-<pin name="RX" x="33.02" y="15.24" visible="pad" length="middle" swaplevel="10" rot="R180"/>
-<pin name="TX" x="33.02" y="12.7" visible="pad" length="middle" swaplevel="11" rot="R180"/>
-<pin name="SCL" x="33.02" y="10.16" visible="pad" length="middle" swaplevel="12" rot="R180"/>
-<pin name="SDA" x="33.02" y="7.62" visible="pad" length="middle" swaplevel="13" rot="R180"/>
-<pin name="5V" x="33.02" y="5.08" visible="pad" length="middle" swaplevel="14" rot="R180"/>
-<pin name="GND_1" x="33.02" y="2.54" visible="pad" length="middle" swaplevel="15" rot="R180"/>
-</symbol>
-</symbols>
-<devicesets>
-<deviceset name="MIKROE-ALTITUDE-6-CLICK-DVC">
-<description>Device for the Mikroe Altitude 6 Click device</description>
-<gates>
-<gate name="G$1" symbol="MIKROE-ALTITUDE-6-CLICK-PINOUT" x="-20.32" y="-33.02"/>
-</gates>
-<devices>
-<device name="" package="MIKROE-ALTITUDE-6-CLICK-PINOUT">
-<connects>
-<connect gate="G$1" pin="3.3V" pad="3.3V"/>
-<connect gate="G$1" pin="5V" pad="5V"/>
-<connect gate="G$1" pin="AN" pad="AN"/>
-<connect gate="G$1" pin="CS" pad="CS"/>
-<connect gate="G$1" pin="GND_0" pad="GND_0"/>
-<connect gate="G$1" pin="GND_1" pad="GND_1"/>
-<connect gate="G$1" pin="INT" pad="INT"/>
-<connect gate="G$1" pin="MISO" pad="MISO"/>
-<connect gate="G$1" pin="MOSI" pad="MOSI"/>
-<connect gate="G$1" pin="PWM" pad="PWM"/>
-<connect gate="G$1" pin="RST" pad="RST"/>
-<connect gate="G$1" pin="RX" pad="RX"/>
-<connect gate="G$1" pin="SCK" pad="SCK"/>
-<connect gate="G$1" pin="SCL" pad="SCL"/>
-<connect gate="G$1" pin="SDA" pad="SDA"/>
-<connect gate="G$1" pin="TX" pad="TX"/>
-</connects>
-<technologies>
-<technology name=""/>
-</technologies>
-</device>
-</devices>
-</deviceset>
-</devicesets>
-</library>
 <library name="ADAFRUIT_BNO08x">
 <packages>
 <package name="ADAFRUIT_BNO08X_FOOTPRINT">
@@ -1228,6 +1099,135 @@ Variants with postfix FAB are widened to allow the routing of internal traces</d
 </deviceset>
 </devicesets>
 </library>
+<library name="MIKROE-4903">
+<packages>
+<package name="MIKROE-ALTITUDE-6-CLICK-PINOUT">
+<description>Footprint of the Altitude 6 Click MikroBus pinout</description>
+<rectangle x1="0" y1="0" x2="27.94" y2="28.575" layer="47"/>
+<dimension x1="-0.635" y1="28.575" x2="-0.635" y2="0" x3="-2.54" y3="14.2875" textsize="1.27" layer="47"/>
+<pad name="AN" x="2.54" y="22.86" drill="0.9" shape="square"/>
+<pad name="RST" x="2.54" y="20.32" drill="0.9"/>
+<pad name="CS" x="2.54" y="17.78" drill="0.9"/>
+<pad name="SCK" x="2.54" y="15.24" drill="0.9"/>
+<pad name="MISO" x="2.54" y="12.7" drill="0.9"/>
+<pad name="MOSI" x="2.54" y="10.16" drill="0.9"/>
+<pad name="3V3" x="2.54" y="7.62" drill="0.9"/>
+<pad name="GND_0" x="2.54" y="5.08" drill="0.9"/>
+<pad name="PWM" x="25.4" y="22.86" drill="0.9" shape="square"/>
+<pad name="INT" x="25.4" y="20.32" drill="0.9"/>
+<pad name="RX" x="25.4" y="17.78" drill="0.9"/>
+<pad name="TX" x="25.4" y="15.24" drill="0.9"/>
+<pad name="SCL" x="25.4" y="12.7" drill="0.9"/>
+<pad name="SDA" x="25.4" y="10.16" drill="0.9"/>
+<pad name="5V" x="25.4" y="7.62" drill="0.9"/>
+<pad name="GND_1" x="25.4" y="5.08" drill="0.9"/>
+<dimension x1="-1.27" y1="24.13" x2="-1.27" y2="3.81" x3="0" y3="13.97" textsize="1.27" layer="47"/>
+<dimension x1="0" y1="0" x2="27.94" y2="0" x3="13.97" y3="-2.54" textsize="1.27" layer="47"/>
+<wire x1="0" y1="24.13" x2="3.81" y2="27.94" width="0.127" layer="21" curve="-80.537678"/>
+<wire x1="27.94" y1="24.13" x2="24.13" y2="27.94" width="0.127" layer="21" curve="80.537678"/>
+<wire x1="27.94" y1="3.81" x2="25.4" y2="1.27" width="0.127" layer="21" curve="-75.963757"/>
+<wire x1="0" y1="3.81" x2="2.54" y2="1.27" width="0.127" layer="21" curve="90"/>
+<wire x1="2.54" y1="1.27" x2="25.4" y2="1.27" width="0.127" layer="21"/>
+<wire x1="27.94" y1="3.81" x2="27.94" y2="24.13" width="0.127" layer="21"/>
+<wire x1="24.13" y1="27.94" x2="3.81" y2="27.94" width="0.127" layer="21"/>
+<wire x1="0" y1="24.13" x2="0" y2="3.81" width="0.127" layer="21"/>
+<text x="21.59" y="22.86" size="0.8128" layer="21">PWM</text>
+<text x="21.59" y="20.32" size="0.8128" layer="21">INT</text>
+<text x="21.59" y="17.78" size="0.8128" layer="21">RX</text>
+<text x="21.59" y="15.24" size="0.8128" layer="21">TX</text>
+<text x="21.59" y="12.7" size="0.8128" layer="21">SCL</text>
+<text x="21.59" y="10.16" size="0.8128" layer="21">SDA</text>
+<text x="21.59" y="7.62" size="0.8128" layer="21">5Vo</text>
+<text x="21.59" y="5.08" size="0.8128" layer="21">GND</text>
+<text x="3.81" y="22.86" size="0.8128" layer="21">AN</text>
+<text x="3.81" y="20.32" size="0.8128" layer="21">RST</text>
+<text x="3.81" y="17.78" size="0.8128" layer="21">CS</text>
+<text x="3.81" y="15.24" size="0.8128" layer="21">SCK</text>
+<text x="3.81" y="12.7" size="0.8128" layer="21">MISO</text>
+<text x="3.81" y="10.16" size="0.8128" layer="21">MOSI</text>
+<text x="3.81" y="7.62" size="0.8128" layer="21">3V3</text>
+<text x="3.81" y="5.08" size="0.8128" layer="21">GND</text>
+<text x="14.224" y="25.781" size="0.8128" layer="21">mikro</text>
+<text x="14.224" y="24.511" size="1.016" layer="21">BUS</text>
+<circle x="11.557" y="26.289" radius="0.283978125" width="0.127" layer="21"/>
+<circle x="12.827" y="26.289" radius="0.283978125" width="0.127" layer="21"/>
+<circle x="10.922" y="24.765" radius="0.283978125" width="0.127" layer="21"/>
+<circle x="12.192" y="24.765" radius="0.283978125" width="0.127" layer="21"/>
+<circle x="13.462" y="24.765" radius="0.283978125" width="0.127" layer="21"/>
+<wire x1="10.922" y1="25.019" x2="10.922" y2="25.527" width="0.127" layer="21"/>
+<wire x1="10.922" y1="25.527" x2="11.557" y2="25.527" width="0.127" layer="21"/>
+<wire x1="11.557" y1="25.527" x2="12.192" y2="25.527" width="0.127" layer="21"/>
+<wire x1="12.192" y1="25.527" x2="12.827" y2="25.527" width="0.127" layer="21"/>
+<wire x1="12.827" y1="25.527" x2="13.462" y2="25.527" width="0.127" layer="21"/>
+<wire x1="13.462" y1="25.527" x2="13.462" y2="25.019" width="0.127" layer="21"/>
+<wire x1="12.192" y1="25.019" x2="12.192" y2="25.527" width="0.127" layer="21"/>
+<wire x1="12.827" y1="25.527" x2="12.827" y2="25.908" width="0.127" layer="21"/>
+<wire x1="11.557" y1="25.527" x2="11.557" y2="25.908" width="0.127" layer="21"/>
+</package>
+</packages>
+<symbols>
+<symbol name="MIKROE-ALTITUDE-6-CLICK-PINOUT">
+<description>Schematic capture of Altitude 6 Click MikroBus</description>
+<wire x1="0" y1="22.86" x2="0" y2="0" width="0.254" layer="94"/>
+<wire x1="0" y1="0" x2="7.62" y2="0" width="0.254" layer="94"/>
+<wire x1="7.62" y1="0" x2="7.62" y2="22.86" width="0.254" layer="94"/>
+<wire x1="7.62" y1="22.86" x2="0" y2="22.86" width="0.254" layer="94"/>
+<wire x1="30.48" y1="22.86" x2="30.48" y2="0" width="0.254" layer="94"/>
+<wire x1="30.48" y1="0" x2="38.1" y2="0" width="0.254" layer="94"/>
+<wire x1="38.1" y1="0" x2="38.1" y2="22.86" width="0.254" layer="94"/>
+<wire x1="38.1" y1="22.86" x2="30.48" y2="22.86" width="0.254" layer="94"/>
+<pin name="AN" x="2.54" y="20.32" visible="pad" length="middle" rot="R180"/>
+<pin name="RST" x="2.54" y="17.78" visible="pad" length="middle" swaplevel="1" rot="R180"/>
+<pin name="CS" x="2.54" y="15.24" visible="pad" length="middle" swaplevel="2" rot="R180"/>
+<pin name="SCK" x="2.54" y="12.7" visible="pad" length="middle" swaplevel="3" rot="R180"/>
+<pin name="MISO" x="2.54" y="10.16" visible="pad" length="middle" swaplevel="4" rot="R180"/>
+<pin name="MOSI" x="2.54" y="7.62" visible="pad" length="middle" swaplevel="5" rot="R180"/>
+<pin name="3.3V" x="2.54" y="5.08" visible="pad" length="middle" swaplevel="6" rot="R180"/>
+<pin name="GND_0" x="2.54" y="2.54" visible="pad" length="middle" swaplevel="7" rot="R180"/>
+<pin name="PWM" x="33.02" y="20.32" visible="pad" length="middle" swaplevel="8" rot="R180"/>
+<pin name="INT" x="33.02" y="17.78" visible="pad" length="middle" swaplevel="9" rot="R180"/>
+<pin name="RX" x="33.02" y="15.24" visible="pad" length="middle" swaplevel="10" rot="R180"/>
+<pin name="TX" x="33.02" y="12.7" visible="pad" length="middle" swaplevel="11" rot="R180"/>
+<pin name="SCL" x="33.02" y="10.16" visible="pad" length="middle" swaplevel="12" rot="R180"/>
+<pin name="SDA" x="33.02" y="7.62" visible="pad" length="middle" swaplevel="13" rot="R180"/>
+<pin name="5V" x="33.02" y="5.08" visible="pad" length="middle" swaplevel="14" rot="R180"/>
+<pin name="GND_1" x="33.02" y="2.54" visible="pad" length="middle" swaplevel="15" rot="R180"/>
+</symbol>
+</symbols>
+<devicesets>
+<deviceset name="MIKROE-ALTITUDE-6-CLICK-DVC">
+<description>Device for the Mikroe Altitude 6 Click device</description>
+<gates>
+<gate name="G$1" symbol="MIKROE-ALTITUDE-6-CLICK-PINOUT" x="-20.32" y="-33.02"/>
+</gates>
+<devices>
+<device name="" package="MIKROE-ALTITUDE-6-CLICK-PINOUT">
+<connects>
+<connect gate="G$1" pin="3.3V" pad="3V3"/>
+<connect gate="G$1" pin="5V" pad="5V"/>
+<connect gate="G$1" pin="AN" pad="AN"/>
+<connect gate="G$1" pin="CS" pad="CS"/>
+<connect gate="G$1" pin="GND_0" pad="GND_0"/>
+<connect gate="G$1" pin="GND_1" pad="GND_1"/>
+<connect gate="G$1" pin="INT" pad="INT"/>
+<connect gate="G$1" pin="MISO" pad="MISO"/>
+<connect gate="G$1" pin="MOSI" pad="MOSI"/>
+<connect gate="G$1" pin="PWM" pad="PWM"/>
+<connect gate="G$1" pin="RST" pad="RST"/>
+<connect gate="G$1" pin="RX" pad="RX"/>
+<connect gate="G$1" pin="SCK" pad="SCK"/>
+<connect gate="G$1" pin="SCL" pad="SCL"/>
+<connect gate="G$1" pin="SDA" pad="SDA"/>
+<connect gate="G$1" pin="TX" pad="TX"/>
+</connects>
+<technologies>
+<technology name=""/>
+</technologies>
+</device>
+</devices>
+</deviceset>
+</devicesets>
+</library>
 </libraries>
 <attributes>
 </attributes>
@@ -1245,13 +1245,9 @@ Variants with postfix FAB are widened to allow the routing of internal traces</d
 <part name="SUPPLY7" library="SparkFun-PowerSymbols" deviceset="3.3V" device=""/>
 <part name="J3" library="SparkX" deviceset="I2C_STANDARD" device="_NO_SILK" value="PTH"/>
 <part name="GND12" library="SparkFun" deviceset="GND" device=""/>
-<part name="U$2" library="microbuilder" deviceset="GND" device=""/>
 <part name="U$3" library="microbuilder" deviceset="GND" device=""/>
-<part name="P+2" library="supply1" library_urn="urn:adsk.eagle:library:371" deviceset="VCC" device=""/>
 <part name="U$4" library="microbuilder" deviceset="3.3V" device=""/>
-<part name="U$1" library="MIKROE-4903" deviceset="MIKROE-ALTITUDE-6-CLICK-DVC" device=""/>
 <part name="P+3" library="supply1" library_urn="urn:adsk.eagle:library:371" deviceset="VCC" device=""/>
-<part name="U$6" library="microbuilder" deviceset="3.3V" device=""/>
 <part name="U$7" library="microbuilder" deviceset="GND" device=""/>
 <part name="U$5" library="ADAFRUIT_BNO08x" deviceset="ADAFRUIT_BNO08X" device=""/>
 <part name="U$10" library="ABX00042" deviceset="ABX00042_HEADERS_IO" device=""/>
@@ -1265,6 +1261,7 @@ Variants with postfix FAB are widened to allow the routing of internal traces</d
 <part name="0OHM" library="fab_new" deviceset="R" device="1206"/>
 <part name="PAD1" library="wirepad" library_urn="urn:adsk.eagle:library:412" deviceset="2,15/1,0" device="" package3d_urn="urn:adsk.eagle:package:30831/1"/>
 <part name="PAD2" library="wirepad" library_urn="urn:adsk.eagle:library:412" deviceset="2,15/1,0" device="" package3d_urn="urn:adsk.eagle:package:30831/1"/>
+<part name="U$1" library="MIKROE-4903" deviceset="MIKROE-ALTITUDE-6-CLICK-DVC" device=""/>
 </parts>
 <sheets>
 <sheet>
@@ -1275,8 +1272,8 @@ Variants with postfix FAB are widened to allow the routing of internal traces</d
 <text x="129.54" y="81.28" size="1.778" layer="91">Altitude 6 Click Pinout</text>
 </plain>
 <instances>
-<instance part="SUPPLY7" gate="G$1" x="71.12" y="27.94" smashed="yes">
-<attribute name="VALUE" x="71.12" y="30.734" size="1.778" layer="96" align="bottom-center"/>
+<instance part="SUPPLY7" gate="G$1" x="58.42" y="27.94" smashed="yes">
+<attribute name="VALUE" x="58.42" y="30.734" size="1.778" layer="96" align="bottom-center"/>
 </instance>
 <instance part="J3" gate="G$1" x="81.28" y="20.32" smashed="yes" rot="MR0">
 <attribute name="VALUE" x="86.36" y="14.986" size="1.778" layer="96" font="vector" rot="MR0" align="top-left"/>
@@ -1285,38 +1282,28 @@ Variants with postfix FAB are widened to allow the routing of internal traces</d
 <instance part="GND12" gate="1" x="71.12" y="12.7" smashed="yes">
 <attribute name="VALUE" x="68.58" y="10.16" size="1.778" layer="96"/>
 </instance>
-<instance part="U$2" gate="G$1" x="144.78" y="50.8" smashed="yes">
-<attribute name="VALUE" x="143.256" y="48.26" size="1.27" layer="96"/>
-</instance>
 <instance part="U$3" gate="G$1" x="175.26" y="50.8" smashed="yes">
 <attribute name="VALUE" x="173.736" y="48.26" size="1.27" layer="96"/>
-</instance>
-<instance part="P+2" gate="VCC" x="152.4" y="66.04" smashed="yes">
-<attribute name="VALUE" x="149.86" y="63.5" size="1.778" layer="96" rot="R90"/>
 </instance>
 <instance part="U$4" gate="G$1" x="124.46" y="66.04" smashed="yes">
 <attribute name="VALUE" x="122.936" y="67.056" size="1.27" layer="96"/>
 </instance>
-<instance part="U$1" gate="G$1" x="132.08" y="50.8" smashed="yes"/>
 <instance part="P+3" gate="VCC" x="68.58" y="76.2" smashed="yes">
 <attribute name="VALUE" x="66.04" y="73.66" size="1.778" layer="96" rot="R90"/>
-</instance>
-<instance part="U$6" gate="G$1" x="60.96" y="76.2" smashed="yes">
-<attribute name="VALUE" x="59.436" y="77.216" size="1.27" layer="96"/>
 </instance>
 <instance part="U$7" gate="G$1" x="88.9" y="60.96" smashed="yes">
 <attribute name="VALUE" x="87.376" y="58.42" size="1.27" layer="96"/>
 </instance>
 <instance part="U$5" gate="G$1" x="73.66" y="53.34" smashed="yes"/>
-<instance part="U$10" gate="G$1" x="5.08" y="30.48" smashed="yes"/>
-<instance part="U$11" gate="G$1" x="45.72" y="76.2" smashed="yes">
-<attribute name="VALUE" x="44.196" y="77.216" size="1.27" layer="96"/>
+<instance part="U$10" gate="G$1" x="-10.16" y="35.56" smashed="yes"/>
+<instance part="U$11" gate="G$1" x="30.48" y="81.28" smashed="yes">
+<attribute name="VALUE" x="28.956" y="82.296" size="1.27" layer="96"/>
 </instance>
-<instance part="P+1" gate="VCC" x="40.64" y="76.2" smashed="yes">
-<attribute name="VALUE" x="38.1" y="73.66" size="1.778" layer="96" rot="R90"/>
+<instance part="P+1" gate="VCC" x="25.4" y="81.28" smashed="yes">
+<attribute name="VALUE" x="22.86" y="78.74" size="1.778" layer="96" rot="R90"/>
 </instance>
-<instance part="U$12" gate="G$1" x="40.64" y="58.42" smashed="yes">
-<attribute name="VALUE" x="39.116" y="55.88" size="1.27" layer="96"/>
+<instance part="U$12" gate="G$1" x="25.4" y="63.5" smashed="yes">
+<attribute name="VALUE" x="23.876" y="60.96" size="1.27" layer="96"/>
 </instance>
 <instance part="R1" gate="G$1" x="35.56" y="2.54" smashed="yes">
 <attribute name="NAME" x="31.75" y="4.0386" size="1.778" layer="95"/>
@@ -1326,24 +1313,25 @@ Variants with postfix FAB are widened to allow the routing of internal traces</d
 <attribute name="NAME" x="41.91" y="4.0386" size="1.778" layer="95"/>
 <attribute name="VALUE" x="41.91" y="-0.762" size="1.778" layer="96"/>
 </instance>
-<instance part="POWER_TERMINAL" gate="G$1" x="53.34" y="55.88" smashed="yes" rot="R90">
-<attribute name="NAME" x="47.625" y="53.34" size="1.778" layer="95" rot="R90"/>
+<instance part="POWER_TERMINAL" gate="G$1" x="45.72" y="71.12" smashed="yes" rot="R90">
+<attribute name="NAME" x="40.005" y="68.58" size="1.778" layer="95" rot="R90"/>
 </instance>
-<instance part="SERVO_TERMINAL" gate="G$1" x="53.34" y="45.72" smashed="yes" rot="R90">
-<attribute name="NAME" x="47.625" y="43.18" size="1.778" layer="95" rot="R90"/>
+<instance part="SERVO_TERMINAL" gate="G$1" x="43.18" y="58.42" smashed="yes" rot="R90">
+<attribute name="NAME" x="42.545" y="53.34" size="1.778" layer="95"/>
 </instance>
-<instance part="0OHM" gate="G$1" x="-5.08" y="33.02" smashed="yes">
-<attribute name="NAME" x="-8.89" y="34.5186" size="1.778" layer="95"/>
-<attribute name="VALUE" x="-8.89" y="29.718" size="1.778" layer="96"/>
+<instance part="0OHM" gate="G$1" x="-20.32" y="38.1" smashed="yes">
+<attribute name="NAME" x="-24.13" y="39.5986" size="1.778" layer="95"/>
+<attribute name="VALUE" x="-24.13" y="34.798" size="1.778" layer="96"/>
 </instance>
 <instance part="PAD1" gate="1" x="48.26" y="15.24" smashed="yes">
 <attribute name="NAME" x="47.117" y="17.0942" size="1.778" layer="95"/>
 <attribute name="VALUE" x="47.117" y="11.938" size="1.778" layer="96"/>
 </instance>
-<instance part="PAD2" gate="1" x="50.8" y="0" smashed="yes" rot="R90">
-<attribute name="NAME" x="48.9458" y="-1.143" size="1.778" layer="95" rot="R90"/>
-<attribute name="VALUE" x="54.102" y="-1.143" size="1.778" layer="96" rot="R90"/>
+<instance part="PAD2" gate="1" x="50.8" y="-7.62" smashed="yes" rot="R90">
+<attribute name="NAME" x="48.9458" y="-8.763" size="1.778" layer="95" rot="R90"/>
+<attribute name="VALUE" x="54.102" y="-8.763" size="1.778" layer="96" rot="R90"/>
 </instance>
+<instance part="U$1" gate="G$1" x="134.62" y="50.8" smashed="yes"/>
 </instances>
 <busses>
 </busses>
@@ -1356,17 +1344,13 @@ Variants with postfix FAB are widened to allow the routing of internal traces</d
 <pinref part="GND12" gate="1" pin="GND"/>
 <pinref part="R2" gate="G$1" pin="2"/>
 <wire x1="71.12" y1="15.24" x2="50.8" y2="15.24" width="0.1524" layer="91"/>
-<wire x1="50.8" y1="15.24" x2="50.8" y2="2.54" width="0.1524" layer="91"/>
+<wire x1="50.8" y1="15.24" x2="50.8" y2="-5.08" width="0.1524" layer="91"/>
 <junction x="71.12" y="15.24"/>
 <pinref part="PAD1" gate="1" pin="P"/>
 <junction x="50.8" y="15.24"/>
 <pinref part="PAD2" gate="1" pin="P"/>
-<junction x="50.8" y="2.54"/>
-</segment>
-<segment>
-<pinref part="U$2" gate="G$1" pin="GND"/>
-<pinref part="U$1" gate="G$1" pin="GND_0"/>
-<wire x1="134.62" y1="53.34" x2="144.78" y2="53.34" width="0.1524" layer="91"/>
+<junction x="50.8" y="-5.08"/>
+<wire x1="50.8" y1="-5.08" x2="50.8" y2="2.54" width="0.1524" layer="91"/>
 </segment>
 <segment>
 <pinref part="U$7" gate="G$1" pin="GND"/>
@@ -1377,26 +1361,25 @@ Variants with postfix FAB are widened to allow the routing of internal traces</d
 </segment>
 <segment>
 <pinref part="U$12" gate="G$1" pin="GND"/>
-<wire x1="35.56" y1="60.96" x2="40.64" y2="60.96" width="0.1524" layer="91"/>
+<wire x1="20.32" y1="66.04" x2="25.4" y2="66.04" width="0.1524" layer="91"/>
 <pinref part="U$10" gate="G$1" pin="GND"/>
-<wire x1="40.64" y1="60.96" x2="40.64" y2="55.88" width="0.1524" layer="91"/>
-<junction x="40.64" y="60.96"/>
 <pinref part="POWER_TERMINAL" gate="G$1" pin="1"/>
-<wire x1="40.64" y1="55.88" x2="50.8" y2="55.88" width="0.1524" layer="91"/>
 <pinref part="SERVO_TERMINAL" gate="G$1" pin="2"/>
-<wire x1="53.34" y1="45.72" x2="53.34" y2="53.34" width="0.1524" layer="91"/>
-<wire x1="53.34" y1="53.34" x2="50.8" y2="53.34" width="0.1524" layer="91"/>
-<wire x1="50.8" y1="53.34" x2="50.8" y2="55.88" width="0.1524" layer="91"/>
-<junction x="50.8" y="55.88"/>
+<wire x1="43.18" y1="58.42" x2="43.18" y2="66.04" width="0.1524" layer="91"/>
+<wire x1="43.18" y1="66.04" x2="43.18" y2="71.12" width="0.1524" layer="91"/>
+<wire x1="43.18" y1="66.04" x2="25.4" y2="66.04" width="0.1524" layer="91"/>
+<junction x="43.18" y="66.04"/>
+<junction x="25.4" y="66.04"/>
+</segment>
+<segment>
+<wire x1="165.1" y1="53.34" x2="167.64" y2="53.34" width="0.1524" layer="91"/>
+<pinref part="U$1" gate="G$1" pin="GND_1"/>
+<pinref part="U$3" gate="G$1" pin="GND"/>
+<wire x1="167.64" y1="53.34" x2="175.26" y2="53.34" width="0.1524" layer="91"/>
+<junction x="167.64" y="53.34"/>
 </segment>
 </net>
 <net name="VCC" class="2">
-<segment>
-<wire x1="165.1" y1="55.88" x2="152.4" y2="55.88" width="0.1524" layer="91"/>
-<wire x1="152.4" y1="55.88" x2="152.4" y2="63.5" width="0.1524" layer="91"/>
-<pinref part="P+2" gate="VCC" pin="VCC"/>
-<pinref part="U$1" gate="G$1" pin="5V"/>
-</segment>
 <segment>
 <wire x1="68.58" y1="68.58" x2="68.58" y2="73.66" width="0.1524" layer="91"/>
 <pinref part="P+3" gate="VCC" pin="VCC"/>
@@ -1404,36 +1387,30 @@ Variants with postfix FAB are widened to allow the routing of internal traces</d
 <wire x1="81.28" y1="68.58" x2="68.58" y2="68.58" width="0.1524" layer="91"/>
 </segment>
 <segment>
-<wire x1="40.64" y1="66.04" x2="40.64" y2="73.66" width="0.1524" layer="91"/>
+<wire x1="25.4" y1="71.12" x2="25.4" y2="78.74" width="0.1524" layer="91"/>
 <pinref part="P+1" gate="VCC" pin="VCC"/>
 <pinref part="U$10" gate="G$1" pin="VIN"/>
-<wire x1="40.64" y1="66.04" x2="35.56" y2="66.04" width="0.1524" layer="91"/>
+<wire x1="25.4" y1="71.12" x2="20.32" y2="71.12" width="0.1524" layer="91"/>
 </segment>
 </net>
 <net name="3.3V" class="2">
 <segment>
 <pinref part="J3" gate="G$1" pin="VCC"/>
-<wire x1="73.66" y1="20.32" x2="71.12" y2="20.32" width="0.1524" layer="91"/>
-<wire x1="71.12" y1="20.32" x2="71.12" y2="27.94" width="0.1524" layer="91"/>
+<wire x1="73.66" y1="20.32" x2="58.42" y2="20.32" width="0.1524" layer="91"/>
+<wire x1="58.42" y1="20.32" x2="58.42" y2="27.94" width="0.1524" layer="91"/>
 <pinref part="SUPPLY7" gate="G$1" pin="3.3V"/>
 </segment>
 <segment>
 <wire x1="124.46" y1="55.88" x2="124.46" y2="63.5" width="0.1524" layer="91"/>
 <pinref part="U$4" gate="G$1" pin="3.3V"/>
 <pinref part="U$1" gate="G$1" pin="3.3V"/>
-<wire x1="134.62" y1="55.88" x2="124.46" y2="55.88" width="0.1524" layer="91"/>
+<wire x1="137.16" y1="55.88" x2="124.46" y2="55.88" width="0.1524" layer="91"/>
 </segment>
 <segment>
-<wire x1="81.28" y1="66.04" x2="60.96" y2="66.04" width="0.1524" layer="91"/>
-<wire x1="60.96" y1="66.04" x2="60.96" y2="73.66" width="0.1524" layer="91"/>
-<pinref part="U$6" gate="G$1" pin="3.3V"/>
-<pinref part="U$5" gate="G$1" pin="3.3V"/>
-</segment>
-<segment>
-<wire x1="45.72" y1="63.5" x2="45.72" y2="73.66" width="0.1524" layer="91"/>
+<wire x1="30.48" y1="68.58" x2="30.48" y2="78.74" width="0.1524" layer="91"/>
 <pinref part="U$11" gate="G$1" pin="3.3V"/>
 <pinref part="U$10" gate="G$1" pin="3V3"/>
-<wire x1="35.56" y1="63.5" x2="45.72" y2="63.5" width="0.1524" layer="91"/>
+<wire x1="20.32" y1="68.58" x2="30.48" y2="68.58" width="0.1524" layer="91"/>
 </segment>
 </net>
 <net name="SCL" class="0">
@@ -1446,6 +1423,7 @@ Variants with postfix FAB are widened to allow the routing of internal traces</d
 <wire x1="165.1" y1="60.96" x2="160.02" y2="60.96" width="0.1524" layer="91"/>
 <label x="160.02" y="60.96" size="1.27" layer="95" rot="R180" xref="yes"/>
 <pinref part="U$1" gate="G$1" pin="SCL"/>
+<wire x1="167.64" y1="60.96" x2="165.1" y2="60.96" width="0.1524" layer="91"/>
 </segment>
 <segment>
 <label x="66.04" y="60.96" size="1.27" layer="95" rot="R180" xref="yes"/>
@@ -1453,8 +1431,8 @@ Variants with postfix FAB are widened to allow the routing of internal traces</d
 <wire x1="66.04" y1="60.96" x2="81.28" y2="60.96" width="0.1524" layer="91"/>
 </segment>
 <segment>
-<wire x1="35.56" y1="48.26" x2="40.64" y2="48.26" width="0.1524" layer="91"/>
-<label x="40.64" y="48.26" size="1.27" layer="95" xref="yes"/>
+<wire x1="20.32" y1="53.34" x2="25.4" y2="53.34" width="0.1524" layer="91"/>
+<label x="25.4" y="53.34" size="1.27" layer="95" xref="yes"/>
 <pinref part="U$10" gate="G$1" pin="SCL"/>
 </segment>
 </net>
@@ -1468,6 +1446,7 @@ Variants with postfix FAB are widened to allow the routing of internal traces</d
 <wire x1="165.1" y1="58.42" x2="160.02" y2="58.42" width="0.1524" layer="91"/>
 <label x="160.02" y="58.42" size="1.27" layer="95" rot="R180" xref="yes"/>
 <pinref part="U$1" gate="G$1" pin="SDA"/>
+<wire x1="167.64" y1="58.42" x2="165.1" y2="58.42" width="0.1524" layer="91"/>
 </segment>
 <segment>
 <label x="66.04" y="58.42" size="1.27" layer="95" rot="R180" xref="yes"/>
@@ -1475,16 +1454,9 @@ Variants with postfix FAB are widened to allow the routing of internal traces</d
 <wire x1="66.04" y1="58.42" x2="81.28" y2="58.42" width="0.1524" layer="91"/>
 </segment>
 <segment>
-<wire x1="35.56" y1="45.72" x2="40.64" y2="45.72" width="0.1524" layer="91"/>
-<label x="40.64" y="45.72" size="1.27" layer="95" xref="yes"/>
+<wire x1="20.32" y1="50.8" x2="25.4" y2="50.8" width="0.1524" layer="91"/>
+<label x="25.4" y="50.8" size="1.27" layer="95" xref="yes"/>
 <pinref part="U$10" gate="G$1" pin="SDA"/>
-</segment>
-</net>
-<net name="N$1" class="2">
-<segment>
-<pinref part="U$3" gate="G$1" pin="GND"/>
-<pinref part="U$1" gate="G$1" pin="GND_1"/>
-<wire x1="165.1" y1="53.34" x2="175.26" y2="53.34" width="0.1524" layer="91"/>
 </segment>
 </net>
 <net name="N$2" class="0">
@@ -1497,24 +1469,28 @@ Variants with postfix FAB are widened to allow the routing of internal traces</d
 <segment>
 <pinref part="POWER_TERMINAL" gate="G$1" pin="2"/>
 <pinref part="SERVO_TERMINAL" gate="G$1" pin="3"/>
-<wire x1="53.34" y1="55.88" x2="55.88" y2="55.88" width="0.1524" layer="91"/>
-<wire x1="55.88" y1="55.88" x2="55.88" y2="45.72" width="0.1524" layer="91"/>
+<wire x1="45.72" y1="71.12" x2="45.72" y2="58.42" width="0.1524" layer="91"/>
 </segment>
 </net>
 <net name="PWM" class="0">
 <segment>
 <pinref part="0OHM" gate="G$1" pin="1"/>
-<wire x1="-10.16" y1="33.02" x2="-10.16" y2="27.94" width="0.1524" layer="91"/>
-<wire x1="-10.16" y1="27.94" x2="0" y2="27.94" width="0.1524" layer="91"/>
+<wire x1="-25.4" y1="38.1" x2="-25.4" y2="33.02" width="0.1524" layer="91"/>
+<wire x1="-25.4" y1="33.02" x2="-15.24" y2="33.02" width="0.1524" layer="91"/>
 <pinref part="SERVO_TERMINAL" gate="G$1" pin="1"/>
-<wire x1="0" y1="27.94" x2="50.8" y2="27.94" width="0.1524" layer="91"/>
-<wire x1="53.34" y1="27.94" x2="50.8" y2="27.94" width="0.1524" layer="91"/>
-<wire x1="50.8" y1="27.94" x2="50.8" y2="45.72" width="0.1524" layer="91"/>
+<wire x1="-15.24" y1="33.02" x2="40.64" y2="33.02" width="0.1524" layer="91"/>
+<wire x1="40.64" y1="33.02" x2="40.64" y2="58.42" width="0.1524" layer="91"/>
 <pinref part="U$10" gate="G$1" pin="PWM_7"/>
 <pinref part="0OHM" gate="G$1" pin="2"/>
-<wire x1="0" y1="33.02" x2="0" y2="27.94" width="0.1524" layer="91"/>
-<junction x="0" y="33.02"/>
-<junction x="0" y="27.94"/>
+<wire x1="-15.24" y1="38.1" x2="-15.24" y2="33.02" width="0.1524" layer="91"/>
+<junction x="-15.24" y="38.1"/>
+<junction x="-15.24" y="33.02"/>
+</segment>
+</net>
+<net name="N$4" class="2">
+<segment>
+<wire x1="134.62" y1="53.34" x2="137.16" y2="53.34" width="0.1524" layer="91"/>
+<pinref part="U$1" gate="G$1" pin="GND_0"/>
 </segment>
 </net>
 </nets>
