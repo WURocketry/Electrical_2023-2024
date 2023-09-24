@@ -63,21 +63,21 @@
 <description>Footprint of the Altitude 6 Click MikroBus pinout</description>
 <rectangle x1="0" y1="0" x2="27.94" y2="28.575" layer="47"/>
 <dimension x1="-0.635" y1="28.575" x2="-0.635" y2="0" x3="-2.54" y3="14.2875" textsize="1.27" layer="47"/>
-<pad name="PWM" x="2.54" y="22.86" drill="0.9" shape="square"/>
-<pad name="INT" x="2.54" y="20.32" drill="0.9"/>
-<pad name="RX" x="2.54" y="17.78" drill="0.9"/>
-<pad name="TX" x="2.54" y="15.24" drill="0.9"/>
-<pad name="SCL" x="2.54" y="12.7" drill="0.9"/>
-<pad name="SDA" x="2.54" y="10.16" drill="0.9"/>
-<pad name="5V" x="2.54" y="7.62" drill="0.9"/>
+<pad name="AN" x="2.54" y="22.86" drill="0.9" shape="square"/>
+<pad name="RST" x="2.54" y="20.32" drill="0.9"/>
+<pad name="CS" x="2.54" y="17.78" drill="0.9"/>
+<pad name="SCK" x="2.54" y="15.24" drill="0.9"/>
+<pad name="MISO" x="2.54" y="12.7" drill="0.9"/>
+<pad name="MOSI" x="2.54" y="10.16" drill="0.9"/>
+<pad name="3V3" x="2.54" y="7.62" drill="0.9"/>
 <pad name="GND_0" x="2.54" y="5.08" drill="0.9"/>
-<pad name="AN" x="25.4" y="22.86" drill="0.9" shape="square"/>
-<pad name="RST" x="25.4" y="20.32" drill="0.9"/>
-<pad name="CS" x="25.4" y="17.78" drill="0.9"/>
-<pad name="SCK" x="25.4" y="15.24" drill="0.9"/>
-<pad name="MISO" x="25.4" y="12.7" drill="0.9"/>
-<pad name="MOSI" x="25.4" y="10.16" drill="0.9"/>
-<pad name="3.3V" x="25.4" y="7.62" drill="0.9"/>
+<pad name="PWM" x="25.4" y="22.86" drill="0.9" shape="square"/>
+<pad name="INT" x="25.4" y="20.32" drill="0.9"/>
+<pad name="RX" x="25.4" y="17.78" drill="0.9"/>
+<pad name="TX" x="25.4" y="15.24" drill="0.9"/>
+<pad name="SCL" x="25.4" y="12.7" drill="0.9"/>
+<pad name="SDA" x="25.4" y="10.16" drill="0.9"/>
+<pad name="5V" x="25.4" y="7.62" drill="0.9"/>
 <pad name="GND_1" x="25.4" y="5.08" drill="0.9"/>
 <dimension x1="-1.27" y1="24.13" x2="-1.27" y2="3.81" x3="0" y3="13.97" textsize="1.27" layer="47"/>
 <dimension x1="0" y1="0" x2="27.94" y2="0" x3="13.97" y3="-2.54" textsize="1.27" layer="47"/>
@@ -89,21 +89,21 @@
 <wire x1="27.94" y1="3.81" x2="27.94" y2="24.13" width="0.127" layer="21"/>
 <wire x1="24.13" y1="27.94" x2="3.81" y2="27.94" width="0.127" layer="21"/>
 <wire x1="0" y1="24.13" x2="0" y2="3.81" width="0.127" layer="21"/>
-<text x="21.59" y="22.86" size="0.8128" layer="21">AN</text>
-<text x="21.59" y="20.32" size="0.8128" layer="21">RST</text>
-<text x="21.59" y="17.78" size="0.8128" layer="21">CS</text>
-<text x="21.59" y="15.24" size="0.8128" layer="21">SCK</text>
-<text x="21.59" y="12.7" size="0.8128" layer="21">MISO</text>
-<text x="21.59" y="10.16" size="0.8128" layer="21">MOSI</text>
-<text x="21.59" y="7.62" size="0.8128" layer="21">3.3V</text>
+<text x="21.59" y="22.86" size="0.8128" layer="21">PWM</text>
+<text x="21.59" y="20.32" size="0.8128" layer="21">INT</text>
+<text x="21.59" y="17.78" size="0.8128" layer="21">RX</text>
+<text x="21.59" y="15.24" size="0.8128" layer="21">TX</text>
+<text x="21.59" y="12.7" size="0.8128" layer="21">SCL</text>
+<text x="21.59" y="10.16" size="0.8128" layer="21">SDA</text>
+<text x="21.59" y="7.62" size="0.8128" layer="21">5Vo</text>
 <text x="21.59" y="5.08" size="0.8128" layer="21">GND</text>
-<text x="3.81" y="22.86" size="0.8128" layer="21">PWM</text>
-<text x="3.81" y="20.32" size="0.8128" layer="21">INT</text>
-<text x="3.81" y="17.78" size="0.8128" layer="21">RX</text>
-<text x="3.81" y="15.24" size="0.8128" layer="21">TX</text>
-<text x="3.81" y="12.7" size="0.8128" layer="21">SCL</text>
-<text x="3.81" y="10.16" size="0.8128" layer="21">SDA</text>
-<text x="3.81" y="7.62" size="0.8128" layer="21">5V</text>
+<text x="3.81" y="22.86" size="0.8128" layer="21">AN</text>
+<text x="3.81" y="20.32" size="0.8128" layer="21">RST</text>
+<text x="3.81" y="17.78" size="0.8128" layer="21">CS</text>
+<text x="3.81" y="15.24" size="0.8128" layer="21">SCK</text>
+<text x="3.81" y="12.7" size="0.8128" layer="21">MISO</text>
+<text x="3.81" y="10.16" size="0.8128" layer="21">MOSI</text>
+<text x="3.81" y="7.62" size="0.8128" layer="21">3V3</text>
 <text x="3.81" y="5.08" size="0.8128" layer="21">GND</text>
 <text x="14.224" y="25.781" size="0.8128" layer="21">mikro</text>
 <text x="14.224" y="24.511" size="1.016" layer="21">BUS</text>
@@ -161,7 +161,7 @@
 <devices>
 <device name="" package="MIKROE-ALTITUDE-6-CLICK-PINOUT">
 <connects>
-<connect gate="G$1" pin="3.3V" pad="3.3V"/>
+<connect gate="G$1" pin="3.3V" pad="3V3"/>
 <connect gate="G$1" pin="5V" pad="5V"/>
 <connect gate="G$1" pin="AN" pad="AN"/>
 <connect gate="G$1" pin="CS" pad="CS"/>
