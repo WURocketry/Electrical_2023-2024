@@ -681,14 +681,12 @@
 <wire x1="12.95" y1="-33.27" x2="12.95" y2="33.27" width="0.05" layer="39"/>
 <wire x1="12.95" y1="33.27" x2="-12.95" y2="33.27" width="0.05" layer="39"/>
 <wire x1="-12.95" y1="33.27" x2="-12.95" y2="-33.27" width="0.05" layer="39"/>
-<text x="-12.7" y="34.29" size="1.27" layer="25">PORTENTA_H7_HEADERS</text>
+<text x="-11.43" y="26.67" size="1.27" layer="25">PORTENTA_H7_HEADERS</text>
 <text x="-12.7" y="-35.56" size="1.27" layer="27">ABX00042</text>
 <hole x="-10.67" y="30.99" drill="2.25"/>
 <hole x="10.67" y="30.99" drill="2.25"/>
 <hole x="10.67" y="-30.99" drill="2.25"/>
 <hole x="-10.67" y="-30.99" drill="2.25"/>
-<attribute name="NAME" x="-10.92" y="0.9748" size="0.8128" layer="21" font="vector" ratio="10" rot="R90"/>
-<attribute name="NAME" x="-33.53" y="7.9152" size="0.8128" layer="21" font="vector" ratio="10" rot="R270"/>
 <pad name="J1" x="-10.1346" y="10.9474" drill="1" shape="square"/>
 <pad name="J2" x="-10.1346" y="8.4074" drill="1"/>
 <pad name="J3" x="-10.1346" y="5.8674" drill="1"/>
