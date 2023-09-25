@@ -200,8 +200,6 @@
 <wire x1="84.28" y1="40.91" x2="58.88" y2="40.91" width="0.1524" layer="21"/>
 <text x="63.96" y="58.69" size="1.778" layer="21" font="fixed">SparkFun</text>
 <text x="65.23" y="56.15" size="1.778" layer="21" font="fixed">OpenLog</text>
-<circle x="112.22" y="47.26" radius="6.83915625" width="0.1524" layer="21"/>
-<text x="107.14" y="47.26" size="1.016" layer="21" font="fixed">rotary_switch</text>
 <dimension x1="24" y1="69" x2="124" y2="71" x3="74" y3="72" textsize="1.778" layer="20" dtype="horizontal"/>
 <dimension x1="24" y1="69" x2="23" y2="4" x3="20" y3="36.5" textsize="1.778" layer="20" dtype="vertical"/>
 <text x="88" y="67" size="1.27" layer="21">SERVO_TERMINAL</text>
@@ -1016,35 +1014,6 @@
 </package>
 </packages>
 </library>
-<library name="wirepad" urn="urn:adsk.eagle:library:412">
-<description>&lt;b&gt;Single Pads&lt;/b&gt;&lt;p&gt;
-&lt;author&gt;Created by librarian@cadsoft.de&lt;/author&gt;</description>
-<packages>
-<package name="2,15/1,0" urn="urn:adsk.eagle:footprint:30813/1" library_version="2">
-<description>&lt;b&gt;THROUGH-HOLE PAD&lt;/b&gt;</description>
-<wire x1="1.143" y1="-1.143" x2="1.143" y2="-0.635" width="0.1524" layer="21"/>
-<wire x1="1.143" y1="-1.143" x2="0.635" y2="-1.143" width="0.1524" layer="21"/>
-<wire x1="1.143" y1="0.635" x2="1.143" y2="1.143" width="0.1524" layer="21"/>
-<wire x1="1.143" y1="1.143" x2="0.635" y2="1.143" width="0.1524" layer="21"/>
-<wire x1="-0.635" y1="1.143" x2="-1.143" y2="1.143" width="0.1524" layer="21"/>
-<wire x1="-1.143" y1="1.143" x2="-1.143" y2="0.635" width="0.1524" layer="21"/>
-<wire x1="-1.143" y1="-0.635" x2="-1.143" y2="-1.143" width="0.1524" layer="21"/>
-<wire x1="-1.143" y1="-1.143" x2="-0.635" y2="-1.143" width="0.1524" layer="21"/>
-<circle x="0" y="0" radius="1.016" width="0.1524" layer="51"/>
-<pad name="1" x="0" y="0" drill="1.016" diameter="2.159" shape="octagon"/>
-<text x="-1.143" y="1.397" size="1.27" layer="25" ratio="10">&gt;NAME</text>
-<text x="0" y="1" size="0.0254" layer="27">&gt;VALUE</text>
-</package>
-</packages>
-<packages3d>
-<package3d name="2,15/1,0" urn="urn:adsk.eagle:package:30831/1" type="box" library_version="2">
-<description>THROUGH-HOLE PAD</description>
-<packageinstances>
-<packageinstance name="2,15/1,0"/>
-</packageinstances>
-</package3d>
-</packages3d>
-</library>
 <library name="MIKROE-4903">
 <packages>
 <package name="MIKROE-ALTITUDE-6-CLICK-PINOUT">
@@ -1319,31 +1288,18 @@ design rules under a new name.</description>
 <element name="U$19" library="buzzard_labels (13)" package="SCL2" value="" x="75.39" y="43.958" smashed="yes" rot="R90"/>
 <element name="U$5" library="ADAFRUIT_BNO08x" package="ADAFRUIT_BNO08X_FOOTPRINT" value="ADAFRUIT_BNO08X" x="25.4" y="39.64" smashed="yes"/>
 <element name="U$10" library="ABX00042" package="MODULE_ABX00042_HEADERS" value="ABX00042_HEADERS_IO" x="89.9" y="24.4" smashed="yes" rot="R270"/>
-<element name="R1" library="fab_new" package="R1206" value="0 ohm" x="56.34" y="45.99" smashed="yes" rot="R90">
-<attribute name="NAME" x="55.07" y="44.72" size="1.27" layer="25" rot="R90"/>
-<attribute name="VALUE" x="58.88" y="44.72" size="1.27" layer="27" rot="R90"/>
-</element>
-<element name="R2" library="fab_new" package="R1206" value="0 ohm" x="56.34" y="49.8" smashed="yes" rot="R90">
-<attribute name="NAME" x="55.07" y="48.53" size="1.27" layer="25" rot="R90"/>
-<attribute name="VALUE" x="58.88" y="48.53" size="1.27" layer="27" rot="R90"/>
-</element>
 <element name="POWER_TERMINAL" library="fab_new" package="3.5MMTERM" value="CONN_02_TERM-ADAFRUIT" x="112.22" y="63.67" smashed="yes">
 <attribute name="NAME" x="105.73" y="66.94" size="1.27" layer="25"/>
 </element>
 <element name="SERVO_TERMINAL" library="fab_new" package="ED555DS-3DS" value="CONN_03_TERM'-FABLAB'" x="98.25" y="64.12" smashed="yes"/>
-<element name="0OHM" library="fab_new" package="R1206" value="" x="90.63" y="51.07" smashed="yes" rot="R270">
-<attribute name="NAME" x="91.9" y="52.34" size="1.27" layer="25" rot="R270"/>
-<attribute name="VALUE" x="88.09" y="52.34" size="1.27" layer="27" rot="R270"/>
-</element>
-<element name="PAD1" library="wirepad" library_urn="urn:adsk.eagle:library:412" package="2,15/1,0" package3d_urn="urn:adsk.eagle:package:30831/1" value="" x="112.22" y="43.45" smashed="yes">
-<attribute name="POPULARITY" value="11" x="112.22" y="43.45" size="1.778" layer="27" display="off"/>
-<attribute name="VALUE" x="112.22" y="44.45" size="0.0254" layer="27"/>
-</element>
-<element name="PAD2" library="wirepad" library_urn="urn:adsk.eagle:library:412" package="2,15/1,0" package3d_urn="urn:adsk.eagle:package:30831/1" value="" x="112.22" y="50.435" smashed="yes">
-<attribute name="POPULARITY" value="11" x="112.22" y="50.435" size="1.778" layer="27" display="off"/>
-<attribute name="VALUE" x="112.22" y="51.435" size="0.0254" layer="27"/>
+<element name="0OHM" library="fab_new" package="R1206" value="" x="90.63" y="52.34" smashed="yes" rot="R270">
+<attribute name="NAME" x="91.9" y="53.61" size="1.27" layer="25" rot="R270"/>
+<attribute name="VALUE" x="88.09" y="53.61" size="1.27" layer="27" rot="R270"/>
 </element>
 <element name="U$1" library="MIKROE-4903" package="MIKROE-ALTITUDE-6-CLICK-PINOUT" value="MIKROE-ALTITUDE-6-CLICK-DVC" x="26.13" y="10.43" smashed="yes"/>
+<element name="ROTARY_TERMINAL" library="fab_new" package="3.5MMTERM" value="CONN_02_TERM-ADAFRUIT" x="118.745" y="53.975" smashed="yes" rot="R270">
+<attribute name="NAME" x="123.745" y="50.975" size="1.27" layer="25" rot="R90"/>
+</element>
 </elements>
 <signals>
 <signal name="GND" class="2">
@@ -1351,36 +1307,37 @@ design rules under a new name.</description>
 <contactref element="U$5" pad="GND"/>
 <contactref element="U$10" pad="J18"/>
 <wire x1="67.77" y1="42.18" x2="57.61" y2="42.18" width="0.4064" layer="1"/>
-<wire x1="57.61" y1="42.18" x2="56.3776" y2="43.4124" width="0.4064" layer="1"/>
-<wire x1="56.3776" y1="43.4124" x2="56.34" y2="43.4124" width="0.4064" layer="1"/>
-<contactref element="R2" pad="2"/>
-<wire x1="56.34" y1="51.222" x2="56.188" y2="51.07" width="0.4064" layer="1"/>
-<wire x1="38.1" y1="47.8" x2="41.522" y2="51.222" width="0.4064" layer="1"/>
-<wire x1="41.522" y1="51.222" x2="56.34" y2="51.222" width="0.4064" layer="1"/>
-<wire x1="38.1" y1="43.45" x2="38.1" y2="47.8" width="0.4064" layer="1"/>
 <wire x1="93.2274" y1="14.2654" x2="93.2274" y2="16.2974" width="0.4064" layer="1"/>
-<wire x1="93.2274" y1="16.2974" x2="93.71" y2="16.78" width="0.4064" layer="1"/>
-<wire x1="93.71" y1="16.78" x2="103.33" y2="16.78" width="0.4064" layer="1"/>
-<wire x1="103.33" y1="16.78" x2="112.22" y2="25.67" width="0.4064" layer="1"/>
-<wire x1="112.22" y1="25.67" x2="112.22" y2="43.45" width="0.4064" layer="1"/>
-<contactref element="PAD1" pad="1"/>
-<contactref element="PAD2" pad="1"/>
 <contactref element="POWER_TERMINAL" pad="1"/>
 <contactref element="SERVO_TERMINAL" pad="2"/>
-<wire x1="97.132" y1="51.222" x2="56.34" y2="51.222" width="0.4064" layer="1"/>
-<wire x1="112.22" y1="50.435" x2="114.02" y2="52.235" width="0.4064" layer="1"/>
-<wire x1="114.02" y1="52.235" x2="114.02" y2="63.67" width="0.4064" layer="1"/>
-<wire x1="97.132" y1="51.222" x2="98.25" y2="52.34" width="0.4064" layer="1"/>
-<wire x1="98.25" y1="64.12" x2="98.25" y2="52.34" width="0.4064" layer="1"/>
 <contactref element="U$1" pad="GND_1"/>
 <wire x1="51.53" y1="15.51" x2="53.8" y2="15.51" width="0.4064" layer="1"/>
 <wire x1="56.34" y1="18.05" x2="56.34" y2="40.91" width="0.4064" layer="1"/>
 <wire x1="56.34" y1="40.91" x2="57.61" y2="42.18" width="0.4064" layer="1"/>
 <wire x1="53.8" y1="15.51" x2="56.34" y2="18.05" width="0.4064" layer="1"/>
-<wire x1="98.25" y1="52.34" x2="107.14" y2="43.45" width="0.4064" layer="1"/>
-<wire x1="107.14" y1="43.45" x2="112.22" y2="43.45" width="0.4064" layer="1"/>
-<wire x1="112.22" y1="43.45" x2="112.22" y2="50.435" width="0" layer="19" extent="1-1"/>
-<wire x1="56.34" y1="43.4124" x2="56.188" y2="51.07" width="0" layer="19" extent="1-1"/>
+<wire x1="38.1" y1="43.45" x2="38.1" y2="17.145" width="0.4064" layer="1"/>
+<wire x1="39.735" y1="15.51" x2="51.53" y2="15.51" width="0.4064" layer="1"/>
+<wire x1="38.1" y1="17.145" x2="39.735" y2="15.51" width="0.4064" layer="1"/>
+<wire x1="38.1" y1="43.45" x2="38.1" y2="50.8" width="0.4064" layer="1"/>
+<contactref element="ROTARY_TERMINAL" pad="2"/>
+<contactref element="ROTARY_TERMINAL" pad="1"/>
+<wire x1="114.02" y1="63.67" x2="114.02" y2="56.795" width="0.4064" layer="1"/>
+<wire x1="115.14" y1="55.675" x2="118.745" y2="55.675" width="0.4064" layer="1"/>
+<wire x1="114.02" y1="56.795" x2="115.14" y2="55.675" width="0.4064" layer="1"/>
+<wire x1="94.075" y1="17.145" x2="101.6" y2="17.145" width="0.4064" layer="1"/>
+<wire x1="101.6" y1="17.145" x2="102.87" y2="18.415" width="0.4064" layer="1"/>
+<wire x1="93.2274" y1="16.2974" x2="94.075" y2="17.145" width="0.4064" layer="1"/>
+<wire x1="118.745" y1="52.175" x2="118.58" y2="52.34" width="0.4064" layer="1"/>
+<wire x1="38.1" y1="50.8" x2="39.64" y2="52.34" width="0.4064" layer="1"/>
+<wire x1="39.64" y1="52.34" x2="118.58" y2="52.34" width="0.4064" layer="1"/>
+<wire x1="98.425" y1="63.945" x2="98.25" y2="64.12" width="0.4064" layer="1"/>
+<wire x1="102.87" y1="18.415" x2="102.87" y2="38.1" width="0.4064" layer="1"/>
+<wire x1="102.87" y1="38.1" x2="102.235" y2="38.735" width="0.4064" layer="1"/>
+<wire x1="102.235" y1="38.735" x2="99.06" y2="38.735" width="0.4064" layer="1"/>
+<wire x1="99.06" y1="38.735" x2="98.425" y2="39.37" width="0.4064" layer="1"/>
+<wire x1="98.425" y1="39.37" x2="98.425" y2="63.945" width="0.4064" layer="1"/>
+<wire x1="118.745" y1="52.175" x2="118.745" y2="55.675" width="0" layer="19" extent="1-1"/>
+<wire x1="98.25" y1="64.12" x2="114.02" y2="63.67" width="0" layer="19" extent="1-1"/>
 </signal>
 <signal name="VCC" class="2">
 <contactref element="U$5" pad="VIN"/>
@@ -1417,9 +1374,9 @@ design rules under a new name.</description>
 <contactref element="J3" pad="4"/>
 <contactref element="U$5" pad="SCL"/>
 <contactref element="U$10" pad="J22"/>
-<wire x1="40.64" y1="43.45" x2="40.64" y2="46.53" width="0.4064" layer="1"/>
-<wire x1="43.91" y1="49.8" x2="40.64" y2="46.53" width="0.4064" layer="1"/>
-<wire x1="43.91" y1="49.8" x2="74.12" y2="49.8" width="0.4064" layer="1"/>
+<wire x1="40.64" y1="43.45" x2="40.64" y2="48.435" width="0.4064" layer="1"/>
+<wire x1="42.005" y1="49.8" x2="40.64" y2="48.435" width="0.4064" layer="1"/>
+<wire x1="42.005" y1="49.8" x2="74.12" y2="49.8" width="0.4064" layer="1"/>
 <wire x1="74.12" y1="49.8" x2="75.39" y2="48.53" width="0.4064" layer="1"/>
 <wire x1="75.39" y1="48.53" x2="75.39" y2="42.18" width="0.4064" layer="1"/>
 <wire x1="83.0674" y1="14.2654" x2="83.0674" y2="15.9926" width="0.4064" layer="1"/>
@@ -1431,9 +1388,9 @@ design rules under a new name.</description>
 <wire x1="70.31" y1="37.1" x2="75.39" y2="42.18" width="0.4064" layer="1"/>
 <wire x1="67.04" y1="37.1" x2="70.31" y2="37.1" width="0.4064" layer="1"/>
 <contactref element="U$1" pad="SCL"/>
-<wire x1="44.91" y1="23.13" x2="40.64" y2="27.4" width="0.4064" layer="1"/>
-<wire x1="40.64" y1="27.4" x2="40.64" y2="43.45" width="0.4064" layer="1"/>
-<wire x1="51.53" y1="23.13" x2="44.91" y2="23.13" width="0.4064" layer="1"/>
+<wire x1="41.735" y1="23.13" x2="40.64" y2="24.225" width="0.4064" layer="1"/>
+<wire x1="40.64" y1="24.225" x2="40.64" y2="43.45" width="0.4064" layer="1"/>
+<wire x1="51.53" y1="23.13" x2="41.735" y2="23.13" width="0.4064" layer="1"/>
 </signal>
 <signal name="SDA">
 <contactref element="J3" pad="3"/>
@@ -1457,17 +1414,9 @@ design rules under a new name.</description>
 <wire x1="53.8" y1="20.59" x2="55.07" y2="21.86" width="0.4064" layer="1"/>
 <wire x1="55.07" y1="21.86" x2="55.07" y2="38.37" width="0.4064" layer="1"/>
 <wire x1="55.07" y1="38.37" x2="53.8" y2="39.64" width="0.4064" layer="1"/>
-<wire x1="53.8" y1="39.64" x2="46.45" y2="39.64" width="0.4064" layer="1"/>
-<wire x1="46.45" y1="39.64" x2="43.18" y2="42.91" width="0.4064" layer="1"/>
-<wire x1="43.18" y1="42.91" x2="43.18" y2="43.45" width="0.4064" layer="1"/>
-</signal>
-<signal name="N$2">
-<contactref element="R1" pad="2"/>
-<contactref element="R2" pad="1"/>
-<wire x1="56.34" y1="48.378" x2="56.34" y2="47.412" width="0" layer="19" extent="1-1"/>
-</signal>
-<signal name="N$3">
-<wire x1="56.34" y1="43.45" x2="56.34" y2="44.72" width="0.4064" layer="1"/>
+<wire x1="53.8" y1="39.64" x2="43.91" y2="39.64" width="0.4064" layer="1"/>
+<wire x1="43.91" y1="39.64" x2="43.18" y2="40.37" width="0.4064" layer="1"/>
+<wire x1="43.18" y1="40.37" x2="43.18" y2="43.45" width="0.4064" layer="1"/>
 </signal>
 <signal name="7.4V">
 <contactref element="POWER_TERMINAL" pad="2"/>
@@ -1481,7 +1430,7 @@ design rules under a new name.</description>
 <signal name="PWM">
 <contactref element="0OHM" pad="1"/>
 <contactref element="SERVO_TERMINAL" pad="1"/>
-<wire x1="90.63" y1="52.492" x2="90.63" y2="62.5" width="0.4064" layer="1"/>
+<wire x1="90.63" y1="53.762" x2="90.63" y2="62.5" width="0.4064" layer="1"/>
 <wire x1="92.25" y1="64.12" x2="94.75" y2="64.12" width="0.4064" layer="1"/>
 <wire x1="90.63" y1="62.5" x2="92.25" y2="64.12" width="0.4064" layer="1"/>
 <contactref element="U$10" pad="J9"/>
@@ -1490,8 +1439,8 @@ design rules under a new name.</description>
 <wire x1="80.5274" y1="38.5224" x2="81.645" y2="39.64" width="0.4064" layer="1"/>
 <wire x1="81.645" y1="39.64" x2="89.265" y2="39.64" width="0.4064" layer="1"/>
 <wire x1="89.265" y1="39.64" x2="90.63" y2="41.005" width="0.4064" layer="1"/>
-<wire x1="90.63" y1="41.005" x2="90.63" y2="49.648" width="0.4064" layer="1"/>
-<wire x1="90.63" y1="49.648" x2="90.63" y2="52.492" width="0" layer="19" extent="1-1"/>
+<wire x1="90.63" y1="41.005" x2="90.63" y2="50.918" width="0.4064" layer="1"/>
+<wire x1="90.63" y1="50.918" x2="90.63" y2="53.762" width="0" layer="19" extent="1-1"/>
 </signal>
 <signal name="N$4" class="2">
 <contactref element="U$1" pad="GND_0"/>
@@ -1506,21 +1455,4 @@ design rules under a new name.</description>
 </mfgpreviewcolors>
 </board>
 </drawing>
-<compatibility>
-<note version="8.2" severity="warning">
-Since Version 8.2, EAGLE supports online libraries. The ids
-of those online libraries will not be understood (or retained)
-with this version.
-</note>
-<note version="8.3" severity="warning">
-Since Version 8.3, EAGLE supports URNs for individual library
-assets (packages, symbols, and devices). The URNs of those assets
-will not be understood (or retained) with this version.
-</note>
-<note version="8.3" severity="warning">
-Since Version 8.3, EAGLE supports the association of 3D packages
-with devices in libraries, schematics, and board files. Those 3D
-packages will not be understood (or retained) with this version.
-</note>
-</compatibility>
 </eagle>

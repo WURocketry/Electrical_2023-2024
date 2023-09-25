@@ -1038,67 +1038,6 @@ Variants with postfix FAB are widened to allow the routing of internal traces</d
 </deviceset>
 </devicesets>
 </library>
-<library name="wirepad" urn="urn:adsk.eagle:library:412">
-<description>&lt;b&gt;Single Pads&lt;/b&gt;&lt;p&gt;
-&lt;author&gt;Created by librarian@cadsoft.de&lt;/author&gt;</description>
-<packages>
-<package name="2,15/1,0" urn="urn:adsk.eagle:footprint:30813/1" library_version="2">
-<description>&lt;b&gt;THROUGH-HOLE PAD&lt;/b&gt;</description>
-<wire x1="1.143" y1="-1.143" x2="1.143" y2="-0.635" width="0.1524" layer="21"/>
-<wire x1="1.143" y1="-1.143" x2="0.635" y2="-1.143" width="0.1524" layer="21"/>
-<wire x1="1.143" y1="0.635" x2="1.143" y2="1.143" width="0.1524" layer="21"/>
-<wire x1="1.143" y1="1.143" x2="0.635" y2="1.143" width="0.1524" layer="21"/>
-<wire x1="-0.635" y1="1.143" x2="-1.143" y2="1.143" width="0.1524" layer="21"/>
-<wire x1="-1.143" y1="1.143" x2="-1.143" y2="0.635" width="0.1524" layer="21"/>
-<wire x1="-1.143" y1="-0.635" x2="-1.143" y2="-1.143" width="0.1524" layer="21"/>
-<wire x1="-1.143" y1="-1.143" x2="-0.635" y2="-1.143" width="0.1524" layer="21"/>
-<circle x="0" y="0" radius="1.016" width="0.1524" layer="51"/>
-<pad name="1" x="0" y="0" drill="1.016" diameter="2.159" shape="octagon"/>
-<text x="-1.143" y="1.397" size="1.27" layer="25" ratio="10">&gt;NAME</text>
-<text x="0" y="1" size="0.0254" layer="27">&gt;VALUE</text>
-</package>
-</packages>
-<packages3d>
-<package3d name="2,15/1,0" urn="urn:adsk.eagle:package:30831/1" type="box" library_version="2">
-<description>THROUGH-HOLE PAD</description>
-<packageinstances>
-<packageinstance name="2,15/1,0"/>
-</packageinstances>
-</package3d>
-</packages3d>
-<symbols>
-<symbol name="PAD" urn="urn:adsk.eagle:symbol:30808/1" library_version="2">
-<wire x1="-1.016" y1="1.016" x2="1.016" y2="-1.016" width="0.254" layer="94"/>
-<wire x1="-1.016" y1="-1.016" x2="1.016" y2="1.016" width="0.254" layer="94"/>
-<text x="-1.143" y="1.8542" size="1.778" layer="95">&gt;NAME</text>
-<text x="-1.143" y="-3.302" size="1.778" layer="96">&gt;VALUE</text>
-<pin name="P" x="2.54" y="0" visible="off" length="short" direction="pas" rot="R180"/>
-</symbol>
-</symbols>
-<devicesets>
-<deviceset name="2,15/1,0" urn="urn:adsk.eagle:component:30850/2" prefix="PAD" uservalue="yes" library_version="2">
-<description>&lt;b&gt;THROUGH-HOLE PAD&lt;/b&gt;</description>
-<gates>
-<gate name="1" symbol="PAD" x="0" y="0"/>
-</gates>
-<devices>
-<device name="" package="2,15/1,0">
-<connects>
-<connect gate="1" pin="P" pad="1"/>
-</connects>
-<package3dinstances>
-<package3dinstance package3d_urn="urn:adsk.eagle:package:30831/1"/>
-</package3dinstances>
-<technologies>
-<technology name="">
-<attribute name="POPULARITY" value="11" constant="no"/>
-</technology>
-</technologies>
-</device>
-</devices>
-</deviceset>
-</devicesets>
-</library>
 <library name="MIKROE-4903">
 <packages>
 <package name="MIKROE-ALTITUDE-6-CLICK-PINOUT">
@@ -1254,14 +1193,11 @@ Variants with postfix FAB are widened to allow the routing of internal traces</d
 <part name="U$11" library="microbuilder" deviceset="3.3V" device=""/>
 <part name="P+1" library="supply1" library_urn="urn:adsk.eagle:library:371" deviceset="VCC" device=""/>
 <part name="U$12" library="microbuilder" deviceset="GND" device=""/>
-<part name="R1" library="fab_new" deviceset="R" device="1206" value="0 ohm"/>
-<part name="R2" library="fab_new" deviceset="R" device="1206" value="0 ohm"/>
 <part name="POWER_TERMINAL" library="fab_new" deviceset="CONN_02_TERM" device="-ADAFRUIT"/>
 <part name="SERVO_TERMINAL" library="fab_new" deviceset="CONN_03_TERM" device="'-FABLAB'"/>
 <part name="0OHM" library="fab_new" deviceset="R" device="1206"/>
-<part name="PAD1" library="wirepad" library_urn="urn:adsk.eagle:library:412" deviceset="2,15/1,0" device="" package3d_urn="urn:adsk.eagle:package:30831/1"/>
-<part name="PAD2" library="wirepad" library_urn="urn:adsk.eagle:library:412" deviceset="2,15/1,0" device="" package3d_urn="urn:adsk.eagle:package:30831/1"/>
 <part name="U$1" library="MIKROE-4903" deviceset="MIKROE-ALTITUDE-6-CLICK-DVC" device=""/>
+<part name="ROTARY_TERMINAL" library="fab_new" deviceset="CONN_02_TERM" device="-ADAFRUIT"/>
 </parts>
 <sheets>
 <sheet>
@@ -1305,14 +1241,6 @@ Variants with postfix FAB are widened to allow the routing of internal traces</d
 <instance part="U$12" gate="G$1" x="25.4" y="63.5" smashed="yes">
 <attribute name="VALUE" x="23.876" y="60.96" size="1.27" layer="96"/>
 </instance>
-<instance part="R1" gate="G$1" x="35.56" y="2.54" smashed="yes">
-<attribute name="NAME" x="31.75" y="4.0386" size="1.778" layer="95"/>
-<attribute name="VALUE" x="31.75" y="-0.762" size="1.778" layer="96"/>
-</instance>
-<instance part="R2" gate="G$1" x="45.72" y="2.54" smashed="yes">
-<attribute name="NAME" x="41.91" y="4.0386" size="1.778" layer="95"/>
-<attribute name="VALUE" x="41.91" y="-0.762" size="1.778" layer="96"/>
-</instance>
 <instance part="POWER_TERMINAL" gate="G$1" x="45.72" y="71.12" smashed="yes" rot="R90">
 <attribute name="NAME" x="40.005" y="68.58" size="1.778" layer="95" rot="R90"/>
 </instance>
@@ -1323,15 +1251,10 @@ Variants with postfix FAB are widened to allow the routing of internal traces</d
 <attribute name="NAME" x="-24.13" y="39.5986" size="1.778" layer="95"/>
 <attribute name="VALUE" x="-24.13" y="34.798" size="1.778" layer="96"/>
 </instance>
-<instance part="PAD1" gate="1" x="48.26" y="15.24" smashed="yes">
-<attribute name="NAME" x="47.117" y="17.0942" size="1.778" layer="95"/>
-<attribute name="VALUE" x="47.117" y="11.938" size="1.778" layer="96"/>
-</instance>
-<instance part="PAD2" gate="1" x="50.8" y="-7.62" smashed="yes" rot="R90">
-<attribute name="NAME" x="48.9458" y="-8.763" size="1.778" layer="95" rot="R90"/>
-<attribute name="VALUE" x="54.102" y="-8.763" size="1.778" layer="96" rot="R90"/>
-</instance>
 <instance part="U$1" gate="G$1" x="134.62" y="50.8" smashed="yes"/>
+<instance part="ROTARY_TERMINAL" gate="G$1" x="68.58" y="2.54" smashed="yes" rot="R270">
+<attribute name="NAME" x="74.295" y="5.08" size="1.778" layer="95" rot="R270"/>
+</instance>
 </instances>
 <busses>
 </busses>
@@ -1342,15 +1265,12 @@ Variants with postfix FAB are widened to allow the routing of internal traces</d
 <wire x1="73.66" y1="17.78" x2="71.12" y2="17.78" width="0.1524" layer="91"/>
 <wire x1="71.12" y1="17.78" x2="71.12" y2="15.24" width="0.1524" layer="91"/>
 <pinref part="GND12" gate="1" pin="GND"/>
-<pinref part="R2" gate="G$1" pin="2"/>
-<wire x1="71.12" y1="15.24" x2="50.8" y2="15.24" width="0.1524" layer="91"/>
-<wire x1="50.8" y1="15.24" x2="50.8" y2="-5.08" width="0.1524" layer="91"/>
+<pinref part="ROTARY_TERMINAL" gate="G$1" pin="2"/>
+<pinref part="ROTARY_TERMINAL" gate="G$1" pin="1"/>
+<wire x1="68.58" y1="2.54" x2="71.12" y2="2.54" width="0.1524" layer="91"/>
+<wire x1="71.12" y1="15.24" x2="71.12" y2="2.54" width="0.1524" layer="91"/>
 <junction x="71.12" y="15.24"/>
-<pinref part="PAD1" gate="1" pin="P"/>
-<junction x="50.8" y="15.24"/>
-<pinref part="PAD2" gate="1" pin="P"/>
-<junction x="50.8" y="-5.08"/>
-<wire x1="50.8" y1="-5.08" x2="50.8" y2="2.54" width="0.1524" layer="91"/>
+<junction x="71.12" y="2.54"/>
 </segment>
 <segment>
 <pinref part="U$7" gate="G$1" pin="GND"/>
@@ -1459,12 +1379,6 @@ Variants with postfix FAB are widened to allow the routing of internal traces</d
 <pinref part="U$10" gate="G$1" pin="SDA"/>
 </segment>
 </net>
-<net name="N$2" class="0">
-<segment>
-<pinref part="R1" gate="G$1" pin="2"/>
-<pinref part="R2" gate="G$1" pin="1"/>
-</segment>
-</net>
 <net name="7.4V" class="0">
 <segment>
 <pinref part="POWER_TERMINAL" gate="G$1" pin="2"/>
@@ -1508,11 +1422,6 @@ with this version.
 Since Version 8.3, EAGLE supports URNs for individual library
 assets (packages, symbols, and devices). The URNs of those assets
 will not be understood (or retained) with this version.
-</note>
-<note version="8.3" severity="warning">
-Since Version 8.3, EAGLE supports the association of 3D packages
-with devices in libraries, schematics, and board files. Those 3D
-packages will not be understood (or retained) with this version.
 </note>
 </compatibility>
 </eagle>
