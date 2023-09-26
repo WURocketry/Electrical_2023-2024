@@ -413,32 +413,6 @@
 </deviceset>
 </devicesets>
 </library>
-<library name="SparkFun">
-<packages>
-</packages>
-<symbols>
-<symbol name="GND">
-<wire x1="-1.905" y1="0" x2="1.905" y2="0" width="0.254" layer="94"/>
-<text x="-2.54" y="-2.54" size="1.778" layer="96">&gt;VALUE</text>
-<pin name="GND" x="0" y="2.54" visible="off" length="short" direction="sup" rot="R270"/>
-</symbol>
-</symbols>
-<devicesets>
-<deviceset name="GND" prefix="GND">
-<description>&lt;b&gt;SUPPLY SYMBOL&lt;/b&gt;</description>
-<gates>
-<gate name="1" symbol="GND" x="0" y="0"/>
-</gates>
-<devices>
-<device name="">
-<technologies>
-<technology name=""/>
-</technologies>
-</device>
-</devices>
-</deviceset>
-</devicesets>
-</library>
 <library name="SparkFun-PowerSymbols">
 <description>&lt;h3&gt;SparkFun Power Symbols&lt;/h3&gt;
 This library contains power, ground, and voltage-supply symbols.
@@ -1167,6 +1141,74 @@ Variants with postfix FAB are widened to allow the routing of internal traces</d
 </deviceset>
 </devicesets>
 </library>
+<library name="282837-2">
+<packages>
+<package name="TE_282837-2">
+<wire x1="-5.08" y1="4.1" x2="5.08" y2="4.1" width="0.127" layer="21"/>
+<wire x1="5.08" y1="4.1" x2="5.08" y2="-3.1" width="0.127" layer="21"/>
+<wire x1="5.08" y1="-3.1" x2="5.08" y2="-4.1" width="0.127" layer="21"/>
+<wire x1="5.08" y1="-4.1" x2="-5.08" y2="-4.1" width="0.127" layer="21"/>
+<wire x1="-5.08" y1="-4.1" x2="-5.08" y2="-3.1" width="0.127" layer="21"/>
+<wire x1="-5.08" y1="-3.1" x2="-5.08" y2="4.1" width="0.127" layer="21"/>
+<wire x1="-5.33" y1="4.35" x2="5.33" y2="4.35" width="0.05" layer="39"/>
+<wire x1="5.33" y1="4.35" x2="5.33" y2="-4.35" width="0.05" layer="39"/>
+<wire x1="5.33" y1="-4.35" x2="-5.33" y2="-4.35" width="0.05" layer="39"/>
+<wire x1="-5.33" y1="-4.35" x2="-5.33" y2="4.35" width="0.05" layer="39"/>
+<text x="-4.30873125" y="4.97865" size="1.272590625" layer="25">&gt;NAME</text>
+<text x="-4.311240625" y="-6.484090625" size="1.27331875" layer="27">&gt;VALUE</text>
+<wire x1="-5.08" y1="4.1" x2="5.08" y2="4.1" width="0.127" layer="51"/>
+<wire x1="5.08" y1="4.1" x2="5.08" y2="-4.1" width="0.127" layer="51"/>
+<wire x1="5.08" y1="-4.1" x2="-5.08" y2="-4.1" width="0.127" layer="51"/>
+<wire x1="-5.08" y1="-4.1" x2="-5.08" y2="4.1" width="0.127" layer="51"/>
+<circle x="-2.54" y="-1.27" radius="0.1" width="0.2" layer="51"/>
+<wire x1="-5.08" y1="-3.1" x2="5.08" y2="-3.1" width="0.127" layer="21"/>
+<pad name="1" x="-2.54" y="0" drill="1.1" shape="square"/>
+<pad name="2" x="2.54" y="0" drill="1.1"/>
+</package>
+</packages>
+<symbols>
+<symbol name="282837-2">
+<wire x1="-2.54" y1="2.54" x2="-2.54" y2="-5.08" width="0.254" layer="94"/>
+<wire x1="-2.54" y1="-5.08" x2="2.54" y2="-5.08" width="0.254" layer="94"/>
+<wire x1="2.54" y1="-5.08" x2="2.54" y2="2.54" width="0.254" layer="94"/>
+<wire x1="2.54" y1="2.54" x2="-2.54" y2="2.54" width="0.254" layer="94"/>
+<text x="-2.540559375" y="2.54381875" size="1.271909375" layer="95">&gt;NAME</text>
+<text x="-2.54236875" y="-6.374509375" size="1.274909375" layer="96">&gt;VALUE</text>
+<pin name="1" x="-7.62" y="0" length="middle" direction="pas"/>
+<pin name="2" x="-7.62" y="-2.54" length="middle" direction="pas"/>
+</symbol>
+</symbols>
+<devicesets>
+<deviceset name="282837-2" prefix="P">
+<description>TERM BLOCK 5.08MM 2POS SIDE ENTY &lt;a href="https://pricing.snapeda.com/parts/282837-2/TE%20Connectivity/view-part?ref=eda"&gt;Check availability&lt;/a&gt;</description>
+<gates>
+<gate name="G$1" symbol="282837-2" x="0" y="0"/>
+</gates>
+<devices>
+<device name="" package="TE_282837-2">
+<connects>
+<connect gate="G$1" pin="1" pad="1"/>
+<connect gate="G$1" pin="2" pad="2"/>
+</connects>
+<technologies>
+<technology name="">
+<attribute name="AVAILABILITY" value="In Stock"/>
+<attribute name="CHECK_PRICES" value="https://www.snapeda.com/parts/282837-2/TE+Connectivity+AMP+Connectors/view-part/?ref=eda"/>
+<attribute name="COMMENT" value="282837-2"/>
+<attribute name="DESCRIPTION" value=" Terminal Block Connector Wire Receptacle 2 5.08 mm 30-16 AWG Green 13.5 A 250 V | TE Connectivity 282837-2 "/>
+<attribute name="MF" value="TE Connectivity"/>
+<attribute name="MP" value="282837-2"/>
+<attribute name="PACKAGE" value="None"/>
+<attribute name="PRICE" value="None"/>
+<attribute name="PURCHASE-URL" value="https://www.snapeda.com/api/url_track_click_mouser/?unipart_id=2549980&amp;manufacturer=TE Connectivity&amp;part_name=282837-2&amp;search_term=None"/>
+<attribute name="SNAPEDA_LINK" value="https://www.snapeda.com/parts/282837-2/TE+Connectivity+AMP+Connectors/view-part/?ref=snap"/>
+</technology>
+</technologies>
+</device>
+</devices>
+</deviceset>
+</devicesets>
+</library>
 </libraries>
 <attributes>
 </attributes>
@@ -1183,7 +1225,6 @@ Variants with postfix FAB are widened to allow the routing of internal traces</d
 <parts>
 <part name="SUPPLY7" library="SparkFun-PowerSymbols" deviceset="3.3V" device=""/>
 <part name="J3" library="SparkX" deviceset="I2C_STANDARD" device="_NO_SILK" value="PTH"/>
-<part name="GND12" library="SparkFun" deviceset="GND" device=""/>
 <part name="U$3" library="microbuilder" deviceset="GND" device=""/>
 <part name="U$4" library="microbuilder" deviceset="3.3V" device=""/>
 <part name="P+3" library="supply1" library_urn="urn:adsk.eagle:library:371" deviceset="VCC" device=""/>
@@ -1197,7 +1238,7 @@ Variants with postfix FAB are widened to allow the routing of internal traces</d
 <part name="SERVO_TERMINAL" library="fab_new" deviceset="CONN_03_TERM" device="'-FABLAB'"/>
 <part name="0OHM" library="fab_new" deviceset="R" device="1206"/>
 <part name="U$1" library="MIKROE-4903" deviceset="MIKROE-ALTITUDE-6-CLICK-DVC" device=""/>
-<part name="ROTARY_TERMINAL" library="fab_new" deviceset="CONN_02_TERM" device="-ADAFRUIT"/>
+<part name="ROTARY_TERMINAL" library="282837-2" deviceset="282837-2" device=""/>
 </parts>
 <sheets>
 <sheet>
@@ -1214,9 +1255,6 @@ Variants with postfix FAB are widened to allow the routing of internal traces</d
 <instance part="J3" gate="G$1" x="81.28" y="20.32" smashed="yes" rot="MR0">
 <attribute name="VALUE" x="86.36" y="14.986" size="1.778" layer="96" font="vector" rot="MR0" align="top-left"/>
 <attribute name="NAME" x="86.36" y="28.194" size="1.778" layer="95" font="vector" rot="MR0"/>
-</instance>
-<instance part="GND12" gate="1" x="71.12" y="12.7" smashed="yes">
-<attribute name="VALUE" x="68.58" y="10.16" size="1.778" layer="96"/>
 </instance>
 <instance part="U$3" gate="G$1" x="175.26" y="50.8" smashed="yes">
 <attribute name="VALUE" x="173.736" y="48.26" size="1.27" layer="96"/>
@@ -1252,26 +1290,15 @@ Variants with postfix FAB are widened to allow the routing of internal traces</d
 <attribute name="VALUE" x="-24.13" y="34.798" size="1.778" layer="96"/>
 </instance>
 <instance part="U$1" gate="G$1" x="134.62" y="50.8" smashed="yes"/>
-<instance part="ROTARY_TERMINAL" gate="G$1" x="68.58" y="2.54" smashed="yes" rot="R270">
-<attribute name="NAME" x="74.295" y="5.08" size="1.778" layer="95" rot="R270"/>
+<instance part="ROTARY_TERMINAL" gate="G$1" x="71.12" y="5.08" smashed="yes" rot="R270">
+<attribute name="NAME" x="73.66381875" y="7.620559375" size="1.271909375" layer="95" rot="R270"/>
+<attribute name="VALUE" x="64.745490625" y="7.62236875" size="1.274909375" layer="96" rot="R270"/>
 </instance>
 </instances>
 <busses>
 </busses>
 <nets>
 <net name="GND" class="2">
-<segment>
-<pinref part="J3" gate="G$1" pin="GND"/>
-<wire x1="73.66" y1="17.78" x2="71.12" y2="17.78" width="0.1524" layer="91"/>
-<wire x1="71.12" y1="17.78" x2="71.12" y2="15.24" width="0.1524" layer="91"/>
-<pinref part="GND12" gate="1" pin="GND"/>
-<pinref part="ROTARY_TERMINAL" gate="G$1" pin="2"/>
-<pinref part="ROTARY_TERMINAL" gate="G$1" pin="1"/>
-<wire x1="68.58" y1="2.54" x2="71.12" y2="2.54" width="0.1524" layer="91"/>
-<wire x1="71.12" y1="15.24" x2="71.12" y2="2.54" width="0.1524" layer="91"/>
-<junction x="71.12" y="15.24"/>
-<junction x="71.12" y="2.54"/>
-</segment>
 <segment>
 <pinref part="U$7" gate="G$1" pin="GND"/>
 <wire x1="78.74" y1="63.5" x2="81.28" y2="63.5" width="0.1524" layer="91"/>
@@ -1405,6 +1432,21 @@ Variants with postfix FAB are widened to allow the routing of internal traces</d
 <segment>
 <wire x1="134.62" y1="53.34" x2="137.16" y2="53.34" width="0.1524" layer="91"/>
 <pinref part="U$1" gate="G$1" pin="GND_0"/>
+</segment>
+</net>
+<net name="N$2" class="2">
+<segment>
+<pinref part="J3" gate="G$1" pin="GND"/>
+<wire x1="73.66" y1="17.78" x2="71.12" y2="17.78" width="0.1524" layer="91"/>
+<pinref part="ROTARY_TERMINAL" gate="G$1" pin="1"/>
+<wire x1="71.12" y1="17.78" x2="71.12" y2="12.7" width="0.1524" layer="91"/>
+<pinref part="ROTARY_TERMINAL" gate="G$1" pin="2"/>
+<wire x1="71.12" y1="12.7" x2="68.58" y2="12.7" width="0.1524" layer="91"/>
+<junction x="71.12" y="12.7"/>
+<wire x1="71.12" y1="12.7" x2="71.12" y2="5.08" width="0.1524" layer="91"/>
+<wire x1="71.12" y1="5.08" x2="68.58" y2="5.08" width="0.1524" layer="91"/>
+<wire x1="68.58" y1="5.08" x2="68.58" y2="12.7" width="0.1524" layer="91"/>
+<junction x="68.58" y="12.7"/>
 </segment>
 </net>
 </nets>
