@@ -681,8 +681,8 @@
 <wire x1="12.95" y1="-33.27" x2="12.95" y2="33.27" width="0.05" layer="39"/>
 <wire x1="12.95" y1="33.27" x2="-12.95" y2="33.27" width="0.05" layer="39"/>
 <wire x1="-12.95" y1="33.27" x2="-12.95" y2="-33.27" width="0.05" layer="39"/>
-<text x="-11.43" y="26.67" size="1.27" layer="25">PORTENTA_H7_HEADERS</text>
-<text x="-12.7" y="-35.56" size="1.27" layer="27">ABX00042</text>
+<text x="1.27" y="-10.16" size="1.27" layer="25" font="vector" rot="R90">ACE M7+M4 CORE</text>
+<text x="-7.366" y="30.099" size="1.27" layer="27">ACE M7+M4 CORE</text>
 <hole x="-10.67" y="30.99" drill="2.25"/>
 <hole x="10.67" y="30.99" drill="2.25"/>
 <hole x="10.67" y="-30.99" drill="2.25"/>
@@ -715,50 +715,37 @@
 <pad name="J26" x="10.1346" y="-16.9926" drill="1"/>
 <pad name="J27" x="10.1346" y="-19.5326" drill="1"/>
 <pad name="J28" x="10.1346" y="-22.0726" drill="1"/>
-</package>
-<package name="MODUEL_ABX00042_HEADERS_TEST">
-<wire x1="-12.7" y1="-31.75" x2="12.7" y2="-31.75" width="0.127" layer="51"/>
-<wire x1="12.7" y1="-31.75" x2="12.7" y2="34.29" width="0.127" layer="51"/>
-<wire x1="12.7" y1="34.29" x2="-12.7" y2="34.29" width="0.127" layer="51"/>
-<wire x1="-12.7" y1="34.29" x2="-12.7" y2="-31.75" width="0.127" layer="51"/>
-<wire x1="-12.7" y1="-31.75" x2="12.7" y2="-31.75" width="0.127" layer="21"/>
-<wire x1="12.7" y1="-31.75" x2="12.7" y2="34.29" width="0.127" layer="21"/>
-<wire x1="12.7" y1="34.29" x2="-12.7" y2="34.29" width="0.127" layer="21"/>
-<wire x1="-12.7" y1="34.29" x2="-12.7" y2="-31.75" width="0.127" layer="21"/>
-<wire x1="-12.95" y1="-32" x2="12.95" y2="-32" width="0.05" layer="39"/>
-<wire x1="12.95" y1="-32" x2="12.95" y2="34.54" width="0.05" layer="39"/>
-<wire x1="12.95" y1="34.54" x2="-12.95" y2="34.54" width="0.05" layer="39"/>
-<wire x1="-12.95" y1="34.54" x2="-12.95" y2="-32" width="0.05" layer="39"/>
-<text x="-12.7" y="35.56" size="1.27" layer="25">PORTENTA_H7</text>
-<text x="-12.7" y="-34.29" size="1.27" layer="27">ABX00042</text>
-<pad name="J1" x="-10.1346" y="12.2174" drill="1" shape="square"/>
-<pad name="J2" x="-10.1346" y="9.6774" drill="1"/>
-<pad name="J3" x="-10.1346" y="7.1374" drill="1"/>
-<pad name="J4" x="-10.1346" y="4.5974" drill="1"/>
-<pad name="J5" x="-10.1346" y="2.0574" drill="1"/>
-<pad name="J6" x="-10.1346" y="-0.4826" drill="1"/>
-<pad name="J7" x="-10.1346" y="-3.0226" drill="1"/>
-<pad name="J8" x="-10.1346" y="-5.5626" drill="1"/>
-<pad name="J9" x="-10.1346" y="-8.1026" drill="1"/>
-<pad name="J10" x="-10.1346" y="-10.6426" drill="1"/>
-<pad name="J11" x="-10.1346" y="-13.1826" drill="1"/>
-<pad name="J12" x="-10.1346" y="-15.7226" drill="1"/>
-<pad name="J13" x="-10.1346" y="-18.2626" drill="1"/>
-<pad name="J14" x="-10.1346" y="-20.8026" drill="1"/>
-<pad name="J15" x="10.1346" y="12.2174" drill="1" shape="square"/>
-<pad name="J16" x="10.1346" y="9.6774" drill="1"/>
-<pad name="J17" x="10.1346" y="7.1374" drill="1"/>
-<pad name="J18" x="10.1346" y="4.5974" drill="1"/>
-<pad name="J19" x="10.1346" y="2.0574" drill="1"/>
-<pad name="J20" x="10.1346" y="-0.4826" drill="1"/>
-<pad name="J21" x="10.1346" y="-3.0226" drill="1"/>
-<pad name="J22" x="10.1346" y="-5.5626" drill="1"/>
-<pad name="J23" x="10.1346" y="-8.1026" drill="1"/>
-<pad name="J24" x="10.1346" y="-10.6426" drill="1"/>
-<pad name="J25" x="10.1346" y="-13.1826" drill="1"/>
-<pad name="J26" x="10.1346" y="-15.7226" drill="1"/>
-<pad name="J27" x="10.1346" y="-18.2626" drill="1"/>
-<pad name="J28" x="10.1346" y="-20.8026" drill="1"/>
+<text x="-1.27" y="-10.16" size="1.778" layer="21" font="vector" rot="R90">PORTENTA H7 Lite</text>
+<text x="6.35" y="10.16" size="0.8128" layer="21" font="vector">+5V</text>
+<text x="6.35" y="7.62" size="0.8128" layer="21" font="vector">VIN</text>
+<text x="6.35" y="5.08" size="0.8128" layer="21" font="vector">+3V3</text>
+<text x="6.35" y="2.54" size="0.8128" layer="21" font="vector">GND</text>
+<text x="6.35" y="0" size="0.8128" layer="21" font="vector">RST</text>
+<text x="6.35" y="-2.54" size="0.8128" layer="21" font="vector">TX</text>
+<text x="6.35" y="-5.08" size="0.8128" layer="21" font="vector">RX</text>
+<text x="6.35" y="-7.62" size="0.8128" layer="21" font="vector">SCL</text>
+<text x="6.35" y="-10.16" size="0.8128" layer="21" font="vector">SDA</text>
+<text x="6.35" y="-12.7" size="0.8128" layer="21" font="vector">MISO</text>
+<text x="6.35" y="-15.24" size="0.8128" layer="21" font="vector">SCK</text>
+<text x="6.35" y="-17.78" size="0.8128" layer="21" font="vector">MOSI</text>
+<text x="6.35" y="-20.32" size="0.8128" layer="21" font="vector">CS</text>
+<text x="6.35" y="-22.86" size="0.8128" layer="21" font="vector">PWM1</text>
+<text x="-8.89" y="-22.86" size="0.8128" layer="21" font="vector">PWM2</text>
+<text x="-8.89" y="-20.32" size="0.8128" layer="21" font="vector">PWM3</text>
+<text x="-8.89" y="-17.78" size="0.8128" layer="21" font="vector">PWM4</text>
+<text x="-8.89" y="-15.24" size="0.8128" layer="21" font="vector">PWM5</text>
+<text x="-8.89" y="-12.7" size="0.8128" layer="21" font="vector">PWM6</text>
+<text x="-8.89" y="-10.16" size="0.8128" layer="21" font="vector">PWM7</text>
+<text x="-8.89" y="-7.62" size="0.8128" layer="21" font="vector">A6</text>
+<text x="-8.89" y="-5.08" size="0.8128" layer="21" font="vector">A5</text>
+<text x="-8.89" y="-2.54" size="0.8128" layer="21" font="vector">A4</text>
+<text x="-8.89" y="0" size="0.8128" layer="21" font="vector">A3</text>
+<text x="-8.89" y="2.54" size="0.8128" layer="21" font="vector">A2</text>
+<text x="-8.89" y="5.08" size="0.8128" layer="21" font="vector">A1</text>
+<text x="-8.89" y="7.62" size="0.8128" layer="21" font="vector">A0</text>
+<text x="-8.89" y="10.16" size="0.8128" layer="21" font="vector">AREF</text>
+<wire x1="-2.921" y1="15.621" x2="1.27" y2="15.621" width="0.1524" layer="21"/>
+<wire x1="1.27" y1="15.621" x2="1.27" y2="7.493" width="0.1524" layer="21"/>
 </package>
 </packages>
 <symbols>
