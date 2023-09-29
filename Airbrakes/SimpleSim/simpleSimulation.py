@@ -221,5 +221,3 @@ thrust = aerotech['Thrust(N)']
 
 simulateFlight(time, thrust, 0, 0)
 
-
-## Above kind of simulates rocket flight and adjusts drag with a PID
