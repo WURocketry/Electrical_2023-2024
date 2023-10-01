@@ -63,6 +63,16 @@ void setup() {
   //Wire.begin();
   //Wire.setClock(400000);
   //logger.begin();
+//Create instance for OpenLog
+//OpenLog logger;
+
+//unsigned int flightno = 0;
+//String filename = "flight"; //for some reason arduino String gets angry if I dont declare an initial value here
+
+ // flightno++; //iterate flightno for filename
+
+ // filename = filename + flightno + ".csv"; //new csv for each flight
+
   
   Serial.begin(115200);
   while (!Serial) delay(10);
@@ -206,6 +216,7 @@ void collectDataFromGPS()
   }
 }
 
+<<<<<<< HEAD
 void writeToFile(double *flightdata, unsigned int n) {
   logger.append(filename);
   
@@ -216,6 +227,7 @@ void writeToFile(double *flightdata, unsigned int n) {
   
   logger.syncFile();
 }
+
 
 
 
