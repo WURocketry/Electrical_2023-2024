@@ -17,6 +17,30 @@ struct euler_t {
   float roll;
 } ypr;
 
+
+//enum for global array indices
+enum{
+  BNO_YAW = 0,
+  BNO_PITCH = 1,
+  BNO_ROLL = 2,
+  BME_TEMPERATURE = 3,
+  BME_PRESSURE = 4,
+  BME_HUMIDITY = 5,
+  BME_GAS = 6,
+  BME_ALTITUDE = 7,
+  GPS_HOUR = 8,
+  GPS_MINUTE = 9,
+  GPS_SECONDS = 10,
+  GPS_SPEED = 11,
+  GPS_LATITUDE = 12,
+  GPS_LONGITUDE = 13,
+  GPS_ALTITUDE = 14,
+  ENUM_SIZE = 15,
+};
+
+//Declaring new global array:
+double DATA_COMPONENT_READINGS[ENUM_SIZE];
+
 sh2_SensorValue_t sensorValue;
 sh2_SensorId_t reportType = SH2_ARVR_STABILIZED_RV;
 long reportIntervalUs = 5000;
@@ -105,8 +129,11 @@ void collectDataFromBNO() {
     if (sensorValue.sensorId == reportType) {
       quaternionToEulerRV(&sensorValue.un.arvrStabilizedRV, &ypr, true);
       Serial.print("Yaw: "); Serial.print(ypr.yaw);
+      DATA_COMPONENT_READINGS[BNO_YAW] = ypr.yaw;
       Serial.print("\tPitch: "); Serial.print(ypr.pitch);
+      DATA_COMPONENT_READINGS[BNO_PITCH] = ypr.pitch;
       Serial.print("\tRoll: "); Serial.println(ypr.roll);
+      DATA_COMPONENT_READINGS[BNO_ROLL] = ypr.roll
     }
   }
 }
@@ -114,11 +141,16 @@ void collectDataFromBNO() {
 // Function to collect data from BME680
 void collectDataFromBME() {
   if (bme.performReading()) {
-    Serial.print("Temperature = "); Serial.print(bme.temperature); Serial.println(" *C");
+    Serial.print("Temperature = "); Serial.print(bme.temperature); Serial.println(" *C");e
+    DATA_COMPONENT_READINGS[BME_TEMPERATURE] = bme.temperature;
     Serial.print("Pressure = "); Serial.print(bme.pressure / 100.0); Serial.println(" hPa");
+    DATA_COMPONENT_READINGS[BME_PRESSURE] = bme.pressure;
     Serial.print("Humidity = "); Serial.print(bme.humidity); Serial.println(" %");
+    DATA_COMPONENT_READINGS[BME_HUMIDITY] = bme.humidity;
     Serial.print("Gas = "); Serial.print(bme.gas_resistance / 1000.0); Serial.println(" KOhms");
+    DATA_COMPONENT_READINGS[BME_GAS] = bme.gas;
     Serial.print("Altitude = "); Serial.print(bme.readAltitude(SEALEVELPRESSURE_HPA)); Serial.println(" m");
+    DATA_COMPONENT_READINGS[BME_ALTITUDE] = bme.readAltitude(SEALEVELPRESSURE_HPA);
   } else {
     Serial.println("Failed to perform reading :(");
   }
@@ -137,17 +169,25 @@ void collectDataFromGPS() {
     if (GPS.fix) {
       Serial.print("Time: ");
       Serial.print(GPS.hour, DEC); Serial.print(':');
+      DATA_COMPONENT_READINGS[GPS_HOUR] = GPS.hour;
       Serial.print(GPS.minute, DEC); Serial.print(':');
+      DATA_COMPONENT_READINGS[GPS_MINUTE] = GPS.minute;
       Serial.print(GPS.seconds, DEC); Serial.println('.');
+      DATA_COMPONENT_READINGS[GPS_SECONDS] = GPS.seconds;
       
       Serial.print("Speed (knots): "); Serial.println(GPS.speed);
-      
+      DATA_COMPONENT_READINGS[GPS_SPEED] = GPS.speed;
+
       Serial.print("Location: ");
       Serial.print(GPS.latitude, 4); Serial.print(GPS.lat);
+      DATA_COMPONENT_READINGS[GPS_LATITUDE] = GPS.lat;
+
       Serial.print(", ");
       Serial.print(GPS.longitude, 4); Serial.println(GPS.lon);
+      DATA_COMPONENT_READINGS[GPS_LONGITUDE] = GPS.lon;
 
       Serial.print("GPS Altitude: "); Serial.println(GPS.altitude);
+      DATA_COMPONENT_READINGS[GPS_ALTITUDE] = GPS.altitude;
     }
   }
 }
