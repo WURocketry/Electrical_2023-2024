@@ -30,15 +30,15 @@ uint32_t timer = millis();
 //Create instance for OpenLog
 OpenLog logger;
 
-flightno = 0;
+unsigned int flightno = 0;
 
 void setup() {
-  flightno++;
+  flightno++; //iterate flightno for filename
 
-  String filename = "flight" + flightno + ".csv";
+  String filename = "flight" + flightno + ".csv"; //new csv for each flight
 
   //Open connection to OpenLog
-  Wire.begin()
+  Wire.begin();
   Wire.setclock(400000);
   logger.begin();
   
@@ -150,18 +150,18 @@ void collectDataFromGPS() {
       Serial.print("GPS Altitude: "); Serial.println(GPS.altitude);
     }
   }
+}
 
   void writeToFile(double *flightdata, unsigned int n) {
       logger.append(filename);
       
       for (int i = 0; i < n; i++) {
-        logger.println(flightdata [i] + ","); //log each element of array into one cell
+        logger.println(flightdata [i] + ","); //log each element of array into cell
       }
       logger.println("\n");
 
       logger.syncFile();
   }
-}
 
 
 
