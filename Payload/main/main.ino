@@ -1,79 +1,175 @@
-/***************************************************************************
-  This is a library for the BME680 gas, humidity, temperature & pressure sensor
-
-  Designed specifically to work with the Adafruit BME680 Breakout
-  ----> http://www.adafruit.com/products/3660
-
-  These sensors use I2C or SPI to communicate, 2 or 4 pins are required
-  to interface.
-
-  Adafruit invests time and resources providing this open source code,
-  please support Adafruit and open-source hardware by purchasing products
-  from Adafruit!
-
-  Written by Limor Fried & Kevin Townsend for Adafruit Industries.
-  BSD license, all text above must be included in any redistribution
- ***************************************************************************/
-
 #include <Wire.h>
-#include <SPI.h>
 #include <Adafruit_Sensor.h>
+#include <Adafruit_BNO08x.h>
 #include "Adafruit_BME680.h"
+#include <Adafruit_GPS.h>
+#include "SparkFun_Qwiic_OpenLog_Arduino_Library.h"
 
-#define BME_SCK 13
-#define BME_MISO 12
-#define BME_MOSI 11
-#define BME_CS 10
+// Define sensor objects
+Adafruit_BNO08x bno08x;
+Adafruit_BME680 bme;
+Adafruit_GPS GPS(&Wire);
 
+// Struct for Euler angles
+struct euler_t {
+  float yaw;
+  float pitch;
+  float roll;
+} ypr;
+
+sh2_SensorValue_t sensorValue;
+sh2_SensorId_t reportType = SH2_ARVR_STABILIZED_RV;
+long reportIntervalUs = 5000;
+
+// BME680 Settings
 #define SEALEVELPRESSURE_HPA (1013.25)
 
-Adafruit_BME680 bme; // I2C
-//Adafruit_BME680 bme(BME_CS); // hardware SPI
-//Adafruit_BME680 bme(BME_CS, BME_MOSI, BME_MISO,  BME_SCK);
+//Timer for GPS
+uint32_t timer = millis();
+
+//Create instance for OpenLog
+OpenLog logger;
+
+flightno = 0;
 
 void setup() {
-  Serial.begin(9600);
-  while (!Serial);
-  Serial.println(F("BME680 test"));
+  flightno++;
 
+  String filename = "flight" + flightno + ".csv";
+
+  //Open connection to OpenLog
+  Wire.begin()
+  Wire.setclock(400000);
+  logger.begin();
+  
+  Serial.begin(115200);
+  while (!Serial) delay(10);
+
+  // Initialize BNO08x
+  if (!bno08x.begin_I2C()) {
+    Serial.println("Failed to find BNO08x chip");
+    while (1) { delay(10); }
+  }
+
+  if (!bno08x.enableReport(reportType, reportIntervalUs)) {
+    Serial.println("Could not enable stabilized remote vector");
+  }
+
+  // Initialize BME680
   if (!bme.begin()) {
     Serial.println("Could not find a valid BME680 sensor, check wiring!");
     while (1);
   }
 
-  // Set up oversampling and filter initialization
   bme.setTemperatureOversampling(BME680_OS_8X);
   bme.setHumidityOversampling(BME680_OS_2X);
   bme.setPressureOversampling(BME680_OS_4X);
   bme.setIIRFilterSize(BME680_FILTER_SIZE_3);
-  bme.setGasHeater(320, 150); // 320*C for 150 ms
+  bme.setGasHeater(320, 150);
+
+  // Initialize GPS
+  GPS.begin(0x10);  // The I2C address to use is 0x10
+  GPS.sendCommand(PMTK_SET_NMEA_OUTPUT_RMCGGA);
+  GPS.sendCommand(PMTK_SET_NMEA_UPDATE_1HZ); // 1 Hz update rate
+  GPS.sendCommand(PGCMD_ANTENNA);
+  delay(1000);
+  GPS.println(PMTK_Q_RELEASE);
+
 }
+
+void quaternionToEulerRV(sh2_RotationVectorWAcc_t* rotational_vector, euler_t* ypr, bool degrees = false) {
+  float sqr = sq(rotational_vector->real);
+  float sqi = sq(rotational_vector->i);
+  float sqj = sq(rotational_vector->j);
+  float sqk = sq(rotational_vector->k);
+
+  ypr->yaw = atan2(2.0 * (rotational_vector->i * rotational_vector->j + rotational_vector->k * rotational_vector->real), (sqi - sqj - sqk + sqr));
+  ypr->pitch = asin(-2.0 * (rotational_vector->i * rotational_vector->k - rotational_vector->j * rotational_vector->real) / (sqi + sqj + sqk + sqr));
+  ypr->roll = atan2(2.0 * (rotational_vector->j * rotational_vector->k + rotational_vector->i * rotational_vector->real), (-sqi - sqj + sqk + sqr));
+
+  if (degrees) {
+    ypr->yaw *= RAD_TO_DEG;
+    ypr->pitch *= RAD_TO_DEG;
+    ypr->roll *= RAD_TO_DEG;
+  }
+}
+
+// Function to collect data from BNO08x
+void collectDataFromBNO() {
+  if (bno08x.wasReset()) {
+    Serial.print("sensor was reset ");
+    bno08x.enableReport(reportType, reportIntervalUs);
+  }
+  
+  if (bno08x.getSensorEvent(&sensorValue)) {
+    if (sensorValue.sensorId == reportType) {
+      quaternionToEulerRV(&sensorValue.un.arvrStabilizedRV, &ypr, true);
+      Serial.print("Yaw: "); Serial.print(ypr.yaw);
+      Serial.print("\tPitch: "); Serial.print(ypr.pitch);
+      Serial.print("\tRoll: "); Serial.println(ypr.roll);
+    }
+  }
+}
+
+// Function to collect data from BME680
+void collectDataFromBME() {
+  if (bme.performReading()) {
+    Serial.print("Temperature = "); Serial.print(bme.temperature); Serial.println(" *C");
+    Serial.print("Pressure = "); Serial.print(bme.pressure / 100.0); Serial.println(" hPa");
+    Serial.print("Humidity = "); Serial.print(bme.humidity); Serial.println(" %");
+    Serial.print("Gas = "); Serial.print(bme.gas_resistance / 1000.0); Serial.println(" KOhms");
+    Serial.print("Altitude = "); Serial.print(bme.readAltitude(SEALEVELPRESSURE_HPA)); Serial.println(" m");
+  } else {
+    Serial.println("Failed to perform reading :(");
+  }
+}
+
+void collectDataFromGPS() {
+  char c = GPS.read();
+  if (GPS.newNMEAreceived()) {
+    if (!GPS.parse(GPS.lastNMEA()))
+      Serial.println("erro");
+      return;
+  }
+  
+  if (millis() - timer > 2000) {
+    timer = millis();
+    if (GPS.fix) {
+      Serial.print("Time: ");
+      Serial.print(GPS.hour, DEC); Serial.print(':');
+      Serial.print(GPS.minute, DEC); Serial.print(':');
+      Serial.print(GPS.seconds, DEC); Serial.println('.');
+      
+      Serial.print("Speed (knots): "); Serial.println(GPS.speed);
+      
+      Serial.print("Location: ");
+      Serial.print(GPS.latitude, 4); Serial.print(GPS.lat);
+      Serial.print(", ");
+      Serial.print(GPS.longitude, 4); Serial.println(GPS.lon);
+
+      Serial.print("GPS Altitude: "); Serial.println(GPS.altitude);
+    }
+  }
+
+  void writeToFile(double *flightdata, unsigned int n) {
+      logger.append(filename);
+      
+      for (int i = 0; i < n; i++) {
+        logger.println(flightdata [i] + ","); //log each element of array into one cell
+      }
+      logger.println("\n");
+
+      logger.syncFile();
+  }
+}
+
+
+
 
 void loop() {
-  if (! bme.performReading()) {
-    Serial.println("Failed to perform reading :(");
-    return;
-  }
-  Serial.print("Temperature = ");
-  Serial.print(bme.temperature);
-  Serial.println(" *C");
-
-  Serial.print("Pressure = ");
-  Serial.print(bme.pressure / 100.0);
-  Serial.println(" hPa");
-
-  Serial.print("Humidity = ");
-  Serial.print(bme.humidity);
-  Serial.println(" %");
-
-  Serial.print("Gas = ");
-  Serial.print(bme.gas_resistance / 1000.0);
-  Serial.println(" KOhms");
-
-  Serial.print("Approx. Altitude = ");
-  Serial.print(bme.readAltitude(SEALEVELPRESSURE_HPA));
-  Serial.println(" m");
-
-  Serial.println();
-  delay(2000);
+  collectDataFromBNO();  
+  collectDataFromBME();  
+  collectDataFromGPS();
+  delay(1000);           
 }
+
