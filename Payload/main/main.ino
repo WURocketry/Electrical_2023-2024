@@ -55,15 +55,16 @@ uint32_t timer = millis();
 OpenLog logger;
 
 unsigned int flightno = 0;
+String filename = "flight"; //for some reason arduino String gets angry if I dont declare an initial value here
 
 void setup() {
   flightno++; //iterate flightno for filename
 
-  String filename = "flight" + flightno + ".csv"; //new csv for each flight
+  filename = filename + flightno + ".csv"; //new csv for each flight
 
   //Open connection to OpenLog
   Wire.begin();
-  Wire.setclock(400000);
+  Wire.setClock(400000);
   logger.begin();
   
   Serial.begin(115200);
@@ -133,7 +134,7 @@ void collectDataFromBNO() {
       Serial.print("\tPitch: "); Serial.print(ypr.pitch);
       DATA_COMPONENT_READINGS[BNO_PITCH] = ypr.pitch;
       Serial.print("\tRoll: "); Serial.println(ypr.roll);
-      DATA_COMPONENT_READINGS[BNO_ROLL] = ypr.roll
+      DATA_COMPONENT_READINGS[BNO_ROLL] = ypr.roll;
     }
   }
 }
@@ -141,7 +142,7 @@ void collectDataFromBNO() {
 // Function to collect data from BME680
 void collectDataFromBME() {
   if (bme.performReading()) {
-    Serial.print("Temperature = "); Serial.print(bme.temperature); Serial.println(" *C");e
+    Serial.print("Temperature = "); Serial.print(bme.temperature); Serial.println(" *C");
     DATA_COMPONENT_READINGS[BME_TEMPERATURE] = bme.temperature;
     Serial.print("Pressure = "); Serial.print(bme.pressure / 100.0); Serial.println(" hPa");
     DATA_COMPONENT_READINGS[BME_PRESSURE] = bme.pressure;
@@ -192,11 +193,12 @@ void collectDataFromGPS() {
   }
 }
 
-  void writeToFile(double *flightdata, unsigned int n) {
+  void writeToFile(double *flightdata) {
       logger.append(filename);
       
-      for (int i = 0; i < n; i++) {
-        logger.println(flightdata [i] + ","); //log each element of array into cell
+      for (int i = 0; i < ENUM_SIZE; i++) {
+        logger.println(flightdata [i]); //log each element of array into cell
+        logger.println(",");  //iterate to next cell
       }
       logger.println("\n");
 
