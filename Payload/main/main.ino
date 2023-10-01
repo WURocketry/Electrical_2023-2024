@@ -5,10 +5,13 @@
 #include <Adafruit_GPS.h>
 #include "SparkFun_Qwiic_OpenLog_Arduino_Library.h"
 
+#define GPSECHO false
+
 // Define sensor objects
 Adafruit_BNO08x bno08x;
 Adafruit_BME680 bme;
 Adafruit_GPS GPS(&Wire);
+OpenLog logger;
 
 // Struct for Euler angles
 struct euler_t {
@@ -51,20 +54,15 @@ long reportIntervalUs = 5000;
 //Timer for GPS
 uint32_t timer = millis();
 
-//Create instance for OpenLog
-OpenLog logger;
-
-flightno = 0;
+//Filename
+String filename = "flight_1.csv";
 
 void setup() {
-  flightno++;
-
-  String filename = "flight" + flightno + ".csv";
 
   //Open connection to OpenLog
-  Wire.begin()
-  Wire.setclock(400000);
-  logger.begin();
+  //Wire.begin();
+  //Wire.setClock(400000);
+  //logger.begin();
   
   Serial.begin(115200);
   while (!Serial) delay(10);
@@ -133,7 +131,7 @@ void collectDataFromBNO() {
       Serial.print("\tPitch: "); Serial.print(ypr.pitch);
       DATA_COMPONENT_READINGS[BNO_PITCH] = ypr.pitch;
       Serial.print("\tRoll: "); Serial.println(ypr.roll);
-      DATA_COMPONENT_READINGS[BNO_ROLL] = ypr.roll
+      DATA_COMPONENT_READINGS[BNO_ROLL] = ypr.roll;
     }
   }
 }
@@ -141,14 +139,14 @@ void collectDataFromBNO() {
 // Function to collect data from BME680
 void collectDataFromBME() {
   if (bme.performReading()) {
-    Serial.print("Temperature = "); Serial.print(bme.temperature); Serial.println(" *C");e
+    Serial.print("Temperature = "); Serial.print(bme.temperature); Serial.println(" *C");
     DATA_COMPONENT_READINGS[BME_TEMPERATURE] = bme.temperature;
     Serial.print("Pressure = "); Serial.print(bme.pressure / 100.0); Serial.println(" hPa");
     DATA_COMPONENT_READINGS[BME_PRESSURE] = bme.pressure;
     Serial.print("Humidity = "); Serial.print(bme.humidity); Serial.println(" %");
     DATA_COMPONENT_READINGS[BME_HUMIDITY] = bme.humidity;
     Serial.print("Gas = "); Serial.print(bme.gas_resistance / 1000.0); Serial.println(" KOhms");
-    DATA_COMPONENT_READINGS[BME_GAS] = bme.gas;
+    DATA_COMPONENT_READINGS[BME_GAS] = bme.gas_resistance / 1000.0;
     Serial.print("Altitude = "); Serial.print(bme.readAltitude(SEALEVELPRESSURE_HPA)); Serial.println(" m");
     DATA_COMPONENT_READINGS[BME_ALTITUDE] = bme.readAltitude(SEALEVELPRESSURE_HPA);
   } else {
@@ -156,51 +154,67 @@ void collectDataFromBME() {
   }
 }
 
-void collectDataFromGPS() {
+void collectDataFromGPS() 
+{
+  // read data from the GPS in the 'main loop'
   char c = GPS.read();
+  // if you want to debug, this is a good time to do it!
+  if (GPSECHO)
+    if (c) Serial.print(c);
+  // if a sentence is received, we can check the checksum, parse it...
   if (GPS.newNMEAreceived()) {
-    if (!GPS.parse(GPS.lastNMEA()))
-      Serial.println("erro");
-      return;
+    // a tricky thing here is if we print the NMEA sentence, or data
+    // we end up not listening and catching other sentences!
+    // so be very wary if using OUTPUT_ALLDATA and trying to print out data
+    Serial.println(GPS.lastNMEA()); // this also sets the newNMEAreceived() flag to false
+    if (!GPS.parse(GPS.lastNMEA())) // this also sets the newNMEAreceived() flag to false
+      return; // we can fail to parse a sentence in which case we should just wait for another
   }
-  
-  if (millis() - timer > 2000) {
-    timer = millis();
-    if (GPS.fix) {
-      Serial.print("Time: ");
-      Serial.print(GPS.hour, DEC); Serial.print(':');
-      DATA_COMPONENT_READINGS[GPS_HOUR] = GPS.hour;
-      Serial.print(GPS.minute, DEC); Serial.print(':');
-      DATA_COMPONENT_READINGS[GPS_MINUTE] = GPS.minute;
-      Serial.print(GPS.seconds, DEC); Serial.println('.');
-      DATA_COMPONENT_READINGS[GPS_SECONDS] = GPS.seconds;
-      
-      Serial.print("Speed (knots): "); Serial.println(GPS.speed);
-      DATA_COMPONENT_READINGS[GPS_SPEED] = GPS.speed;
 
+  // approximately every 2 seconds or so, print out the current stats
+  if (millis() - timer > 2000) {
+    timer = millis(); // reset the timer
+    Serial.print("\nTime: ");
+    if (GPS.hour < 10) { Serial.print('0'); }
+    Serial.print(GPS.hour, DEC); Serial.print(':');
+    if (GPS.minute < 10) { Serial.print('0'); }
+    Serial.print(GPS.minute, DEC); Serial.print(':');
+    if (GPS.seconds < 10) { Serial.print('0'); }
+    Serial.print(GPS.seconds, DEC); Serial.print('.');
+    if (GPS.milliseconds < 10) {
+      Serial.print("00");
+    } else if (GPS.milliseconds > 9 && GPS.milliseconds < 100) {
+      Serial.print("0");
+    }
+    Serial.println(GPS.milliseconds);
+    Serial.print("Date: ");
+    Serial.print(GPS.day, DEC); Serial.print('/');
+    Serial.print(GPS.month, DEC); Serial.print("/20");
+    Serial.println(GPS.year, DEC);
+    Serial.print("Fix: "); Serial.print((int)GPS.fix);
+    Serial.print(" quality: "); Serial.println((int)GPS.fixquality);
+    if (GPS.fix) {
       Serial.print("Location: ");
       Serial.print(GPS.latitude, 4); Serial.print(GPS.lat);
-      DATA_COMPONENT_READINGS[GPS_LATITUDE] = GPS.lat;
-
       Serial.print(", ");
       Serial.print(GPS.longitude, 4); Serial.println(GPS.lon);
-      DATA_COMPONENT_READINGS[GPS_LONGITUDE] = GPS.lon;
-
-      Serial.print("GPS Altitude: "); Serial.println(GPS.altitude);
-      DATA_COMPONENT_READINGS[GPS_ALTITUDE] = GPS.altitude;
+      Serial.print("Speed (knots): "); Serial.println(GPS.speed);
+      Serial.print("Angle: "); Serial.println(GPS.angle);
+      Serial.print("Altitude: "); Serial.println(GPS.altitude);
+      Serial.print("Satellites: "); Serial.println((int)GPS.satellites);
     }
   }
+}
 
-  void writeToFile(double *flightdata, unsigned int n) {
-      logger.append(filename);
-      
-      for (int i = 0; i < n; i++) {
-        logger.println(flightdata [i] + ","); //log each element of array into one cell
-      }
-      logger.println("\n");
-
-      logger.syncFile();
+void writeToFile(double *flightdata, unsigned int n) {
+  logger.append(filename);
+  
+  for (int i = 0; i < n; i++) {
+    logger.println(String(flightdata[i]) + ","); //log each element of array into one cell
   }
+  logger.println("\n");
+  
+  logger.syncFile();
 }
 
 
