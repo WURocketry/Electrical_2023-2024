@@ -60,9 +60,9 @@ String filename = "flight_1.csv";
 void setup() {
 
   //Open connection to OpenLog
-  //Wire.begin();
-  //Wire.setClock(400000);
-  //logger.begin();
+  Wire.begin();
+  Wire.setClock(115200);
+  logger.begin();
 //Create instance for OpenLog
 //OpenLog logger;
 
@@ -216,11 +216,10 @@ void collectDataFromGPS()
   }
 }
 
-<<<<<<< HEAD
-void writeToFile(double *flightdata, unsigned int n) {
+void writeToFile(double *flightdata) {
   logger.append(filename);
   
-  for (int i = 0; i < n; i++) {
+  for (int i = 0; i < ENUM_SIZE; i++) {
     logger.println(String(flightdata[i]) + ","); //log each element of array into one cell
   }
   logger.println("\n");
