@@ -216,7 +216,6 @@ void collectDataFromGPS()
   }
 }
 
-<<<<<<< HEAD
 void writeToFile(double *flightdata, unsigned int n) {
   logger.append(filename);
   
