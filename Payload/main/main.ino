@@ -4,14 +4,17 @@
 #include "Adafruit_BME680.h"
 #include <Adafruit_GPS.h>
 #include "SparkFun_Qwiic_OpenLog_Arduino_Library.h"
-
-#define GPSECHO false
+#include "Adafruit_MAX1704X.h"
+#include <SPI.h>
+#include <RH_RF95.h>
 
 // Define sensor objects
 Adafruit_BNO08x bno08x;
 Adafruit_BME680 bme;
 Adafruit_GPS GPS(&Wire);
 OpenLog logger;
+Adafruit_MAX17048 maxlipo;
+
 
 // Struct for Euler angles
 struct euler_t {
@@ -38,66 +41,88 @@ enum{
   GPS_LATITUDE = 12,
   GPS_LONGITUDE = 13,
   GPS_ALTITUDE = 14,
-  ENUM_SIZE = 15,
+  BATTERY_PERCENT = 15,
+  BATTERY_VOLTAGE = 16,
+  BATTERY_DISCHARGE_RATE = 17,
+  ENUM_SIZE = 18, 
 };
 
-//Declaring new global array:
+const char* ENUM_NAMES[] = {
+  "BNO_YAW",
+  "BNO_PITCH",
+  "BNO_ROLL",
+  "BME_TEMPERATURE",
+  "BME_PRESSURE",
+  "BME_HUMIDITY",
+  "BME_GAS",
+  "BME_ALTITUDE",
+  "GPS_HOUR",
+  "GPS_MINUTE",
+  "GPS_SECONDS",
+  "GPS_SPEED",
+  "GPS_LATITUDE",
+  "GPS_LONGITUDE",
+  "GPS_ALTITUDE",
+  "BATTERY_PERCENT",
+  "BATTERY_VOLTAGE",
+  "BATTERY_DISCHARGE_RATE_%_PER_HOUR",
+};
+
+
+//Global Sensor Data Array
 double DATA_COMPONENT_READINGS[ENUM_SIZE];
+
 
 sh2_SensorValue_t sensorValue;
 sh2_SensorId_t reportType = SH2_ARVR_STABILIZED_RV;
 long reportIntervalUs = 5000;
 
-// BME680 Settings
+// BME680 Definitions 
 #define SEALEVELPRESSURE_HPA (1013.25)
 
-//Timer for GPS
+//GPS Defintions
 uint32_t timer = millis();
 
-//Filename
-String filename = "flight_1.csv";
+//Openlog Defintions
+const byte OpenLogAddress = 42; //Default Qwiic OpenLog I2C address
+String filename;
+
+//Battery Monitor Defintions
+float lastBatteryVoltage = 0.0;
+unsigned long lastBatteryCheck = 0;  
+
+//LoRa Radio Definitions
+#define RFM95_CS   16
+#define RFM95_INT  21
+#define RFM95_RST  17
+#define RF95_FREQ 915.0
+RH_RF95 rf95(RFM95_CS, RFM95_INT);
+int16_t packetnum = 0;  
 
 void setup() {
 
-  //Open connection to OpenLog
-  //Wire.begin();
-  //Wire.setClock(400000);
-  //logger.begin();
-//Create instance for OpenLog
-//OpenLog logger;
-
-//unsigned int flightno = 0;
-//String filename = "flight"; //for some reason arduino String gets angry if I dont declare an initial value here
-
- // flightno++; //iterate flightno for filename
-
- // filename = filename + flightno + ".csv"; //new csv for each flight
-
-  
   Serial.begin(115200);
-  while (!Serial) delay(10);
+  pinMode(LED_BUILTIN, OUTPUT);
 
   // Initialize BNO08x
   if (!bno08x.begin_I2C()) {
-    Serial.println("Failed to find BNO08x chip");
-    while (1) { delay(10); }
+    ErrorLEDLoop("Failed to find BNO08x IMU, Halting");
+  }
+  if (!bno08x.enableReport(reportType, reportIntervalUs)) {
+    Serial.println("Could not enable stabilized remote vector for IMU");
   }
 
-  if (!bno08x.enableReport(reportType, reportIntervalUs)) {
-    Serial.println("Could not enable stabilized remote vector");
-  }
 
   // Initialize BME680
   if (!bme.begin()) {
-    Serial.println("Could not find a valid BME680 sensor, check wiring!");
-    while (1);
+    ErrorLEDLoop("Failed to find BME680 sensor, Halting");
   }
-
   bme.setTemperatureOversampling(BME680_OS_8X);
   bme.setHumidityOversampling(BME680_OS_2X);
   bme.setPressureOversampling(BME680_OS_4X);
   bme.setIIRFilterSize(BME680_FILTER_SIZE_3);
   bme.setGasHeater(320, 150);
+
 
   // Initialize GPS
   GPS.begin(0x10);  // The I2C address to use is 0x10
@@ -106,6 +131,38 @@ void setup() {
   GPS.sendCommand(PGCMD_ANTENNA);
   delay(1000);
   GPS.println(PMTK_Q_RELEASE);
+
+  //OpenLog Setup
+  Wire.begin();
+  logger.begin(); //Open connection to OpenLog (no pun intended)
+  int fileCount = getNumberOfPrevFlights();
+  filename = "flight_" + String(fileCount) +".csv";
+  Serial.println("Writing this flights data to: " + filename);
+  writeColumnHeaders();
+
+  //LoRa Setup
+  pinMode(RFM95_RST, OUTPUT);
+  digitalWrite(RFM95_RST, HIGH);
+  //Radio Reset
+  digitalWrite(RFM95_RST, LOW);
+  delay(10);
+  digitalWrite(RFM95_RST, HIGH);
+  delay(10);
+  //LoRa Init & Frequency Test
+  while (!rf95.init()) {
+    ErrorLEDLoop("LoRa radio init failed, Halting");
+  }
+  Serial.println("LoRa radio init OK!");
+
+  // Defaults after init are 434.0MHz, modulation GFSK_Rb250Fd250, +13dbM
+  if (!rf95.setFrequency(RF95_FREQ)) {
+    ErrorLEDLoop("setFrequency failed, Halting");
+  }
+  Serial.print("Set Freq to: "); Serial.println(RF95_FREQ);
+  rf95.setTxPower(23, false); //5-23 power level, 23 is max
+
+
+  initBatteryMonitor();
 
 }
 
@@ -136,11 +193,11 @@ void collectDataFromBNO() {
   if (bno08x.getSensorEvent(&sensorValue)) {
     if (sensorValue.sensorId == reportType) {
       quaternionToEulerRV(&sensorValue.un.arvrStabilizedRV, &ypr, true);
-      Serial.print("Yaw: "); Serial.print(ypr.yaw);
+
       DATA_COMPONENT_READINGS[BNO_YAW] = ypr.yaw;
-      Serial.print("\tPitch: "); Serial.print(ypr.pitch);
+
       DATA_COMPONENT_READINGS[BNO_PITCH] = ypr.pitch;
-      Serial.print("\tRoll: "); Serial.println(ypr.roll);
+
       DATA_COMPONENT_READINGS[BNO_ROLL] = ypr.roll;
     }
   }
@@ -149,18 +206,15 @@ void collectDataFromBNO() {
 // Function to collect data from BME680
 void collectDataFromBME() {
   if (bme.performReading()) {
-    Serial.print("Temperature = "); Serial.print(bme.temperature); Serial.println(" *C");
+
     DATA_COMPONENT_READINGS[BME_TEMPERATURE] = bme.temperature;
-    Serial.print("Pressure = "); Serial.print(bme.pressure / 100.0); Serial.println(" hPa");
     DATA_COMPONENT_READINGS[BME_PRESSURE] = bme.pressure;
-    Serial.print("Humidity = "); Serial.print(bme.humidity); Serial.println(" %");
     DATA_COMPONENT_READINGS[BME_HUMIDITY] = bme.humidity;
-    Serial.print("Gas = "); Serial.print(bme.gas_resistance / 1000.0); Serial.println(" KOhms");
     DATA_COMPONENT_READINGS[BME_GAS] = bme.gas_resistance / 1000.0;
-    Serial.print("Altitude = "); Serial.print(bme.readAltitude(SEALEVELPRESSURE_HPA)); Serial.println(" m");
     DATA_COMPONENT_READINGS[BME_ALTITUDE] = bme.readAltitude(SEALEVELPRESSURE_HPA);
+
   } else {
-    Serial.println("Failed to perform reading :(");
+    Serial.println("Failed to perform BME680 reading");
   }
 }
 
@@ -168,9 +222,7 @@ void collectDataFromGPS()
 {
   // read data from the GPS in the 'main loop'
   char c = GPS.read();
-  // if you want to debug, this is a good time to do it!
-  if (GPSECHO)
-    if (c) Serial.print(c);
+
   // if a sentence is received, we can check the checksum, parse it...
   if (GPS.newNMEAreceived()) {
     // a tricky thing here is if we print the NMEA sentence, or data
@@ -216,25 +268,150 @@ void collectDataFromGPS()
   }
 }
 
-void writeToFile(double *flightdata, unsigned int n) {
+// Function to write column headers
+void writeColumnHeaders() {
+  logger.append(filename); // Open the file
+  
+  for (int i = 0; i < ENUM_SIZE; i++) {
+    logger.print(String(ENUM_NAMES[i]));  // Write each column name
+    if (i < ENUM_SIZE - 1) {
+      logger.print(",");  // Add comma if it's not the last element
+    }
+  }
+  logger.println();  // End of line after all columns are written
+  
+  logger.syncFile();  // Save the changes
+}
+
+// Updated writeToFile function
+void writeToFile() {
   logger.append(filename);
   
-  for (int i = 0; i < n; i++) {
-    logger.println(String(flightdata[i]) + ","); //log each element of array into one cell
+  for (int i = 0; i < ENUM_SIZE; i++) {
+    logger.print(String(DATA_COMPONENT_READINGS[i]));  // Write each data element
+    if (i < ENUM_SIZE - 1) {
+      logger.print(",");  // Add comma if it's not the last element
+    }
   }
-  logger.println("\n");
+  logger.println();  // End of line after all data are written
   
-  logger.syncFile();
+  logger.syncFile();  // Save the changes
+}
+
+int getNumberOfPrevFlights(){
+  int fileCount = 0;
+  
+  // Check if the file exists
+  long sizeOfFile = logger.size("fileNum.txt");
+  if (sizeOfFile > -1) {
+    byte myBufferSize = 200; // Increase this buffer size to hold larger numbers
+    byte myBuffer[myBufferSize];
+    logger.read(myBuffer, myBufferSize, "fileNum.txt"); // Load myBuffer with contents of fileNum.txt
+    
+    String counterString = "";
+    for (int x = 0 ; x < myBufferSize ; x++) {
+      if (myBuffer[x] >= '0' && myBuffer[x] <= '9') {
+        counterString += (char)myBuffer[x];
+      }
+    }
+    fileCount = counterString.toInt();
+    
+  }
+  
+  // Increment the file count
+  fileCount++;
+
+  Serial.println(fileCount);
+  
+  // Overwrite the file with the new file count
+  logger.remove("fileNum.txt", false);
+  logger.append("fileNum.txt"); 
+  logger.print(String(fileCount));
+  logger.syncFile(); // Ensure data is written to SD card
+
+  return fileCount;
+}
+
+
+void collectDataFromBatteryMonitor() {
+  unsigned long currentMillis = millis();
+  if (currentMillis - lastBatteryCheck >= 2000) {
+    lastBatteryCheck = currentMillis;
+
+    DATA_COMPONENT_READINGS[BATTERY_PERCENT] = maxlipo.cellPercent();
+    DATA_COMPONENT_READINGS[BATTERY_VOLTAGE] = maxlipo.cellVoltage();
+    DATA_COMPONENT_READINGS[BATTERY_DISCHARGE_RATE] = maxlipo.chargeRate();
+    
+  }
+}
+
+void printAllData() {
+  Serial.println("--------------------------------------------------------");
+  for (int i = 0; i < ENUM_SIZE; i++) {
+    Serial.print(ENUM_NAMES[i]);
+    Serial.print(": ");
+    Serial.println(DATA_COMPONENT_READINGS[i]);
+  }
+}
+
+void initBatteryMonitor(){
+  if (!maxlipo.begin()) {
+    ErrorLEDLoop("Couldn't find Adafruit MAX17048?\nMake sure a battery is plugged in!");
+  }
+  Serial.print(F("Found MAX17048"));
+  Serial.print(F(" with Chip ID: 0x")); 
+  Serial.println(maxlipo.getChipID(), HEX);
+  
+}
+
+void transmitCurrentComponentReadings() {
+
+    // Prepare a buffer to hold the transmitted message
+    char radiopacket[256] = {0};  
+    
+    // Iterate through the DATA_COMPONENT_READINGS array and build the message
+    for (int i = 0; i < ENUM_SIZE; i++) {
+        char buffer[32];  // Temporary buffer to hold each value
+        dtostrf(DATA_COMPONENT_READINGS[i], 6, 2, buffer);  // Convert double to string, adjust field width and decimal places as necessary
+
+        // Append the value to radiopacket
+        strcat(radiopacket, buffer);
+
+        // If not the last element, append a comma
+        if (i < ENUM_SIZE - 1) {
+            strcat(radiopacket, ",");
+        }
+    }
+
+    // Send the message via RF95
+    rf95.send((uint8_t *)radiopacket, strlen(radiopacket) + 1);  // +1 to include the null terminator
+
+    rf95.waitPacketSent();  // Wait for transmission to complete
+}
+
+void ErrorLEDLoop(const char* error_msg){
+  while(true){
+    Serial.println(error_msg);
+    digitalWrite(LED_BUILTIN, HIGH);  // turn the LED on (HIGH is the voltage level)
+    delay(1000);                      
+    digitalWrite(LED_BUILTIN, LOW);   // turn the LED off by making the voltage LOW
+    delay(1000);    
+  }                
 }
 
 
 
 
-
 void loop() {
+
+         
   collectDataFromBNO();  
   collectDataFromBME();  
-  collectDataFromGPS();
-  delay(1000);           
+  //collectDataFromGPS();
+  collectDataFromBatteryMonitor();
+  writeToFile();
+  printAllData();
+  transmitCurrentComponentReadings();
+        
 }
 
