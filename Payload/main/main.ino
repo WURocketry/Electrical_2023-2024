@@ -99,6 +99,12 @@ unsigned long lastBatteryCheck = 0;
 RH_RF95 rf95(RFM95_CS, RFM95_INT);
 int16_t packetnum = 0;  
 
+//Define timing separations for devices
+float bnoTime = 2000;
+float bmeTime = 2000;
+float gpsTime = 2000;
+float batteryTime = 2000;
+
 void setup() {
 
   Serial.begin(115200);
@@ -185,36 +191,44 @@ void quaternionToEulerRV(sh2_RotationVectorWAcc_t* rotational_vector, euler_t* y
 
 // Function to collect data from BNO08x
 void collectDataFromBNO() {
-  if (bno08x.wasReset()) {
-    Serial.print("sensor was reset ");
-    bno08x.enableReport(reportType, reportIntervalUs);
-  }
-  
-  if (bno08x.getSensorEvent(&sensorValue)) {
-    if (sensorValue.sensorId == reportType) {
-      quaternionToEulerRV(&sensorValue.un.arvrStabilizedRV, &ypr, true);
+  unsigned long currentMillis = millis();
+  if (currentMillis - timer >= bnoTime) {
+    timer = currentMillis;
+    if (bno08x.wasReset()) {
+      Serial.print("sensor was reset ");
+      bno08x.enableReport(reportType, reportIntervalUs);
+    }
+    
+    if (bno08x.getSensorEvent(&sensorValue)) {
+      if (sensorValue.sensorId == reportType) {
+        quaternionToEulerRV(&sensorValue.un.arvrStabilizedRV, &ypr, true);
 
-      DATA_COMPONENT_READINGS[BNO_YAW] = ypr.yaw;
+        DATA_COMPONENT_READINGS[BNO_YAW] = ypr.yaw;
 
-      DATA_COMPONENT_READINGS[BNO_PITCH] = ypr.pitch;
+        DATA_COMPONENT_READINGS[BNO_PITCH] = ypr.pitch;
 
-      DATA_COMPONENT_READINGS[BNO_ROLL] = ypr.roll;
+        DATA_COMPONENT_READINGS[BNO_ROLL] = ypr.roll;
+      }
     }
   }
 }
 
 // Function to collect data from BME680
 void collectDataFromBME() {
-  if (bme.performReading()) {
+  unsigned long currentMillis = millis();
+  if (currentMillis - timer >= bmeTime) {
+    timer = currentMillis;
+    if (bme.performReading()) {
 
-    DATA_COMPONENT_READINGS[BME_TEMPERATURE] = bme.temperature;
-    DATA_COMPONENT_READINGS[BME_PRESSURE] = bme.pressure;
-    DATA_COMPONENT_READINGS[BME_HUMIDITY] = bme.humidity;
-    DATA_COMPONENT_READINGS[BME_GAS] = bme.gas_resistance / 1000.0;
-    DATA_COMPONENT_READINGS[BME_ALTITUDE] = bme.readAltitude(SEALEVELPRESSURE_HPA);
+      DATA_COMPONENT_READINGS[BME_TEMPERATURE] = bme.temperature;
+      DATA_COMPONENT_READINGS[BME_PRESSURE] = bme.pressure;
+      DATA_COMPONENT_READINGS[BME_HUMIDITY] = bme.humidity;
+      DATA_COMPONENT_READINGS[BME_GAS] = bme.gas_resistance / 1000.0;
+      DATA_COMPONENT_READINGS[BME_ALTITUDE] = bme.readAltitude(SEALEVELPRESSURE_HPA);
 
-  } else {
-    Serial.println("Failed to perform BME680 reading");
+    } else {
+      Serial.println("Failed to perform BME680 reading");
+    }
   }
 }
 
@@ -234,7 +248,7 @@ void collectDataFromGPS()
   }
 
   // approximately every 2 seconds or so, print out the current stats
-  if (millis() - timer > 2000) {
+  if (millis() - timer > gpsTime) {
     timer = millis(); // reset the timer
     Serial.print("\nTime: ");
     if (GPS.hour < 10) { Serial.print('0'); }
@@ -335,7 +349,7 @@ int getNumberOfPrevFlights(){
 
 void collectDataFromBatteryMonitor() {
   unsigned long currentMillis = millis();
-  if (currentMillis - lastBatteryCheck >= 2000) {
+  if (currentMillis - lastBatteryCheck >= batteryTime) {
     lastBatteryCheck = currentMillis;
 
     DATA_COMPONENT_READINGS[BATTERY_PERCENT] = maxlipo.cellPercent();
@@ -407,7 +421,7 @@ void loop() {
          
   collectDataFromBNO();  
   collectDataFromBME();  
-  //collectDataFromGPS();
+  collectDataFromGPS();
   collectDataFromBatteryMonitor();
   writeToFile();
   printAllData();
