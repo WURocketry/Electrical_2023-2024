@@ -153,15 +153,17 @@ FlightState controlTransition(FlightState currentState) {
 
 FlightState controlStandbyTransition(FlightState currentState) {
   /* Transitions
+   * this -> coast
    * this -> control
-   * this -> controlStandby
    */
-  // remain until safe control conditions
+  // remain until safe control conditions (implement eventually)
   // TODO: determine condition
-  if (minimalLean) {
-    return FlightState::control;
+  // if (minimalLean) {
+  //   return FlightState::control;
+  // }
+  if (fm_ace.detectedApogee()) {
+    return FlightState::coast;
   }
-
   return currentState;
 }
 
