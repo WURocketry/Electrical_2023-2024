@@ -44,7 +44,8 @@ enum{
   BATTERY_PERCENT = 15,
   BATTERY_VOLTAGE = 16,
   BATTERY_DISCHARGE_RATE = 17,
-  ENUM_SIZE = 18, 
+  ACCELERATION = 18,
+  ENUM_SIZE = 19, 
 };
 
 const char* ENUM_NAMES[] = {
@@ -66,6 +67,7 @@ const char* ENUM_NAMES[] = {
   "BATTERY_PERCENT",
   "BATTERY_VOLTAGE",
   "BATTERY_DISCHARGE_RATE_%_PER_HOUR",
+  "ACCELERATION",
 };
 
 
@@ -86,6 +88,7 @@ uint32_t timer = millis();
 //Openlog Defintions
 const byte OpenLogAddress = 42; //Default Qwiic OpenLog I2C address
 String filename;
+String smallFileName;
 
 //Battery Monitor Defintions
 float lastBatteryVoltage = 0.0;
@@ -136,9 +139,11 @@ void setup() {
   Wire.begin();
   logger.begin(); //Open connection to OpenLog (no pun intended)
   int fileCount = getNumberOfPrevFlights();
-  filename = "flight_" + String(fileCount) +".csv";
+  filename = "flight_" + String(fileCount) + ".csv";
+  smallFileName = "flight_" + String(fileCount) + "_small.csv";
   Serial.println("Writing this flights data to: " + filename);
   writeColumnHeaders();
+  writeSmallColumnHeaders();
 
   //LoRa Setup
   pinMode(RFM95_RST, OUTPUT);
@@ -298,6 +303,41 @@ void writeToFile() {
   logger.syncFile();  // Save the changes
 }
 
+/*smallFile functions missing acceleration*/
+void writeSmallColumnHeaders() {
+  logger.append(smallFileName); // Open the file
+  
+  for (int i = 0; i < 4; i++) {
+    if (i < 3) {
+      logger.print(String(ENUM_NAMES[i]));  // Write each column name
+      logger.print(",");  // Add comma if it's not the last element
+    }
+    else if (i == 3) {
+      logger.print(String(ENUM_NAMES[ACCELERATION])); //last element is acceleration
+    }
+  }
+  logger.println();  // End of line after all columns are written
+  
+  logger.syncFile();  // Save the changes
+}
+
+void writeToSmallFile() {
+  logger.append(smallFileName); //Open the file
+
+  for (int i = 0; i < 4; i++) {
+    if (i < 3) {
+      logger.print(String(DATA_COMPONENT_READINGS[i])); //write first 3 data elements
+      logger.print(",");  //add comma if it's not the last element
+    }
+    else if (i == 3) {
+      logger.print(String(DATA_COMPONENT_READINGS[ACCELERATION]));  //last element is acceleration
+    }
+  }
+  logger.println(); //new line
+
+  logger.syncFile();  //Save changes
+}
+
 int getNumberOfPrevFlights(){
   int fileCount = 0;
   
@@ -410,6 +450,7 @@ void loop() {
   //collectDataFromGPS();
   collectDataFromBatteryMonitor();
   writeToFile();
+  writeToSmallFile();
   printAllData();
   transmitCurrentComponentReadings();
         
