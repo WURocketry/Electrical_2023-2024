@@ -105,17 +105,10 @@ float bmeTime = 2000;
 float gpsTime = 2000;
 float batteryTime = 2000;
 
-<<<<<<< HEAD
 unsigned int bnoTimer = 0;
 unsigned int bmeTimer = 0;
 unsigned int gpsTimer = 0;
 unsigned int batteryTimer = 0;
-=======
-float bnoTimer = 0;
-float bmeTimer = 0;
-float gpsTimer = 0;
-float batteryTimer = 0;
->>>>>>> 09d5c86bfca9c10e16b144a8d6c9777ba329eedf
 
 void setup() {
 
@@ -204,11 +197,7 @@ void quaternionToEulerRV(sh2_RotationVectorWAcc_t* rotational_vector, euler_t* y
 // Function to collect data from BNO08x
 void collectDataFromBNO() {
   unsigned long currentMillis = millis();
-<<<<<<< HEAD
   if (currentMillis - bnoTimer >= bnoTime + bnoTimer) {
-=======
-  if (currentMillis - bnoTimer >= bnoTime) {
->>>>>>> 09d5c86bfca9c10e16b144a8d6c9777ba329eedf
     bnoTimer += bnoTime;
     if (bno08x.wasReset()) {
       Serial.print("sensor was reset ");
@@ -232,11 +221,7 @@ void collectDataFromBNO() {
 // Function to collect data from BME680
 void collectDataFromBME() {
   unsigned long currentMillis = millis();
-<<<<<<< HEAD
   if (currentMillis - bmeTimer >= bmeTime + bmeTimer) {
-=======
-  if (currentMillis - bmeTimer >= bmeTime) {
->>>>>>> 09d5c86bfca9c10e16b144a8d6c9777ba329eedf
     bmeTimer += bmeTime;
     if (bme.performReading()) {
 
