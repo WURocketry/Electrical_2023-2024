@@ -105,6 +105,11 @@ float bmeTime = 2000;
 float gpsTime = 2000;
 float batteryTime = 2000;
 
+unsigned int bnoTimer = 0;
+unsigned int bmeTimer = 0;
+unsigned int gpsTimer = 0;
+unsigned int batteryTimer = 0;
+
 void setup() {
 
   Serial.begin(115200);
@@ -192,8 +197,8 @@ void quaternionToEulerRV(sh2_RotationVectorWAcc_t* rotational_vector, euler_t* y
 // Function to collect data from BNO08x
 void collectDataFromBNO() {
   unsigned long currentMillis = millis();
-  if (currentMillis - timer >= bnoTime) {
-    timer = currentMillis;
+  if (currentMillis - bnoTimer >= bnoTime + bnoTimer) {
+    bnoTimer += bnoTime;
     if (bno08x.wasReset()) {
       Serial.print("sensor was reset ");
       bno08x.enableReport(reportType, reportIntervalUs);
@@ -216,8 +221,8 @@ void collectDataFromBNO() {
 // Function to collect data from BME680
 void collectDataFromBME() {
   unsigned long currentMillis = millis();
-  if (currentMillis - timer >= bmeTime) {
-    timer = currentMillis;
+  if (currentMillis - bmeTimer >= bmeTime + bmeTimer) {
+    bmeTimer += bmeTime;
     if (bme.performReading()) {
 
       DATA_COMPONENT_READINGS[BME_TEMPERATURE] = bme.temperature;
@@ -248,8 +253,9 @@ void collectDataFromGPS()
   }
 
   // approximately every 2 seconds or so, print out the current stats
-  if (millis() - timer > gpsTime) {
-    timer = millis(); // reset the timer
+  unsigned long currentMillis = millis();
+  if (currentMillis - gpsTimer >= gpsTime + gpsTimer) {
+    gpsTimer += gpsTime;
     Serial.print("\nTime: ");
     if (GPS.hour < 10) { Serial.print('0'); }
     Serial.print(GPS.hour, DEC); Serial.print(':');
@@ -349,8 +355,8 @@ int getNumberOfPrevFlights(){
 
 void collectDataFromBatteryMonitor() {
   unsigned long currentMillis = millis();
-  if (currentMillis - lastBatteryCheck >= batteryTime) {
-    lastBatteryCheck = currentMillis;
+  if (currentMillis - batteryTimer >= batteryTime + batteryTimer) {
+    batteryTimer += batteryTime;
 
     DATA_COMPONENT_READINGS[BATTERY_PERCENT] = maxlipo.cellPercent();
     DATA_COMPONENT_READINGS[BATTERY_VOLTAGE] = maxlipo.cellVoltage();
@@ -428,4 +434,3 @@ void loop() {
   transmitCurrentComponentReadings();
         
 }
-
