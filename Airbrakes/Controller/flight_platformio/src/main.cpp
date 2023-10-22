@@ -1,4 +1,7 @@
 #include <BasicLinearAlgebra.h>
+// #include <capabilities/FlightMonitor.h>
+// #include <AdafruitBNO085.h>
+// include statement for Altimeter
 
 // Loop rates (Hz)
 #define ONE_SEC_MICROS 1000000
@@ -10,6 +13,7 @@ using namespace BLA;
 
 // Delta timing variables
 unsigned long currentTime;
+unsigned long previousFilterReset;
 unsigned long previousSampleTime;
 unsigned long previousComputeTime;
 unsigned long previousControlTime;
@@ -45,6 +49,10 @@ BLA::Matrix<4> innovation;
 BLA::Matrix<4,4> innovationCov;
 
 BLA::Matrix<9,4> Kkalman;
+
+// Flight monitor and sensor variables
+AdafruitBNO085 adafruit_bno085;
+FlightMonitor fm_ace(adafruit_bno085);
 
 // Peripheral helper functions/structs
 
@@ -83,6 +91,7 @@ enum class FlightState {
   detectLaunch,
   burn,
   control,
+  controlStandby,
   coast,
   landed
 };
@@ -104,7 +113,7 @@ FlightState detectLaunchTransition(FlightState currentState) {
 
   // remain prior to launch (await launch detection)
   // TODO: determine launchCondition (could be from Kalman)
-  if (launchCondition) {
+  if (fm_ace.detectedLaunch()) {
     return FlightState::burn;
   }
   return currentState;
@@ -117,7 +126,7 @@ FlightState burnTransition(FlightState currentState) {
    */
   // remain until burn acceleration ended
   // TODO: determine condition
-  if (noBurnAccelCondition) {
+  if (fm_ace.detectedUnpoweredAscent()) {
     return FlightState::control;
   }
   
@@ -128,11 +137,29 @@ FlightState controlTransition(FlightState currentState) {
   /* Transitions
    * this -> coast
    * this -> burn
+   * this -> controlStandby
    */
   // remain until apogee
   // TODO: determine condition
-  if (apogeeReached) {
+  if (fm_ace.detectedApogee()) {
     return FlightState::coast;
+  }
+  if (fm_ace.detectedLean()) {
+    return FlightState::controlStandby;
+  }
+
+  return currentState;
+}
+
+FlightState controlStandbyTransition(FlightState currentState) {
+  /* Transitions
+   * this -> control
+   * this -> controlStandby
+   */
+  // remain until safe control conditions
+  // TODO: determine condition
+  if (minimalLean) {
+    return FlightState::control;
   }
 
   return currentState;
@@ -146,7 +173,7 @@ FlightState coastTransition(FlightState currentState) {
   
   // remain until landing
   // TOOD: determine condition
-  if (landed) {
+  if (fm_ace.detectedLanding()) {
     return FlightState::landed;
   }
   return currentState;
@@ -228,11 +255,16 @@ void setup() {
 }
 
 void loop() {
-
+  currentTime = micros();
   /* Switch statement for FSM of ACE system modes */
   switch(currentState) {
     case FlightState::detectLaunch:
       //if one second has elapsed and not launched, reset kalman filter
+      if (currentTime >= previousFilterReset + ONE_SEC_MICROS){
+        //Reset kalman filter
+        //Clear data logs
+        previousFilterReset = currentTime;
+      }
       //if conditions met, transition to burn
       currentState = detectLaunchTransition(currentState);
       break;
@@ -243,6 +275,10 @@ void loop() {
     case FlightState::control:
       //wait until apogee is reached, store airbrakes, transition to coast state
       currentState = controlTransition(currentState);
+      break;
+    case FlightState::controlStandby:
+      //wait until rocket reverts to stable conditions, continue airbrake control
+      currentState = controlStandbyTransition(currentState);
       break;
     case FlightState::coast:
       //if z velocity is very close to zero and altitude is low, then we are landed
@@ -256,10 +292,10 @@ void loop() {
       // should not reach this state
       break;
   }
-
+  
   /* SAMPLE LOOP (400Hz) */
   currentTime = micros();
-  if (currentTime >= previousSampleTime + sampleLoopMicros) {
+  if (currentState!=FlightState::landed && currentTime >= previousSampleTime + sampleLoopMicros) {
     previousSampleTime = currentTime;
     
     /**
@@ -273,7 +309,7 @@ void loop() {
 
   /* COMPUTE LOOP (100Hz) */
   currentTime = micros();
-  if (currentTime >= previousComputeTime + computeLoopMicros) {
+  if (currentState!=FlightState::landed && currentTime >= previousComputeTime + computeLoopMicros) {
 
     previousComputeTime = currentTime;
 
@@ -304,9 +340,9 @@ void loop() {
 
   /* CONTROL LOOP (xHz) */
   currentTime = micros();
-  if (currentTime >= previousControlTime + controlLoopMicros) {
+  if (currentState==FlightState::control && currentTime >= previousControlTime + controlLoopMicros) {
     previousControlTime = currentTime;
-
+    // TODO: Stow airbrakes if too far from vertical below a certain altitude
     /**
      * TODO: 
      *  1. Obtain current altitude and current velocity (prediction from 
