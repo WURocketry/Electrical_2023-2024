@@ -213,7 +213,6 @@ void collectDataFromBNO() {
 
         DATA_COMPONENT_READINGS[BNO_YAW] = ypr.yaw;
 
-<<<<<<< HEAD
 
       DATA_COMPONENT_READINGS[BNO_PITCH] = ypr.pitch;
 
@@ -228,12 +227,6 @@ void collectDataFromBNO() {
 
       // syntax for raw accelerometer
       // DATA_COMPONENT_READINGS[BNO_ZACCEL] = sensorValue.un.rawAccelerometer.z;
-=======
-        DATA_COMPONENT_READINGS[BNO_PITCH] = ypr.pitch;
-
-        DATA_COMPONENT_READINGS[BNO_ROLL] = ypr.roll;
-      }
->>>>>>> e41c650b4b3fb75d409377d995ebde54012b2231
     }
   }
 }
