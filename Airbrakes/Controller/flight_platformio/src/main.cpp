@@ -6,7 +6,7 @@
 // Loop rates (Hz)
 #define ONE_SEC_MICROS 1000000
 #define SAMPLE_LOOP_FREQ 400
-#define KALMAN_LOOP_FREQ 100 
+#define KALMAN_LOOP_FREQ_PER_SAMPLES 4  // Compute per n=4 samples
 #define CONTROL_LOOP_FREQ 1
 
 using namespace BLA;
@@ -19,7 +19,7 @@ unsigned long previousComputeTime;
 unsigned long previousControlTime;
 
 const long sampleLoopMicros  = ONE_SEC_MICROS/SAMPLE_LOOP_FREQ;
-const long computeLoopMicros = ONE_SEC_MICROS/KALMAN_LOOP_FREQ;
+const long computeLoopMicros = KALMAN_LOOP_FREQ_PER_SAMPLES * sampleLoopMicros;
 const long controlLoopMicros = ONE_SEC_MICROS/CONTROL_LOOP_FREQ;
 
 // Kalman filter variables
@@ -195,6 +195,12 @@ void setup() {
   // Initialize FSM state
   currentState = FlightState::detectLaunch;
 
+  // Initialize delta timing variables
+  previousFilterReset = 0;
+  previousSampleTime = 0;
+  previousComputeTime = 0;
+  previousControlTIme = 0;
+
   // Initialize vectors/matrices
   stateVec = {0,0,0,0,0,0,0,0,0};
 
@@ -298,7 +304,7 @@ void loop() {
   /* SAMPLE LOOP (400Hz) */
   currentTime = micros();
   if (currentState!=FlightState::landed && currentTime >= previousSampleTime + sampleLoopMicros) {
-    previousSampleTime = currentTime;
+    previousSampleTime += sampleLoopMicros;
     
     /**
      * TODO: 
@@ -309,11 +315,12 @@ void loop() {
     
   }
 
-  /* COMPUTE LOOP (100Hz) */
+  /* COMPUTE LOOP (per 4 SAMPLEs) */
   currentTime = micros();
-  if (currentState!=FlightState::landed && currentTime >= previousComputeTime + computeLoopMicros) {
+  // If no. samples is multiple of 4, i.e. previousSampleTime/sampleLoopMicros % KALMAN_LOOP_FREQ_PER_SAMPLES
+  if (currentState!=FlightState::landed && previousSampleTime % computeLoopMicros == 0) {
 
-    previousComputeTime = currentTime;
+    previousComputeTime += computeLoopMicros;
 
     currentMeasurement = makeMeasurement();
 
@@ -343,7 +350,7 @@ void loop() {
   /* CONTROL LOOP (xHz) */
   currentTime = micros();
   if (currentState==FlightState::control && currentTime >= previousControlTime + controlLoopMicros) {
-    previousControlTime = currentTime;
+    previousControlTime += controlLoopMicros;
     // TODO: Stow airbrakes if too far from vertical below a certain altitude
     /**
      * TODO: 
