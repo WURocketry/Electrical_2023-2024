@@ -1,3 +1,5 @@
+#include <algorithm>
+
 #include <Wire.h>
 #include <Adafruit_Sensor.h>
 #include <Adafruit_BNO08x.h>
@@ -90,6 +92,10 @@ const byte OpenLogAddress = 42; //Default Qwiic OpenLog I2C address
 String filename;
 String smallFileName;
 
+//
+unsigned int fullidx[ENUM_SIZE] = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18};
+unsigned int smallidx[] = {0, 1, 2, 18};  //tmpy
+
 //Battery Monitor Defintions
 float lastBatteryVoltage = 0.0;
 unsigned long lastBatteryCheck = 0;  
@@ -142,8 +148,8 @@ void setup() {
   filename = "flight_" + String(fileCount) + ".csv";
   smallFileName = "flight_" + String(fileCount) + "_small.csv";
   Serial.println("Writing this flights data to: " + filename);
-  writeColumnHeaders();
-  writeSmallColumnHeaders();
+  writeColumnHeaders(ENUM_NAMES, fullidx, filename);
+  writeColumnHeaders(ENUM_NAMES, smallidx, smallFileName);
 
   //LoRa Setup
   pinMode(RFM95_RST, OUTPUT);
@@ -273,69 +279,41 @@ void collectDataFromGPS()
   }
 }
 
-// Function to write column headers
-void writeColumnHeaders() {
-  logger.append(filename); // Open the file
+//functions to write to log files
+//unsigned int* idx points to an array containing indexes we want to write from
+void writeColumnHeaders(const char** headers, unsigned int* idx, String writeto) {
+  unsigned int n = sizeof(idx) / sizeof(idx[0]);
   
-  for (int i = 0; i < ENUM_SIZE; i++) {
-    logger.print(String(ENUM_NAMES[i]));  // Write each column name
-    if (i < ENUM_SIZE - 1) {
-      logger.print(",");  // Add comma if it's not the last element
-    }
+  logger.append(writeto);  //opens the file
+
+  for (int i = 0; i < n; i++) {
+      logger.print(String(headers[idx[i]]));  //write used column names
+      if (i < n - 1) {
+        logger.print(",");  //Add comma if its not the last element
+      }
   }
-  logger.println();  // End of line after all columns are written
-  
-  logger.syncFile();  // Save the changes
+  logger.println(); //end line after all columns are written
+
+  logger.syncFile(); //saves changes
 }
 
-// Updated writeToFile function
-void writeToFile() {
-  logger.append(filename);
-  
-  for (int i = 0; i < ENUM_SIZE; i++) {
-    logger.print(String(DATA_COMPONENT_READINGS[i]));  // Write each data element
-    if (i < ENUM_SIZE - 1) {
-      logger.print(",");  // Add comma if it's not the last element
-    }
+void writeToFile(double* flightdata, unsigned int* idx, String writeto) {
+  unsigned int n = sizeof(idx) / sizeof(idx[0]);
+  auto maxidx = std::max_element(, )
+
+  logger.append(writeto);  //opens the file
+
+
+
+  for (int i = 0; i < n; i++) {
+      logger.print(String(flightdata[idx[i]]));  //write used column names
+      if (i < n - 1) {
+        logger.print(",");  //Add comma if its not the last element
+      }
   }
-  logger.println();  // End of line after all data are written
-  
-  logger.syncFile();  // Save the changes
-}
+  logger.println(); //end line after all columns are written
 
-/*smallFile functions missing acceleration*/
-void writeSmallColumnHeaders() {
-  logger.append(smallFileName); // Open the file
-  
-  for (int i = 0; i < 4; i++) {
-    if (i < 3) {
-      logger.print(String(ENUM_NAMES[i]));  // Write each column name
-      logger.print(",");  // Add comma if it's not the last element
-    }
-    else if (i == 3) {
-      logger.print(String(ENUM_NAMES[ACCELERATION])); //last element is acceleration
-    }
-  }
-  logger.println();  // End of line after all columns are written
-  
-  logger.syncFile();  // Save the changes
-}
-
-void writeToSmallFile() {
-  logger.append(smallFileName); //Open the file
-
-  for (int i = 0; i < 4; i++) {
-    if (i < 3) {
-      logger.print(String(DATA_COMPONENT_READINGS[i])); //write first 3 data elements
-      logger.print(",");  //add comma if it's not the last element
-    }
-    else if (i == 3) {
-      logger.print(String(DATA_COMPONENT_READINGS[ACCELERATION]));  //last element is acceleration
-    }
-  }
-  logger.println(); //new line
-
-  logger.syncFile();  //Save changes
+  logger.syncFile(); //saves changes
 }
 
 int getNumberOfPrevFlights(){
@@ -449,8 +427,8 @@ void loop() {
   collectDataFromBME();  
   //collectDataFromGPS();
   collectDataFromBatteryMonitor();
-  writeToFile();
-  writeToSmallFile();
+  writeToFile(DATA_COMPONENT_READINGS, fullidx, filename);
+  writeToFile(DATA_COMPONENT_READINGS, smallidx, smallFileName);
   printAllData();
   transmitCurrentComponentReadings();
         
