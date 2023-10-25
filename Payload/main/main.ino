@@ -105,10 +105,10 @@ float bmeTime = 2000;
 float gpsTime = 2000;
 float batteryTime = 2000;
 
-unsigned int bnoTimer = 0;
-unsigned int bmeTimer = 0;
-unsigned int gpsTimer = 0;
-unsigned int batteryTimer = 0;
+unsigned long bnoTimer = 0;
+unsigned long bmeTimer = 0;
+unsigned long gpsTimer = 0;
+unsigned long batteryTimer = 0;
 
 void setup() {
 
@@ -197,7 +197,7 @@ void quaternionToEulerRV(sh2_RotationVectorWAcc_t* rotational_vector, euler_t* y
 // Function to collect data from BNO08x
 void collectDataFromBNO() {
   unsigned long currentMillis = millis();
-  if (currentMillis - bnoTimer >= bnoTime + bnoTimer) {
+  if (currentMillis >= bnoTime + bnoTimer) {
     bnoTimer += bnoTime;
     if (bno08x.wasReset()) {
       Serial.print("sensor was reset ");
@@ -221,7 +221,7 @@ void collectDataFromBNO() {
 // Function to collect data from BME680
 void collectDataFromBME() {
   unsigned long currentMillis = millis();
-  if (currentMillis - bmeTimer >= bmeTime + bmeTimer) {
+  if (currentMillis >= bmeTime + bmeTimer) {
     bmeTimer += bmeTime;
     if (bme.performReading()) {
 
@@ -254,7 +254,7 @@ void collectDataFromGPS()
 
   // approximately every 2 seconds or so, print out the current stats
   unsigned long currentMillis = millis();
-  if (currentMillis - gpsTimer >= gpsTime + gpsTimer) {
+  if (currentMillis >= gpsTime + gpsTimer) {
     gpsTimer += gpsTime;
     Serial.print("\nTime: ");
     if (GPS.hour < 10) { Serial.print('0'); }
@@ -355,7 +355,7 @@ int getNumberOfPrevFlights(){
 
 void collectDataFromBatteryMonitor() {
   unsigned long currentMillis = millis();
-  if (currentMillis - batteryTimer >= batteryTime + batteryTimer) {
+  if (currentMillis >= batteryTime + batteryTimer) {
     batteryTimer += batteryTime;
 
     DATA_COMPONENT_READINGS[BATTERY_PERCENT] = maxlipo.cellPercent();
