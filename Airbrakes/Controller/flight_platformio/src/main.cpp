@@ -199,7 +199,7 @@ void setup() {
   previousFilterReset = 0;
   previousSampleTime = 0;
   previousComputeTime = 0;
-  previousControlTIme = 0;
+  previousControlTime = 0;
 
   // Initialize vectors/matrices
   stateVec = {0,0,0,0,0,0,0,0,0};
