@@ -26,25 +26,28 @@ struct euler_t {
 
 //enum for global array indices
 enum{
-  BNO_YAW = 0,
-  BNO_PITCH = 1,
-  BNO_ROLL = 2,
-  BME_TEMPERATURE = 3,
-  BME_PRESSURE = 4,
-  BME_HUMIDITY = 5,
-  BME_GAS = 6,
-  BME_ALTITUDE = 7,
-  GPS_HOUR = 8,
-  GPS_MINUTE = 9,
-  GPS_SECONDS = 10,
-  GPS_SPEED = 11,
-  GPS_LATITUDE = 12,
-  GPS_LONGITUDE = 13,
-  GPS_ALTITUDE = 14,
-  BATTERY_PERCENT = 15,
-  BATTERY_VOLTAGE = 16,
-  BATTERY_DISCHARGE_RATE = 17,
-  ENUM_SIZE = 18, 
+  BNO_YAW,
+  BNO_PITCH,
+  BNO_ROLL,
+  BNO_XACCEL,
+  BNO_YACCEL,
+  BNO_ZACCEL,
+  BME_TEMPERATURE,
+  BME_PRESSURE,
+  BME_HUMIDITY,
+  BME_GAS,
+  BME_ALTITUDE,
+  GPS_HOUR,
+  GPS_MINUTE,
+  GPS_SECONDS,
+  GPS_SPEED,
+  GPS_LATITUDE,
+  GPS_LONGITUDE,
+  GPS_ALTITUDE,
+  BATTERY_PERCENT,
+  BATTERY_VOLTAGE,
+  BATTERY_DISCHARGE_RATE,
+  ENUM_SIZE, 
 };
 
 const char* ENUM_NAMES[] = {
@@ -210,10 +213,20 @@ void collectDataFromBNO() {
 
         DATA_COMPONENT_READINGS[BNO_YAW] = ypr.yaw;
 
-        DATA_COMPONENT_READINGS[BNO_PITCH] = ypr.pitch;
 
-        DATA_COMPONENT_READINGS[BNO_ROLL] = ypr.roll;
-      }
+      DATA_COMPONENT_READINGS[BNO_PITCH] = ypr.pitch;
+
+      DATA_COMPONENT_READINGS[BNO_ROLL] = ypr.roll;
+
+      DATA_COMPONENT_READINGS[BNO_XACCEL] = sensorValue.un.accelerometer.x;
+      DATA_COMPONENT_READINGS[BNO_YACCEL] = sensorValue.un.accelerometer.y;
+      DATA_COMPONENT_READINGS[BNO_ZACCEL] = sensorValue.un.accelerometer.z;
+
+      // syntax for linear acceleration
+      // DATA_COMPONENT_READINGS[BNO_ZACCEL] = sensorValue.un.linearAcceleration.z;
+
+      // syntax for raw accelerometer
+      // DATA_COMPONENT_READINGS[BNO_ZACCEL] = sensorValue.un.rawAccelerometer.z;
     }
   }
 }
@@ -256,34 +269,21 @@ void collectDataFromGPS()
   unsigned long currentMillis = millis();
   if (currentMillis >= gpsTime + gpsTimer) {
     gpsTimer += gpsTime;
-    Serial.print("\nTime: ");
-    if (GPS.hour < 10) { Serial.print('0'); }
-    Serial.print(GPS.hour, DEC); Serial.print(':');
-    if (GPS.minute < 10) { Serial.print('0'); }
-    Serial.print(GPS.minute, DEC); Serial.print(':');
-    if (GPS.seconds < 10) { Serial.print('0'); }
-    Serial.print(GPS.seconds, DEC); Serial.print('.');
-    if (GPS.milliseconds < 10) {
-      Serial.print("00");
-    } else if (GPS.milliseconds > 9 && GPS.milliseconds < 100) {
-      Serial.print("0");
-    }
-    Serial.println(GPS.milliseconds);
-    Serial.print("Date: ");
-    Serial.print(GPS.day, DEC); Serial.print('/');
-    Serial.print(GPS.month, DEC); Serial.print("/20");
-    Serial.println(GPS.year, DEC);
-    Serial.print("Fix: "); Serial.print((int)GPS.fix);
-    Serial.print(" quality: "); Serial.println((int)GPS.fixquality);
+
     if (GPS.fix) {
-      Serial.print("Location: ");
-      Serial.print(GPS.latitude, 4); Serial.print(GPS.lat);
-      Serial.print(", ");
-      Serial.print(GPS.longitude, 4); Serial.println(GPS.lon);
-      Serial.print("Speed (knots): "); Serial.println(GPS.speed);
-      Serial.print("Angle: "); Serial.println(GPS.angle);
-      Serial.print("Altitude: "); Serial.println(GPS.altitude);
-      Serial.print("Satellites: "); Serial.println((int)GPS.satellites);
+      DATA_COMPONENT_READINGS[GPS_LATITUDE] = GPS.lat;
+      DATA_COMPONENT_READINGS[GPS_LONGITUDE] = GPS.lon;
+      DATA_COMPONENT_READINGS[GPS_HOUR] = GPS.hour;
+      DATA_COMPONENT_READINGS[GPS_SPEED] = GPS.speed;
+      DATA_COMPONENT_READINGS[GPS_ALTITUDE] = GPS.altitude;
+    }
+    else {
+      DATA_COMPONENT_READINGS[GPS_LATITUDE] = -1;
+      DATA_COMPONENT_READINGS[GPS_LONGITUDE] = -1;
+      DATA_COMPONENT_READINGS[GPS_HOUR] = -1;
+      DATA_COMPONENT_READINGS[GPS_SPEED] = -1;
+      DATA_COMPONENT_READINGS[GPS_ALTITUDE] = -1;
+
     }
   }
 }
