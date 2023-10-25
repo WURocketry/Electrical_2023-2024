@@ -101,7 +101,7 @@ int16_t packetnum = 0;
 
 //Define timing separations for devices
 float bnoTime = 2000;
-float bmeTime = 2000;
+float bmeTime = 3200;
 float gpsTime = 2000;
 float batteryTime = 2000;
 
@@ -203,27 +203,43 @@ void collectDataFromBNO() {
       Serial.print("sensor was reset ");
       bno08x.enableReport(reportType, reportIntervalUs);
     }
-    
+   
     if (bno08x.getSensorEvent(&sensorValue)) {
       if (sensorValue.sensorId == reportType) {
         quaternionToEulerRV(&sensorValue.un.arvrStabilizedRV, &ypr, true);
-
+ 
         DATA_COMPONENT_READINGS[BNO_YAW] = ypr.yaw;
+ 
 
-        DATA_COMPONENT_READINGS[BNO_PITCH] = ypr.pitch;
-
-        DATA_COMPONENT_READINGS[BNO_ROLL] = ypr.roll;
-      }
+      DATA_COMPONENT_READINGS[BNO_PITCH] = ypr.pitch;
+ 
+      DATA_COMPONENT_READINGS[BNO_ROLL] = ypr.roll;
+ 
+      DATA_COMPONENT_READINGS[BNO_XACCEL] = sensorValue.un.accelerometer.x;
+      DATA_COMPONENT_READINGS[BNO_YACCEL] = sensorValue.un.accelerometer.y;
+      DATA_COMPONENT_READINGS[BNO_ZACCEL] = sensorValue.un.accelerometer.z;
+ 
+      // syntax for linear acceleration
+      // DATA_COMPONENT_READINGS[BNO_ZACCEL] = sensorValue.un.linearAcceleration.z;
+ 
+      // syntax for raw accelerometer
+      // DATA_COMPONENT_READINGS[BNO_ZACCEL] = sensorValue.un.rawAccelerometer.z;
     }
   }
 }
 
 // Function to collect data from BME680
+/*
+The bme.performReading() function is blocking, it takes like 3 seconds to run. The delta timing loop is useless
+since the program will get stuck on the if-statement for 3 seconds before taking any other measurements. To avoid
+this we updated the delta timing loop to update every 3200 milliseconds (needs more testing) and we asynchronously collect the data by using 'beginReading()' and then 'endReading()' Still needs more testing to find out what the largest time it may take to gather that data. Probably around 3000. --Chase
+
+*/
 void collectDataFromBME() {
   unsigned long currentMillis = millis();
   if (currentMillis - bmeTimer >= bmeTime) {
     bmeTimer += bmeTime;
-    if (bme.performReading()) {
+    if (bme.beginReading()) {
 
       DATA_COMPONENT_READINGS[BME_TEMPERATURE] = bme.temperature;
       DATA_COMPONENT_READINGS[BME_PRESSURE] = bme.pressure;
@@ -231,9 +247,11 @@ void collectDataFromBME() {
       DATA_COMPONENT_READINGS[BME_GAS] = bme.gas_resistance / 1000.0;
       DATA_COMPONENT_READINGS[BME_ALTITUDE] = bme.readAltitude(SEALEVELPRESSURE_HPA);
 
-    } else {
+    }
+     else {
       Serial.println("Failed to perform BME680 reading");
     }
+    bme.endReading();
   }
 }
 
