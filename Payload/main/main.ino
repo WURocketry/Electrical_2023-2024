@@ -108,10 +108,10 @@ float bmeTime = 2000;
 float gpsTime = 2000;
 float batteryTime = 2000;
 
-float bnoTimer = 0;
-float bmeTimer = 0;
-float gpsTimer = 0;
-float batteryTimer = 0;
+unsigned long bnoTimer = 0;
+unsigned long bmeTimer = 0;
+unsigned long gpsTimer = 0;
+unsigned long batteryTimer = 0;
 
 void setup() {
 
@@ -200,7 +200,7 @@ void quaternionToEulerRV(sh2_RotationVectorWAcc_t* rotational_vector, euler_t* y
 // Function to collect data from BNO08x
 void collectDataFromBNO() {
   unsigned long currentMillis = millis();
-  if (currentMillis - bnoTimer >= bnoTime) {
+  if (currentMillis >= bnoTime + bnoTimer) {
     bnoTimer += bnoTime;
     if (bno08x.wasReset()) {
       Serial.print("sensor was reset ");
@@ -234,7 +234,7 @@ void collectDataFromBNO() {
 // Function to collect data from BME680
 void collectDataFromBME() {
   unsigned long currentMillis = millis();
-  if (currentMillis - bmeTimer >= bmeTime) {
+  if (currentMillis >= bmeTime + bmeTimer) {
     bmeTimer += bmeTime;
     if (bme.performReading()) {
 
@@ -266,9 +266,10 @@ void collectDataFromGPS()
   }
 
   // approximately every 2 seconds or so, print out the current stats
-  if (millis() - timer > gpsTime) {
-    timer = millis(); // reset the timer
-    }
+  unsigned long currentMillis = millis();
+  if (currentMillis >= gpsTime + gpsTimer) {
+    gpsTimer += gpsTime;
+
     if (GPS.fix) {
       DATA_COMPONENT_READINGS[GPS_LATITUDE] = GPS.lat;
       DATA_COMPONENT_READINGS[GPS_LONGITUDE] = GPS.lon;
@@ -354,8 +355,8 @@ int getNumberOfPrevFlights(){
 
 void collectDataFromBatteryMonitor() {
   unsigned long currentMillis = millis();
-  if (currentMillis - lastBatteryCheck >= batteryTime) {
-    lastBatteryCheck = currentMillis;
+  if (currentMillis >= batteryTime + batteryTimer) {
+    batteryTimer += batteryTime;
 
     DATA_COMPONENT_READINGS[BATTERY_PERCENT] = maxlipo.cellPercent();
     DATA_COMPONENT_READINGS[BATTERY_VOLTAGE] = maxlipo.cellVoltage();
@@ -433,4 +434,3 @@ void loop() {
   transmitCurrentComponentReadings();
         
 }
-
