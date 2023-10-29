@@ -32,25 +32,28 @@ struct euler_t {
 
 //enum for global array indices
 enum{
-  BNO_YAW = 0,
-  BNO_PITCH = 1,
-  BNO_ROLL = 2,
-  BME_TEMPERATURE = 3,
-  BME_PRESSURE = 4,
-  BME_HUMIDITY = 5,
-  BME_GAS = 6,
-  BME_ALTITUDE = 7,
-  GPS_HOUR = 8,
-  GPS_MINUTE = 9,
-  GPS_SECONDS = 10,
-  GPS_SPEED = 11,
-  GPS_LATITUDE = 12,
-  GPS_LONGITUDE = 13,
-  GPS_ALTITUDE = 14,
-  BATTERY_PERCENT = 15,
-  BATTERY_VOLTAGE = 16,
-  BATTERY_DISCHARGE_RATE = 17,
-  ENUM_SIZE = 18, 
+  BNO_YAW,
+  BNO_PITCH,
+  BNO_ROLL,
+  BNO_XACCEL,
+  BNO_YACCEL,
+  BNO_ZACCEL,
+  BME_TEMPERATURE,
+  BME_PRESSURE,
+  BME_HUMIDITY,
+  BME_GAS,
+  BME_ALTITUDE,
+  GPS_HOUR,
+  GPS_MINUTE,
+  GPS_SECONDS,
+  GPS_SPEED,
+  GPS_LATITUDE,
+  GPS_LONGITUDE,
+  GPS_ALTITUDE,
+  BATTERY_PERCENT,
+  BATTERY_VOLTAGE,
+  BATTERY_DISCHARGE_RATE,
+  ENUM_SIZE, 
 };
 
 const char* ENUM_NAMES[] = {
@@ -111,10 +114,10 @@ float bmeTime = 2000;
 float gpsTime = 2000;
 float batteryTime = 2000;
 
-float bnoTimer = 0;
-float bmeTimer = 0;
-float gpsTimer = 0;
-float batteryTimer = 0;
+unsigned long bnoTimer = 0;
+unsigned long bmeTimer = 0;
+unsigned long gpsTimer = 0;
+unsigned long batteryTimer = 0;
 
 void setup() {
 
@@ -228,7 +231,7 @@ void quaternionToEulerRV(sh2_RotationVectorWAcc_t* rotational_vector, euler_t* y
 // Function to collect data from BNO08x
 void collectDataFromBNO() {
   unsigned long currentMillis = millis();
-  if (currentMillis - bnoTimer >= bnoTime) {
+  if (currentMillis >= bnoTime + bnoTimer) {
     bnoTimer += bnoTime;
     if (bno08x.wasReset()) {
       Serial.print("sensor was reset ");
@@ -241,10 +244,20 @@ void collectDataFromBNO() {
 
         DATA_COMPONENT_READINGS[BNO_YAW] = ypr.yaw;
 
-        DATA_COMPONENT_READINGS[BNO_PITCH] = ypr.pitch;
 
-        DATA_COMPONENT_READINGS[BNO_ROLL] = ypr.roll;
-      }
+      DATA_COMPONENT_READINGS[BNO_PITCH] = ypr.pitch;
+
+      DATA_COMPONENT_READINGS[BNO_ROLL] = ypr.roll;
+
+      DATA_COMPONENT_READINGS[BNO_XACCEL] = sensorValue.un.accelerometer.x;
+      DATA_COMPONENT_READINGS[BNO_YACCEL] = sensorValue.un.accelerometer.y;
+      DATA_COMPONENT_READINGS[BNO_ZACCEL] = sensorValue.un.accelerometer.z;
+
+      // syntax for linear acceleration
+      // DATA_COMPONENT_READINGS[BNO_ZACCEL] = sensorValue.un.linearAcceleration.z;
+
+      // syntax for raw accelerometer
+      // DATA_COMPONENT_READINGS[BNO_ZACCEL] = sensorValue.un.rawAccelerometer.z;
     }
   }
 }
@@ -252,7 +265,7 @@ void collectDataFromBNO() {
 // Function to collect data from BME680
 void collectDataFromBME() {
   unsigned long currentMillis = millis();
-  if (currentMillis - bmeTimer >= bmeTime) {
+  if (currentMillis >= bmeTime + bmeTimer) {
     bmeTimer += bmeTime;
     if (bme.performReading()) {
 
@@ -283,9 +296,11 @@ void collectDataFromGPS() {
   }
 
   // approximately every 2 seconds or so, print out the current stats
-  if (millis() - timer > gpsTime) {
-    timer = millis(); // reset the timer
-    
+
+  unsigned long currentMillis = millis();
+  if (currentMillis >= gpsTime + gpsTimer) {
+    gpsTimer += gpsTime;
+
     if (GPS.fix) {
       DATA_COMPONENT_READINGS[GPS_LATITUDE] = GPS.lat;
       DATA_COMPONENT_READINGS[GPS_LONGITUDE] = GPS.lon;
@@ -371,8 +386,8 @@ int getNumberOfPrevFlights(){
 
 void collectDataFromBatteryMonitor() {
   unsigned long currentMillis = millis();
-  if (currentMillis - lastBatteryCheck >= batteryTime) {
-    lastBatteryCheck = currentMillis;
+  if (currentMillis >= batteryTime + batteryTimer) {
+    batteryTimer += batteryTime;
 
     DATA_COMPONENT_READINGS[BATTERY_PERCENT] = maxlipo.cellPercent();
     DATA_COMPONENT_READINGS[BATTERY_VOLTAGE] = maxlipo.cellVoltage();
@@ -442,4 +457,3 @@ void loop() {
   delay(2000);
         
 }
-
