@@ -26,7 +26,7 @@ struct euler_t {
 } ypr;
 
 //enum for global array indices
-enum {
+enum{
   BNO_YAW,
   BNO_PITCH,
   BNO_ROLL,
@@ -115,6 +115,17 @@ unsigned long lastBatteryCheck = 0;
 #define RF95_FREQ 915.0
 RH_RF95 rf95(RFM95_CS, RFM95_INT);
 int16_t packetnum = 0;  
+
+//Define timing separations for devices
+float bnoTime = 2000;
+float bmeTime = 2000;
+float gpsTime = 2000;
+float batteryTime = 2000;
+
+unsigned long bnoTimer = 0;
+unsigned long bmeTimer = 0;
+unsigned long gpsTimer = 0;
+unsigned long batteryTimer = 0;
 
 void setup() {
 
@@ -208,36 +219,54 @@ void quaternionToEulerRV(sh2_RotationVectorWAcc_t* rotational_vector, euler_t* y
 
 // Function to collect data from BNO08x
 void collectDataFromBNO() {
-  if (bno08x.wasReset()) {
-    Serial.print("sensor was reset ");
-    bno08x.enableReport(reportType, reportIntervalUs);
-  }
-  
-  if (bno08x.getSensorEvent(&sensorValue)) {
-    if (sensorValue.sensorId == reportType) {
-      quaternionToEulerRV(&sensorValue.un.arvrStabilizedRV, &ypr, true);
+  unsigned long currentMillis = millis();
+  if (currentMillis >= bnoTime + bnoTimer) {
+    bnoTimer += bnoTime;
+    if (bno08x.wasReset()) {
+      Serial.print("sensor was reset ");
+      bno08x.enableReport(reportType, reportIntervalUs);
+    }
+    
+    if (bno08x.getSensorEvent(&sensorValue)) {
+      if (sensorValue.sensorId == reportType) {
+        quaternionToEulerRV(&sensorValue.un.arvrStabilizedRV, &ypr, true);
 
-      DATA_COMPONENT_READINGS[BNO_YAW] = ypr.yaw;
+        DATA_COMPONENT_READINGS[BNO_YAW] = ypr.yaw;
+
 
       DATA_COMPONENT_READINGS[BNO_PITCH] = ypr.pitch;
 
       DATA_COMPONENT_READINGS[BNO_ROLL] = ypr.roll;
+
+      DATA_COMPONENT_READINGS[BNO_XACCEL] = sensorValue.un.accelerometer.x;
+      DATA_COMPONENT_READINGS[BNO_YACCEL] = sensorValue.un.accelerometer.y;
+      DATA_COMPONENT_READINGS[BNO_ZACCEL] = sensorValue.un.accelerometer.z;
+
+      // syntax for linear acceleration
+      // DATA_COMPONENT_READINGS[BNO_ZACCEL] = sensorValue.un.linearAcceleration.z;
+
+      // syntax for raw accelerometer
+      // DATA_COMPONENT_READINGS[BNO_ZACCEL] = sensorValue.un.rawAccelerometer.z;
     }
   }
 }
 
 // Function to collect data from BME680
 void collectDataFromBME() {
-  if (bme.performReading()) {
+  unsigned long currentMillis = millis();
+  if (currentMillis >= bmeTime + bmeTimer) {
+    bmeTimer += bmeTime;
+    if (bme.performReading()) {
 
-    DATA_COMPONENT_READINGS[BME_TEMPERATURE] = bme.temperature;
-    DATA_COMPONENT_READINGS[BME_PRESSURE] = bme.pressure;
-    DATA_COMPONENT_READINGS[BME_HUMIDITY] = bme.humidity;
-    DATA_COMPONENT_READINGS[BME_GAS] = bme.gas_resistance / 1000.0;
-    DATA_COMPONENT_READINGS[BME_ALTITUDE] = bme.readAltitude(SEALEVELPRESSURE_HPA);
+      DATA_COMPONENT_READINGS[BME_TEMPERATURE] = bme.temperature;
+      DATA_COMPONENT_READINGS[BME_PRESSURE] = bme.pressure;
+      DATA_COMPONENT_READINGS[BME_HUMIDITY] = bme.humidity;
+      DATA_COMPONENT_READINGS[BME_GAS] = bme.gas_resistance / 1000.0;
+      DATA_COMPONENT_READINGS[BME_ALTITUDE] = bme.readAltitude(SEALEVELPRESSURE_HPA);
 
-  } else {
-    Serial.println("Failed to perform BME680 reading");
+    } else {
+      Serial.println("Failed to perform BME680 reading");
+    }
   }
 }
 
@@ -257,36 +286,24 @@ void collectDataFromGPS()
   }
 
   // approximately every 2 seconds or so, print out the current stats
-  if (millis() - timer > 2000) {
-    timer = millis(); // reset the timer
-    Serial.print("\nTime: ");
-    if (GPS.hour < 10) { Serial.print('0'); }
-    Serial.print(GPS.hour, DEC); Serial.print(':');
-    if (GPS.minute < 10) { Serial.print('0'); }
-    Serial.print(GPS.minute, DEC); Serial.print(':');
-    if (GPS.seconds < 10) { Serial.print('0'); }
-    Serial.print(GPS.seconds, DEC); Serial.print('.');
-    if (GPS.milliseconds < 10) {
-      Serial.print("00");
-    } else if (GPS.milliseconds > 9 && GPS.milliseconds < 100) {
-      Serial.print("0");
-    }
-    Serial.println(GPS.milliseconds);
-    Serial.print("Date: ");
-    Serial.print(GPS.day, DEC); Serial.print('/');
-    Serial.print(GPS.month, DEC); Serial.print("/20");
-    Serial.println(GPS.year, DEC);
-    Serial.print("Fix: "); Serial.print((int)GPS.fix);
-    Serial.print(" quality: "); Serial.println((int)GPS.fixquality);
+  unsigned long currentMillis = millis();
+  if (currentMillis >= gpsTime + gpsTimer) {
+    gpsTimer += gpsTime;
+
     if (GPS.fix) {
-      Serial.print("Location: ");
-      Serial.print(GPS.latitude, 4); Serial.print(GPS.lat);
-      Serial.print(", ");
-      Serial.print(GPS.longitude, 4); Serial.println(GPS.lon);
-      Serial.print("Speed (knots): "); Serial.println(GPS.speed);
-      Serial.print("Angle: "); Serial.println(GPS.angle);
-      Serial.print("Altitude: "); Serial.println(GPS.altitude);
-      Serial.print("Satellites: "); Serial.println((int)GPS.satellites);
+      DATA_COMPONENT_READINGS[GPS_LATITUDE] = GPS.lat;
+      DATA_COMPONENT_READINGS[GPS_LONGITUDE] = GPS.lon;
+      DATA_COMPONENT_READINGS[GPS_HOUR] = GPS.hour;
+      DATA_COMPONENT_READINGS[GPS_SPEED] = GPS.speed;
+      DATA_COMPONENT_READINGS[GPS_ALTITUDE] = GPS.altitude;
+    }
+    else {
+      DATA_COMPONENT_READINGS[GPS_LATITUDE] = -1;
+      DATA_COMPONENT_READINGS[GPS_LONGITUDE] = -1;
+      DATA_COMPONENT_READINGS[GPS_HOUR] = -1;
+      DATA_COMPONENT_READINGS[GPS_SPEED] = -1;
+      DATA_COMPONENT_READINGS[GPS_ALTITUDE] = -1;
+
     }
   }
 }
@@ -372,8 +389,8 @@ int getNumberOfPrevFlights(){
 
 void collectDataFromBatteryMonitor() {
   unsigned long currentMillis = millis();
-  if (currentMillis - lastBatteryCheck >= 2000) {
-    lastBatteryCheck = currentMillis;
+  if (currentMillis >= batteryTime + batteryTimer) {
+    batteryTimer += batteryTime;
 
     DATA_COMPONENT_READINGS[BATTERY_PERCENT] = maxlipo.cellPercent();
     DATA_COMPONENT_READINGS[BATTERY_VOLTAGE] = maxlipo.cellVoltage();
@@ -444,7 +461,7 @@ void loop() {
          
   collectDataFromBNO();  
   collectDataFromBME();  
-  //collectDataFromGPS();
+  collectDataFromGPS();
   collectDataFromBatteryMonitor();
   writeToFile(DATA_COMPONENT_READINGS, fullidx, filename);
   writeToFile(DATA_COMPONENT_READINGS, smallidx, smallFileName);
@@ -452,4 +469,3 @@ void loop() {
   transmitCurrentComponentReadings();
         
 }
-
