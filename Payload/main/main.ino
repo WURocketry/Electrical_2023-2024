@@ -25,35 +25,39 @@ struct euler_t {
   float roll;
 } ypr;
 
-
 //enum for global array indices
-enum{
-  BNO_YAW = 0,
-  BNO_PITCH = 1,
-  BNO_ROLL = 2,
-  BME_TEMPERATURE = 3,
-  BME_PRESSURE = 4,
-  BME_HUMIDITY = 5,
-  BME_GAS = 6,
-  BME_ALTITUDE = 7,
-  GPS_HOUR = 8,
-  GPS_MINUTE = 9,
-  GPS_SECONDS = 10,
-  GPS_SPEED = 11,
-  GPS_LATITUDE = 12,
-  GPS_LONGITUDE = 13,
-  GPS_ALTITUDE = 14,
-  BATTERY_PERCENT = 15,
-  BATTERY_VOLTAGE = 16,
-  BATTERY_DISCHARGE_RATE = 17,
-  ACCELERATION = 18,
-  ENUM_SIZE = 19, 
+enum {
+  BNO_YAW,
+  BNO_PITCH,
+  BNO_ROLL,
+  BNO_XACCEL,
+  BNO_YACCEL,
+  BNO_ZACCEL,
+  BME_TEMPERATURE,
+  BME_PRESSURE,
+  BME_HUMIDITY,
+  BME_GAS,
+  BME_ALTITUDE,
+  GPS_HOUR,
+  GPS_MINUTE,
+  GPS_SECONDS,
+  GPS_SPEED,
+  GPS_LATITUDE,
+  GPS_LONGITUDE,
+  GPS_ALTITUDE,
+  BATTERY_PERCENT,
+  BATTERY_VOLTAGE,
+  BATTERY_DISCHARGE_RATE,
+  ENUM_SIZE, 
 };
 
 const char* ENUM_NAMES[] = {
   "BNO_YAW",
   "BNO_PITCH",
   "BNO_ROLL",
+  "BNO_XACCEL",
+  "BNO_YACCEL",
+  "BNO_ZACCEL",
   "BME_TEMPERATURE",
   "BME_PRESSURE",
   "BME_HUMIDITY",
@@ -69,7 +73,6 @@ const char* ENUM_NAMES[] = {
   "BATTERY_PERCENT",
   "BATTERY_VOLTAGE",
   "BATTERY_DISCHARGE_RATE_%_PER_HOUR",
-  "ACCELERATION",
 };
 
 
@@ -92,9 +95,14 @@ const byte OpenLogAddress = 42; //Default Qwiic OpenLog I2C address
 String filename;
 String smallFileName;
 
-//
-unsigned int fullidx[ENUM_SIZE] = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18};
-unsigned int smallidx[] = {0, 1, 2, 18};  //tmpy
+//flightdata to writeto files
+unsigned int fullidx[ENUM_SIZE];
+unsigned int smallidx[] = {BNO_YAW,
+                           BNO_PITCH,
+                           BNO_ROLL, 
+                           BNO_XACCEL, 
+                           BNO_YACCEL, 
+                           BNO_ZACCEL};
 
 //Battery Monitor Defintions
 float lastBatteryVoltage = 0.0;
@@ -142,6 +150,10 @@ void setup() {
   GPS.println(PMTK_Q_RELEASE);
 
   //OpenLog Setup
+  for (int i = 0; i < ENUM_SIZE; i++) {
+    fullidx[i] = i; //include all data components for the full index
+  }
+
   Wire.begin();
   logger.begin(); //Open connection to OpenLog (no pun intended)
   int fileCount = getNumberOfPrevFlights();
@@ -282,7 +294,12 @@ void collectDataFromGPS()
 //functions to write to log files
 //unsigned int* idx points to an array containing indexes we want to write from
 void writeColumnHeaders(const char** headers, unsigned int* idx, String writeto) {
-  unsigned int n = sizeof(idx) / sizeof(idx[0]);
+  unsigned int n = sizeof(idx) / sizeof(idx[0]);  //size of idx array
+  auto maxidx = std::max_element(idx, idx + n);   //find largest index we want to read from global data array
+
+  if (*maxidx > (sizeof(headers) / sizeof(headers[0]))) {
+    ErrorLEDLoop("Array index out of bounds!"); //if largest index exceeds max index of headers
+  }
   
   logger.append(writeto);  //opens the file
 
@@ -298,12 +315,14 @@ void writeColumnHeaders(const char** headers, unsigned int* idx, String writeto)
 }
 
 void writeToFile(double* flightdata, unsigned int* idx, String writeto) {
-  unsigned int n = sizeof(idx) / sizeof(idx[0]);
-  auto maxidx = std::max_element(, )
+  unsigned int n = sizeof(idx) / sizeof(idx[0]);  //size of idx array  
+  auto maxidx = std::max_element(idx, idx + n);   //find largest index we want to read from global data array
+
+  if (*maxidx > (sizeof(flightdata) / sizeof(flightdata[0]))) {
+    ErrorLEDLoop("Array Index out of bounds!"); //if largest index exceeds max index of flightdata
+  }
 
   logger.append(writeto);  //opens the file
-
-
 
   for (int i = 0; i < n; i++) {
       logger.print(String(flightdata[idx[i]]));  //write used column names
