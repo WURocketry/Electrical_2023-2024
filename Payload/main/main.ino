@@ -9,6 +9,8 @@
 #include "Adafruit_MAX1704X.h"
 #include <SPI.h>
 #include <RH_RF95.h>
+#include <Adafruit_NeoPixel.h>
+
 
 // Define sensor objects
 Adafruit_BNO08x bno08x;
@@ -17,6 +19,10 @@ Adafruit_GPS GPS(&Wire);
 OpenLog logger;
 Adafruit_MAX17048 maxlipo;
 
+// Neopixel
+const int pin = 4;
+const int numPixels = 1;
+Adafruit_NeoPixel pixels = Adafruit_NeoPixel(numPixels, pin, NEO_GRB + NEO_KHZ800);
 
 // Struct for Euler angles
 struct euler_t {
@@ -132,7 +138,42 @@ void setup() {
   Serial.begin(115200);
   pinMode(LED_BUILTIN, OUTPUT);
 
-  // Initialize BNO08x
+  delay(10000);
+
+  Serial.println("init radio");
+
+  //LoRa Setup
+  pinMode(RFM95_RST, OUTPUT);
+  digitalWrite(RFM95_RST, HIGH);
+
+  Serial.println("init radio");
+  //Radio Reset
+  digitalWrite(RFM95_RST, LOW);
+  delay(10);
+  digitalWrite(RFM95_RST, HIGH);
+  delay(10);
+
+  //LoRa Init & Frequency Test
+  while (!rf95.init()) {
+    Serial.println("LoRa radio init failed, Halting");
+  }
+  Serial.println("LoRa radio init OK!");
+  Serial.println("init radio");
+
+  // Defaults after init are 434.0MHz, modulation GFSK_Rb250Fd250, +13dbM
+  if (!rf95.setFrequency(RF95_FREQ)) {
+    ErrorLEDLoop("setFrequency failed, Halting");
+  }
+  Serial.print("Set Freq to: "); Serial.println(RF95_FREQ);
+  rf95.setTxPower(23, false); //5-23 power level, 23 is max
+  Serial.println("init radio");
+
+
+  //init Neopixel
+  pixels.begin();
+  pixels.setBrightness(255);
+
+  //Initialize BNO08x
   if (!bno08x.begin_I2C()) {
     ErrorLEDLoop("Failed to find BNO08x IMU, Halting");
   }
@@ -141,7 +182,7 @@ void setup() {
   }
 
 
-  // Initialize BME680
+  //Initialize BME680
   if (!bme.begin()) {
     ErrorLEDLoop("Failed to find BME680 sensor, Halting");
   }
@@ -152,7 +193,7 @@ void setup() {
   bme.setGasHeater(320, 150);
 
 
-  // Initialize GPS
+  //Initialize GPS
   GPS.begin(0x10);  // The I2C address to use is 0x10
   GPS.sendCommand(PMTK_SET_NMEA_OUTPUT_RMCGGA);
   GPS.sendCommand(PMTK_SET_NMEA_UPDATE_1HZ); // 1 Hz update rate
@@ -174,30 +215,20 @@ void setup() {
   writeColumnHeaders(ENUM_NAMES, fullidx, filename);
   writeColumnHeaders(ENUM_NAMES, smallidx, smallFileName);
 
-  //LoRa Setup
-  pinMode(RFM95_RST, OUTPUT);
-  digitalWrite(RFM95_RST, HIGH);
-  //Radio Reset
-  digitalWrite(RFM95_RST, LOW);
-  delay(10);
-  digitalWrite(RFM95_RST, HIGH);
-  delay(10);
-  //LoRa Init & Frequency Test
-  while (!rf95.init()) {
-    ErrorLEDLoop("LoRa radio init failed, Halting");
-  }
-  Serial.println("LoRa radio init OK!");
-
-  // Defaults after init are 434.0MHz, modulation GFSK_Rb250Fd250, +13dbM
-  if (!rf95.setFrequency(RF95_FREQ)) {
-    ErrorLEDLoop("setFrequency failed, Halting");
-  }
-  Serial.print("Set Freq to: "); Serial.println(RF95_FREQ);
-  rf95.setTxPower(23, false); //5-23 power level, 23 is max
 
 
-  initBatteryMonitor();
+}
 
+void ErrorLEDLoop(const char* error_msg){
+  while(true){
+    //Serial.println(error_msg);
+    pixels.setPixelColor(0, pixels.Color(255, 0, 0));
+    pixels.show();
+    delay(1000);                      
+    pixels.setPixelColor(0, pixels.Color(0, 0, 0));
+    pixels.show();
+    delay(1000);    
+  }                
 }
 
 void quaternionToEulerRV(sh2_RotationVectorWAcc_t* rotational_vector, euler_t* ypr, bool degrees = false) {
@@ -270,8 +301,7 @@ void collectDataFromBME() {
   }
 }
 
-void collectDataFromGPS() 
-{
+void collectDataFromGPS() {
   // read data from the GPS in the 'main loop'
   char c = GPS.read();
 
@@ -286,6 +316,7 @@ void collectDataFromGPS()
   }
 
   // approximately every 2 seconds or so, print out the current stats
+
   unsigned long currentMillis = millis();
   if (currentMillis >= gpsTime + gpsTimer) {
     gpsTimer += gpsTime;
@@ -443,15 +474,6 @@ void transmitCurrentComponentReadings() {
     rf95.waitPacketSent();  // Wait for transmission to complete
 }
 
-void ErrorLEDLoop(const char* error_msg){
-  while(true){
-    Serial.println(error_msg);
-    digitalWrite(LED_BUILTIN, HIGH);  // turn the LED on (HIGH is the voltage level)
-    delay(1000);                      
-    digitalWrite(LED_BUILTIN, LOW);   // turn the LED off by making the voltage LOW
-    delay(1000);    
-  }                
-}
 
 
 
@@ -467,5 +489,7 @@ void loop() {
   writeToFile(DATA_COMPONENT_READINGS, smallidx, smallFileName);
   printAllData();
   transmitCurrentComponentReadings();
+
+  delay(2000);
         
 }
