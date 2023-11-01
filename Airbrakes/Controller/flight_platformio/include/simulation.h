@@ -360,3 +360,31 @@ double simData[733][2] {{30.0,0.0,0.0},{30.01, 0.003, 68.886}, {30.02, 0.02, 191
 //Write function that returns the acceleration and a function that returns altitude as a function of time
 //Just need to linearly interpolate the second two columns from time in the first. 
 //time was shifted forward by 30 seconds, gives time for start up
+
+//return array will have the position in the zeroth location, acceleration in the second
+void simulatedData(time, double *returnArray){
+
+  if(time>130){
+    returnArray[0] = 0.0;
+    returnArray[1] = 0.0;
+  }else{
+    //get the first row where the time is less than the requested time
+    while(simulatedData[i][0]<time){
+      i++;
+    }
+    if(i==0){
+      returnArray[0] = 0.0;
+      returnArray[1] = 0.0;
+    }else{
+      double fractionToNext = (time-simulatedData[i][0])/(simulatedData[i+1][0]-simulatedData[i][0]);
+
+      //interpolated position
+      returnArray[0] = simulatedData[i][1]+fractionToNext*(simulatedData[i+1][1]-simulatedData[i][1]);
+      //interpolated acceleration
+      returnArray[1] = simulatedData[i][2]+fractionToNext*(simulatedData[i+1][2]-simulatedData[i][2]);
+
+    }
+  }
+  
+  
+}
