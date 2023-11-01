@@ -364,6 +364,8 @@ double simData[733][2] {{30.0,0.0,0.0},{30.01, 0.003, 68.886}, {30.02, 0.02, 191
 //return array will have the position in the zeroth location, acceleration in the second
 void simulatedData(time, double *returnArray){
 
+  int i = 0;
+
   if(time>130){
     returnArray[0] = 0.0;
     returnArray[1] = 0.0;
