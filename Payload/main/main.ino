@@ -1,4 +1,5 @@
 #include <algorithm>
+#include <bitset>
 
 #include <Wire.h>
 #include <Adafruit_Sensor.h>
@@ -279,7 +280,8 @@ void collectDataFromBNO() {
 
       // syntax for raw accelerometer
       // DATA_COMPONENT_READINGS[BNO_ZACCEL] = sensorValue.un.rawAccelerometer.z;
-    }
+      }
+    } 
   }
 }
 
