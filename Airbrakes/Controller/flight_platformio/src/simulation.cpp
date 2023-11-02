@@ -2,9 +2,9 @@
 #include <simulation.h>
 
 // Binary search for row before or on time
-int SearchVltByTime(double target) {
+int SearchDataByTime(double target) {
     if (target < 0) {
-        Serial.println("(SearchVltByTime) Error: Cannot have negative target time");
+        Serial.println("(SearchDataByTime) Error: Cannot have negative target time");
         return -1;
     }
     
@@ -22,7 +22,6 @@ int SearchVltByTime(double target) {
         if (simData[mIdx][tCol] < target) {
             // right subarr
             lIdx = mIdx + 1;
-            
         }
         else if (simData[mIdx][tCol] > target) {
             // left subarr
@@ -53,9 +52,10 @@ void getSimulatedData(double time, double *returnArray) {
     }
     else {
         //get the first row where the time is less than the requested time
-        int i = SearchVltByTime(time);
-        
-        if (i==0) {
+        int i = SearchDataByTime(time);
+
+        // TODO: Fault handler - SearchDataByTime exception handling        
+        if (i < 0) {
             returnArray[0] = 0.0;
             returnArray[1] = 0.0;
         }
