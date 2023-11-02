@@ -1,7 +1,11 @@
+/* Library includes */
 #include <BasicLinearAlgebra.h>
-// #include <capabilities/FlightMonitor.h>
-// #include <AdafruitBNO085.h>
+
+/* Our includes */
 // include statement for Altimeter
+// #include <FlightMonitor.h>
+// #include <AdafruitBNO085.h>
+#include <simulation.h>
 
 // Loop rates (Hz)
 #define ONE_SEC_MICROS 1000000
@@ -264,6 +268,7 @@ void setup() {
 
 void loop() {
   currentTime = micros();
+  
   /* Switch statement for FSM of ACE system modes */
   switch(currentState) {
     case FlightState::detectLaunch:
@@ -305,6 +310,14 @@ void loop() {
   currentTime = micros();
   if (currentState!=FlightState::landed && currentTime >= previousSampleTime + sampleLoopMicros) {
     previousSampleTime += sampleLoopMicros;
+
+    // Temporary test of simulated OR data
+    double simSample[2];
+    getSimulatedData(currentTime/(double)1000000, simSample);
+    Serial.print("Interp pos: ");
+    Serial.println(simSample[0]);
+    Serial.print("Interp acc: ");
+    Serial.println(simSample[1]);
     
     /**
      * TODO: 
