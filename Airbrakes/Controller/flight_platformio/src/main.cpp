@@ -23,7 +23,7 @@ const long computeLoopMicros = KALMAN_LOOP_FREQ_PER_SAMPLES * sampleLoopMicros;
 const long controlLoopMicros = ONE_SEC_MICROS/CONTROL_LOOP_FREQ;
 
 // Kalman filter variables
-const float kdt          = 1/KALMAN_LOOP_FREQ; //seconds
+const float kdt          = 1/((float)(SAMPLE_LOOP_FREQ/KALMAN_LOOP_FREQ_PER_SAMPLES)); //seconds
 const float processVar   = pow(0.5,2);
 const float altimeterVar = pow(.1,2);
 const float accelXVar    = pow(2,2);
