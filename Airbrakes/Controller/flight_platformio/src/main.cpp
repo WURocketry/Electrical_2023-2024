@@ -280,58 +280,6 @@ int counterSample=0;
 void loop() {
   currentTime = micros();
   
-  /* Switch statement for FSM of ACE system modes */
-  switch(currentState) {
-    case FlightState::detectLaunch:
-      //if one second has elapsed and not launched, reset kalman filter
-      if (currentTime >= previousFilterReset + ONE_SEC_MICROS){
-        //Reset kalman filter
-
-        //THIS IS VERY IMPORTANT  
-        //if this is not done velocity acts very badly
-        Pkalman = {10,0,0,0,0,0,0,0,0,
-                   0,10,0,0,0,0,0,0,0,
-                   0,0,10,0,0,0,0,0,0,
-                   0,0,0,10,0,0,0,0,0,
-                   0,0,0,0,10,0,0,0,0,
-                   0,0,0,0,0,10,0,0,0,
-                   0,0,0,0,0,0,10,0,0,
-                   0,0,0,0,0,0,0,10,0,
-                   0,0,0,0,0,0,0,0,10};
-        
-        stateVec = {0,0,0,0,0,0,0,0,0};
-
-        //Clear data logs
-        previousFilterReset = currentTime;
-      }
-      //if conditions met, transition to burn
-      currentState = detectLaunchTransition(currentState);
-      break;
-    case FlightState::burn:
-      //if rocket is decelerating, transition to control state
-      currentState = burnTransition(currentState);
-      break;
-    case FlightState::control:
-      //wait until apogee is reached, store airbrakes, transition to coast state
-      currentState = controlTransition(currentState);
-      break;
-    case FlightState::controlStandby:
-      //wait until rocket reverts to stable conditions, continue airbrake control
-      currentState = controlStandbyTransition(currentState);
-      break;
-    case FlightState::coast:
-      //if z velocity is very close to zero and altitude is low, then we are landed
-      //transition to landed
-      currentState = coastTransition(currentState);
-      break;
-    case FlightState::landed:
-      //if you have gotten here wait forever
-      break;
-    default:
-      // should not reach this state
-      break;
-  }
-  
   /* SAMPLE LOOP (400Hz) */
   currentTime = micros();
   if (currentState!=FlightState::landed && currentTime >= previousSampleTime + sampleLoopMicros) {
@@ -396,8 +344,59 @@ void loop() {
 
     }
     counter++;
-    
 
+    /* Switch statement for FSM of ACE system modes */
+    switch(currentState) {
+      case FlightState::detectLaunch:
+        //if one second has elapsed and not launched, reset kalman filter
+        if (currentTime >= previousFilterReset + ONE_SEC_MICROS){
+          //Reset kalman filter
+
+          //THIS IS VERY IMPORTANT  
+          //if this is not done velocity acts very badly
+          Pkalman = {10,0,0,0,0,0,0,0,0,
+                    0,10,0,0,0,0,0,0,0,
+                    0,0,10,0,0,0,0,0,0,
+                    0,0,0,10,0,0,0,0,0,
+                    0,0,0,0,10,0,0,0,0,
+                    0,0,0,0,0,10,0,0,0,
+                    0,0,0,0,0,0,10,0,0,
+                    0,0,0,0,0,0,0,10,0,
+                    0,0,0,0,0,0,0,0,10};
+          
+          stateVec = {0,0,0,0,0,0,0,0,0};
+
+          //Clear data logs
+          previousFilterReset = currentTime;
+        }
+        //if conditions met, transition to burn
+        currentState = detectLaunchTransition(currentState);
+        break;
+      case FlightState::burn:
+        //if rocket is decelerating, transition to control state
+        currentState = burnTransition(currentState);
+        break;
+      case FlightState::control:
+        //wait until apogee is reached, store airbrakes, transition to coast state
+        currentState = controlTransition(currentState);
+        break;
+      case FlightState::controlStandby:
+        //wait until rocket reverts to stable conditions, continue airbrake control
+        currentState = controlStandbyTransition(currentState);
+        break;
+      case FlightState::coast:
+        //if z velocity is very close to zero and altitude is low, then we are landed
+        //transition to landed
+        currentState = coastTransition(currentState);
+        break;
+      case FlightState::landed:
+        //if you have gotten here wait forever
+        break;
+      default:
+        // should not reach this state
+        break;
+    }
+  
   }
 
   /* CONTROL LOOP (xHz) */
