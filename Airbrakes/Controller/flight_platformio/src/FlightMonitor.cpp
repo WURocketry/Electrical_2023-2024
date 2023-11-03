@@ -28,7 +28,7 @@ bool FlightMonitor::detectedLaunch()
         launchCounts = 0;
     }
 
-    if(launchCounts>=10){
+    if(launchCounts>=LAUNCH_PERSISTENCE){
         return true;
     }else{
         return false;
@@ -45,7 +45,7 @@ bool FlightMonitor::detectedUnpoweredAscent()
         burnoutCounts = 0;
     }
 
-    if(burnoutCounts>=10){
+    if(burnoutCounts>=BURNOUT_PERSISTENCE){
         return true;
     }else{
         return false;
@@ -62,7 +62,7 @@ bool FlightMonitor::detectedApogee()
         apogeeCounts = 0;
     }
 
-    if(apogeeCounts>=10){
+    if(apogeeCounts>=APOGEE_PERSISTENCE){
         return true;
     }else{
         return false;
@@ -78,7 +78,7 @@ bool FlightMonitor::detectedLanding()
         landingCounts = 0;
     }
 
-    if(landingCounts>=10){
+    if(landingCounts>=LANDING_PERSISTENCE){
         return true;
     }else{
         return false;

@@ -12,6 +12,11 @@
 #define LANDING_ALTITUDE_THRESHOLD 10 //units: m
 #define LANDING_VELOCITY_THRESHOLD 0.5 //unit: m/s
 
+// number of required rsequential observations to transition
+#define LAUNCH_PERSISTENCE 10
+#define BURNOUT_PERSISTENCE 10
+#define APOGEE_PERSISTENCE 10
+#define LANDING_PERSISTENCE 1000
 
 extern BLA::Matrix<9> stateVec;
 
