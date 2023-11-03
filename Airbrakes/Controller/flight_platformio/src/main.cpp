@@ -30,10 +30,10 @@ const long controlLoopMicros = ONE_SEC_MICROS/CONTROL_LOOP_FREQ;
 // Kalman filter variables
 const float kdt          = 1/((float)(SAMPLE_LOOP_FREQ/KALMAN_LOOP_FREQ_PER_SAMPLES)); //seconds
 const float processVar   = pow(0.5,2);
-const float altimeterVar = pow(.1,2);
-const float accelXVar    = pow(2,2);
-const float accelYVar    = pow(2,2);
-const float accelZVar    = pow(2,2);
+const float altimeterVar = pow(.01,2);
+const float accelXVar    = pow(.1,2);
+const float accelYVar    = pow(.1,2);
+const float accelZVar    = pow(.1,2);
 
 BLA::Matrix<9> stateVec;
 
@@ -77,11 +77,13 @@ struct Measurement {
     xAccel(xAcc), yAccel(yAcc), zAccel(zAcc), altitude(alt) {}
 };
 
+double currentPosition = 0.0;
+double currentAcceleration = 0.0;
 
 struct Measurement makeMeasurement() {
   // TODO: placeholder measurement values
   struct Measurement collectedData(
-    .1, .1, 0, 10
+    0.0, 0.0, currentAcceleration, currentPosition
   );
 
   return collectedData;
@@ -119,6 +121,7 @@ FlightState detectLaunchTransition(FlightState currentState) {
   // remain prior to launch (await launch detection)
   // TODO: determine launchCondition (could be from Kalman)
   if (fm_ace.detectedLaunch()) {
+    Serial << "**** TRANSITION TO BURN ****\n";
     return FlightState::burn;
   }
   return currentState;
@@ -132,6 +135,7 @@ FlightState burnTransition(FlightState currentState) {
   // remain until burn acceleration ended
   // TODO: determine condition
   if (fm_ace.detectedUnpoweredAscent()) {
+    Serial << "**** TRANSITION TO CONTROL ****\n";
     return FlightState::control;
   }
   
@@ -147,6 +151,7 @@ FlightState controlTransition(FlightState currentState) {
   // remain until apogee
   // TODO: determine condition
   if (fm_ace.detectedApogee()) {
+    Serial << " **** APOGEE REACHED. TRANSITION TO COAST ****\n";
     return FlightState::coast;
   }
   if (fm_ace.detectedLean()) {
@@ -167,6 +172,7 @@ FlightState controlStandbyTransition(FlightState currentState) {
   //   return FlightState::control;
   // }
   if (fm_ace.detectedApogee()) {
+    Serial << " **** APOGEE REACHED. TRANSITION TO COAST ****\n";
     return FlightState::coast;
   }
   return currentState;
@@ -181,6 +187,7 @@ FlightState coastTransition(FlightState currentState) {
   // remain until landing
   // TOOD: determine condition
   if (fm_ace.detectedLanding()) {
+    Serial << "**** LANDING DETECTED ****\n";
     return FlightState::landed;
   }
   return currentState;
@@ -267,6 +274,9 @@ void setup() {
              0,0,0,0};
 }
 
+int counter = 0;
+int counterSample=0;
+
 void loop() {
   currentTime = micros();
   
@@ -276,6 +286,21 @@ void loop() {
       //if one second has elapsed and not launched, reset kalman filter
       if (currentTime >= previousFilterReset + ONE_SEC_MICROS){
         //Reset kalman filter
+
+        //THIS IS VERY IMPORTANT  
+        //if this is not done velocity acts very badly
+        Pkalman = {10,0,0,0,0,0,0,0,0,
+                   0,10,0,0,0,0,0,0,0,
+                   0,0,10,0,0,0,0,0,0,
+                   0,0,0,10,0,0,0,0,0,
+                   0,0,0,0,10,0,0,0,0,
+                   0,0,0,0,0,10,0,0,0,
+                   0,0,0,0,0,0,10,0,0,
+                   0,0,0,0,0,0,0,10,0,
+                   0,0,0,0,0,0,0,0,10};
+        
+        stateVec = {0,0,0,0,0,0,0,0,0};
+
         //Clear data logs
         previousFilterReset = currentTime;
       }
@@ -314,11 +339,18 @@ void loop() {
 
     // Temporary test of simulated OR data
     double simSample[2];
-    getSimulatedData(currentTime/(double)1000000, simSample);
-    Serial.print("Interp pos: ");
-    Serial.println(simSample[0]);
-    Serial.print("Interp acc: ");
-    Serial.println(simSample[1]);
+    getSimulatedData(currentTime/1000000.0+15.96, simSample);
+
+    if(counterSample%100==0){
+      Serial.print("Interp pos: ");
+      Serial.println(simSample[0]);
+      Serial.print("Interp acc: ");
+      Serial.println(simSample[1]);
+    }
+    counterSample++;
+
+    currentPosition = simSample[0];
+    currentAcceleration = simSample[1];
     
     /**
      * TODO: 
@@ -358,6 +390,13 @@ void loop() {
     Kkalman = Pkalman*(~Hkalman*innovationCov);
 
     stateVec = stateVec + Kkalman*innovation;
+
+    if(counter%25==0){
+      Serial << stateVec << "\n";
+
+    }
+    counter++;
+    
 
   }
 

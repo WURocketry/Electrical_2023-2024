@@ -1,27 +1,32 @@
 /* Include file for airbrakes flight monitor capability.*/
 #pragma once
 
+#include <BasicLinearAlgebra.h>
 #include "AdafruitBNO085.h" // TODO: replace all AdafruitBNO085 instances with generalized BaseIMUComponent later
 
 // Magic number definitions
 #define LAUNCH_VELOCITY_THRESHOLD 5.0 // unit: m/s
 #define LAUNCH_HEIGHT_THRESHOLD 2.0 // unit: m
-#define LANDING_POSITION_THRESHOLD 30.0 // unit: m
-#define LANDING_VELOCITY_THRESHOLD 0.1 // unit: m/s
+#define APOGEE_ALTITUDE_THRESHOLD 1200.0 //unit: m
+#define APOGEE_VELOCITY_THRESHOLD 10.0 //unit: m/s
+#define LANDING_ALTITUDE_THRESHOLD 10 //units: m
+#define LANDING_VELOCITY_THRESHOLD 0.5 //unit: m/s
+
+
+extern BLA::Matrix<9> stateVec;
 
 /* Flight Monitor class defines flight stages relevant to airbrakes*/
 class FlightMonitor {
 private:
     AdafruitBNO085 imu; 
-    float stateVecTable[100][9];
-    float orientationVec[100][3];
-    float avgStateVec[9];
-    float predictedApogee;
-    void calculateAvgStateVec();
+    int launchCounts; //holds number of sequential observations of met launch conditons
+    int burnoutCounts; //hold number of sequential observations of motor burn out
+    int apogeeCounts; //hold number of sequential observations of reaching apogee 
+    int landingCounts;
 public:
 // Constructors
     FlightMonitor(AdafruitBNO085 bno085);
-    FlightMonitor(float stateVecs[100][9], float predictedApogee);  // note: revisit this, do we need to pass stateVecs to construct FM?
+    FlightMonitor(); 
 // Methods
     bool detectedLaunch();
     bool detectedUnpoweredAscent();
