@@ -1,10 +1,11 @@
 /* Library includes */
+#include <Arduino.h>
 #include <BasicLinearAlgebra.h>
 
 /* Our includes */
-// include statement for Altimeter
-// #include <FlightMonitor.h>
-// #include <AdafruitBNO085.h>
+#include <FlightMonitor.h>
+#include <AdafruitBNO085.h>
+// include statement for Altimeter (which will tooootally happen, right? right..?)
 #include <simulation.h>
 
 // Loop rates (Hz)
