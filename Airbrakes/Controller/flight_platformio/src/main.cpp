@@ -1,7 +1,11 @@
+/* Library includes */
+#include <Arduino.h>
 #include <BasicLinearAlgebra.h>
-// #include <capabilities/FlightMonitor.h>
-// #include <AdafruitBNO085.h>
-// include statement for Altimeter
+
+/* Our includes */
+#include <FlightMonitor.h>
+#include <AdafruitBNO085.h>
+// include statement for Altimeter (which will tooootally happen, right? right..?)
 
 // Loop rates (Hz)
 #define ONE_SEC_MICROS 1000000
