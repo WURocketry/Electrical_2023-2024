@@ -382,6 +382,8 @@ void loop() {
           stateVec = {0,0,0,0,0,0,0,0,0};
 
           //Clear data logs
+          ringBufferIndex = 0;
+
           previousFilterReset = currentTime;
         }
         //if conditions met, transition to burn
