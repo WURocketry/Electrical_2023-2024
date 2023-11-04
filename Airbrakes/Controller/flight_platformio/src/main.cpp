@@ -193,6 +193,11 @@ FlightState coastTransition(FlightState currentState) {
   return currentState;
 }
 
+//Ring Buffer for Saving
+#define RING_BUFFER_LENGTH 4000
+float ringBuffer[RING_BUFFER_LENGTH][11]; //contrains time,stateVec, and control value
+int ringBufferIndex = 0;
+
 void setup() {
 
   Serial.begin(38400);
@@ -344,6 +349,16 @@ void loop() {
 
     }
     counter++;
+
+    //write new information to ringBuffer
+    ringBuffer[ringBufferIndex%RING_BUFFER_LENGTH][0] = micros()/1000000.0;
+    for(int iter = 1; iter<10;iter++){
+      ringBuffer[ringBufferIndex%RING_BUFFER_LENGTH][iter] = stateVec(iter-1);
+    }
+
+    //TODO add current value of control to eleventh element of the array
+
+    ringBufferIndex++;
 
     /* Switch statement for FSM of ACE system modes */
     switch(currentState) {
