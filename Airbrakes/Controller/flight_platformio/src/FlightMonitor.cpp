@@ -2,7 +2,6 @@
 
 // include class header
 #include "FlightMonitor.h"
-#include <BasicLinearAlgebra.h>
 
 extern BLA::Matrix<9> stateVec;
 
