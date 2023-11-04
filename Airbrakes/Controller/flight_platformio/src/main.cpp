@@ -203,6 +203,7 @@ void setup() {
   Serial.begin(38400);
   while (!Serial) {
     ;  // wait for serial port to connect. Needed for native USB port only
+    //TODO REMOVE FOR FLIGHT
   }
 
   // prints title with ending line break
