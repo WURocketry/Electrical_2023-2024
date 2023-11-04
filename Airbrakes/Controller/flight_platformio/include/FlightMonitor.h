@@ -10,7 +10,7 @@
 #define APOGEE_ALTITUDE_THRESHOLD 1200.0 //unit: m
 #define APOGEE_VELOCITY_THRESHOLD 10.0 //unit: m/s
 #define LANDING_ALTITUDE_THRESHOLD 10 //units: m
-#define LANDING_VELOCITY_THRESHOLD 0.5 //unit: m/s
+#define LANDING_VELOCITY_THRESHOLD -10 //unit: m/s (negative because rocket is falling down)
 
 // number of required rsequential observations to transition
 #define LAUNCH_PERSISTENCE 10

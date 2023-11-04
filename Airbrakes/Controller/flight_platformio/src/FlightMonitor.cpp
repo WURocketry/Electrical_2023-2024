@@ -72,7 +72,7 @@ bool FlightMonitor::detectedApogee()
 
 bool FlightMonitor::detectedLanding()
 {
-    if((stateVec(2)<LANDING_ALTITUDE_THRESHOLD)&&(stateVec(5)<LANDING_VELOCITY_THRESHOLD)){
+    if((stateVec(2)<LANDING_ALTITUDE_THRESHOLD)&&(stateVec(5)>LANDING_VELOCITY_THRESHOLD)){
         landingCounts++;
     }else{
         landingCounts = 0;
