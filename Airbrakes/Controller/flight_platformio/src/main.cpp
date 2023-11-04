@@ -194,9 +194,27 @@ FlightState coastTransition(FlightState currentState) {
 }
 
 //Ring Buffer for Saving
+
+#if $PIOENV==rp2040
+
 #define RING_BUFFER_LENGTH 4000
 float ringBuffer[RING_BUFFER_LENGTH][11]; //contrains time,stateVec, and control value
 int ringBufferIndex = 0;
+
+#else
+
+#include <SDRAM.h>
+#define RING_BUFFER_LENGTH 12000
+
+SDRAMClass ram;
+float (*ringBuffer)[11] = ram.malloc(sizeof(float[RING_BUFFER_LENGTH][11]));
+int ringBufferIndex = 0;
+#error "should only show on portenta"
+
+#endif
+
+
+
 
 void setup() {
 
