@@ -400,7 +400,7 @@ int SearchDataByTime(double target) {
 //return array will have the position in the zeroth location, acceleration in the second
 void getSimulatedData(double time, double *returnArray) {
     
-    if (time>130) {
+    if ((time>134.255)||(time<30)) {
         returnArray[0] = 0.0;
         returnArray[1] = 0.0;
     }

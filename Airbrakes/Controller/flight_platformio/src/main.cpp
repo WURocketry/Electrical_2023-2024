@@ -14,6 +14,23 @@
 #define KALMAN_LOOP_FREQ_PER_SAMPLES 4  // Compute per n=4 samples
 #define CONTROL_LOOP_FREQ 1
 
+// Configure ringBuffer for saving airbrakes sensor data
+#ifdef RP2040_PLATFORM
+  #warning "CONFIG: Configuring ringBuffer for RP2040 platform"
+  #define RING_BUFFER_LENGTH 4000
+  float ringBuffer[RING_BUFFER_LENGTH][11]; //contrains time,stateVec, and control value
+  int ringBufferIndex = 0;
+
+#elif PORTENTA_H7_M7_PLATFORM
+  #warning "CONFIG: Configuring ringBuffer for Portenta_H7 platform"
+  #include <SDRAM.h>
+  #define RING_BUFFER_LENGTH 12000
+
+  SDRAMClass ram;
+  float (*ringBuffer)[11] = (float (*)[11])ram.malloc(sizeof(float[RING_BUFFER_LENGTH][11]));
+  int ringBufferIndex = 0;
+#endif
+
 using namespace BLA;
 
 // Delta timing variables
@@ -31,9 +48,9 @@ const long controlLoopMicros = ONE_SEC_MICROS/CONTROL_LOOP_FREQ;
 const float kdt          = 1/((float)(SAMPLE_LOOP_FREQ/KALMAN_LOOP_FREQ_PER_SAMPLES)); //seconds
 const float processVar   = pow(0.5,2);
 const float altimeterVar = pow(.1,2);
-const float accelXVar    = pow(2,2);
-const float accelYVar    = pow(2,2);
-const float accelZVar    = pow(2,2);
+const float accelXVar    = pow(1,2);
+const float accelYVar    = pow(1,2);
+const float accelZVar    = pow(1,2);
 
 BLA::Matrix<9> stateVec;
 
@@ -77,11 +94,13 @@ struct Measurement {
     xAccel(xAcc), yAccel(yAcc), zAccel(zAcc), altitude(alt) {}
 };
 
+double currentPosition = 0.0;
+double currentAcceleration = 0.0;
 
 struct Measurement makeMeasurement() {
   // TODO: placeholder measurement values
   struct Measurement collectedData(
-    .1, .1, 0, 10
+    0.0, 0.0, currentAcceleration, currentPosition
   );
 
   return collectedData;
@@ -119,6 +138,7 @@ FlightState detectLaunchTransition(FlightState currentState) {
   // remain prior to launch (await launch detection)
   // TODO: determine launchCondition (could be from Kalman)
   if (fm_ace.detectedLaunch()) {
+    Serial << "**** TRANSITION TO BURN ****\n";
     return FlightState::burn;
   }
   return currentState;
@@ -132,6 +152,7 @@ FlightState burnTransition(FlightState currentState) {
   // remain until burn acceleration ended
   // TODO: determine condition
   if (fm_ace.detectedUnpoweredAscent()) {
+    Serial << "**** TRANSITION TO CONTROL ****\n";
     return FlightState::control;
   }
   
@@ -147,6 +168,7 @@ FlightState controlTransition(FlightState currentState) {
   // remain until apogee
   // TODO: determine condition
   if (fm_ace.detectedApogee()) {
+    Serial << " **** APOGEE REACHED. TRANSITION TO COAST ****\n";
     return FlightState::coast;
   }
   if (fm_ace.detectedLean()) {
@@ -167,6 +189,7 @@ FlightState controlStandbyTransition(FlightState currentState) {
   //   return FlightState::control;
   // }
   if (fm_ace.detectedApogee()) {
+    Serial << " **** APOGEE REACHED. TRANSITION TO COAST ****\n";
     return FlightState::coast;
   }
   return currentState;
@@ -181,16 +204,19 @@ FlightState coastTransition(FlightState currentState) {
   // remain until landing
   // TOOD: determine condition
   if (fm_ace.detectedLanding()) {
+    Serial << "**** LANDING DETECTED ****\n";
     return FlightState::landed;
   }
   return currentState;
 }
+
 
 void setup() {
 
   Serial.begin(38400);
   while (!Serial) {
     ;  // wait for serial port to connect. Needed for native USB port only
+    //TODO REMOVE FOR FLIGHT
   }
 
   // prints title with ending line break
@@ -267,45 +293,11 @@ void setup() {
              0,0,0,0};
 }
 
+int counter = 0;
+int counterSample=0;
+
 void loop() {
   currentTime = micros();
-  
-  /* Switch statement for FSM of ACE system modes */
-  switch(currentState) {
-    case FlightState::detectLaunch:
-      //if one second has elapsed and not launched, reset kalman filter
-      if (currentTime >= previousFilterReset + ONE_SEC_MICROS){
-        //Reset kalman filter
-        //Clear data logs
-        previousFilterReset = currentTime;
-      }
-      //if conditions met, transition to burn
-      currentState = detectLaunchTransition(currentState);
-      break;
-    case FlightState::burn:
-      //if rocket is decelerating, transition to control state
-      currentState = burnTransition(currentState);
-      break;
-    case FlightState::control:
-      //wait until apogee is reached, store airbrakes, transition to coast state
-      currentState = controlTransition(currentState);
-      break;
-    case FlightState::controlStandby:
-      //wait until rocket reverts to stable conditions, continue airbrake control
-      currentState = controlStandbyTransition(currentState);
-      break;
-    case FlightState::coast:
-      //if z velocity is very close to zero and altitude is low, then we are landed
-      //transition to landed
-      currentState = coastTransition(currentState);
-      break;
-    case FlightState::landed:
-      //if you have gotten here wait forever
-      break;
-    default:
-      // should not reach this state
-      break;
-  }
   
   /* SAMPLE LOOP (400Hz) */
   currentTime = micros();
@@ -314,11 +306,18 @@ void loop() {
 
     // Temporary test of simulated OR data
     double simSample[2];
-    getSimulatedData(currentTime/(double)1000000, simSample);
-    Serial.print("Interp pos: ");
-    Serial.println(simSample[0]);
-    Serial.print("Interp acc: ");
-    Serial.println(simSample[1]);
+    getSimulatedData(currentTime/1000000.0+15.96, simSample);
+
+    if(counterSample%100==0){
+      Serial.print("Interp pos: ");
+      Serial.println(simSample[0]);
+      Serial.print("Interp acc: ");
+      Serial.println(simSample[1]);
+    }
+    counterSample++;
+
+    currentPosition = simSample[0];
+    currentAcceleration = simSample[1];
     
     /**
      * TODO: 
@@ -359,6 +358,76 @@ void loop() {
 
     stateVec = stateVec + Kkalman*innovation;
 
+    if(counter%25==0){
+      Serial << stateVec << "\n";
+
+    }
+    counter++;
+
+    //write new information to ringBuffer
+    ringBuffer[ringBufferIndex%RING_BUFFER_LENGTH][0] = micros()/1000000.0;
+    for(int iter = 1; iter<10;iter++){
+      ringBuffer[ringBufferIndex%RING_BUFFER_LENGTH][iter] = stateVec(iter-1);
+    }
+
+    //TODO add current value of control to eleventh element of the array
+
+    ringBufferIndex++;
+
+    /* Switch statement for FSM of ACE system modes */
+    switch(currentState) {
+      case FlightState::detectLaunch:
+        //if one second has elapsed and not launched, reset kalman filter
+        if (currentTime >= previousFilterReset + ONE_SEC_MICROS){
+          //Reset kalman filter
+
+          //THIS IS VERY IMPORTANT  
+          //if this is not done velocity acts very badly
+          Pkalman = {10,0,0,0,0,0,0,0,0,
+                    0,10,0,0,0,0,0,0,0,
+                    0,0,10,0,0,0,0,0,0,
+                    0,0,0,10,0,0,0,0,0,
+                    0,0,0,0,10,0,0,0,0,
+                    0,0,0,0,0,10,0,0,0,
+                    0,0,0,0,0,0,10,0,0,
+                    0,0,0,0,0,0,0,10,0,
+                    0,0,0,0,0,0,0,0,10};
+          
+          stateVec = {0,0,0,0,0,0,0,0,0};
+
+          //Clear data logs
+          ringBufferIndex = 0;
+
+          previousFilterReset = currentTime;
+        }
+        //if conditions met, transition to burn
+        currentState = detectLaunchTransition(currentState);
+        break;
+      case FlightState::burn:
+        //if rocket is decelerating, transition to control state
+        currentState = burnTransition(currentState);
+        break;
+      case FlightState::control:
+        //wait until apogee is reached, store airbrakes, transition to coast state
+        currentState = controlTransition(currentState);
+        break;
+      case FlightState::controlStandby:
+        //wait until rocket reverts to stable conditions, continue airbrake control
+        currentState = controlStandbyTransition(currentState);
+        break;
+      case FlightState::coast:
+        //if z velocity is very close to zero and altitude is low, then we are landed
+        //transition to landed
+        currentState = coastTransition(currentState);
+        break;
+      case FlightState::landed:
+        //if you have gotten here wait forever
+        break;
+      default:
+        // should not reach this state
+        break;
+    }
+  
   }
 
   /* CONTROL LOOP (xHz) */
