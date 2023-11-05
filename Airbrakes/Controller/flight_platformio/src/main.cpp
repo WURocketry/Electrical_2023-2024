@@ -14,6 +14,23 @@
 #define KALMAN_LOOP_FREQ_PER_SAMPLES 4  // Compute per n=4 samples
 #define CONTROL_LOOP_FREQ 1
 
+// Configure ringBuffer for saving airbrakes sensor data
+#ifdef RP2040_PLATFORM
+  #warning "CONFIG: Configuring ringBuffer for RP2040 platform"
+  #define RING_BUFFER_LENGTH 4000
+  float ringBuffer[RING_BUFFER_LENGTH][11]; //contrains time,stateVec, and control value
+  int ringBufferIndex = 0;
+
+#elif PORTENTA_H7_M7_PLATFORM
+  #warning "CONFIG: Configuring ringBuffer for Portenta_H7 platform"
+  #include <SDRAM.h>
+  #define RING_BUFFER_LENGTH 12000
+
+  SDRAMClass ram;
+  float (*ringBuffer)[11] = (float (*)[11])ram.malloc(sizeof(float[RING_BUFFER_LENGTH][11]));
+  int ringBufferIndex = 0;
+#endif
+
 using namespace BLA;
 
 // Delta timing variables
@@ -192,28 +209,6 @@ FlightState coastTransition(FlightState currentState) {
   }
   return currentState;
 }
-
-//Ring Buffer for Saving
-
-#if $PIOENV==rp2040
-
-#define RING_BUFFER_LENGTH 4000
-float ringBuffer[RING_BUFFER_LENGTH][11]; //contrains time,stateVec, and control value
-int ringBufferIndex = 0;
-
-#else
-
-#include <SDRAM.h>
-#define RING_BUFFER_LENGTH 12000
-
-SDRAMClass ram;
-float (*ringBuffer)[11] = ram.malloc(sizeof(float[RING_BUFFER_LENGTH][11]));
-int ringBufferIndex = 0;
-#error "should only show on portenta"
-
-#endif
-
-
 
 
 void setup() {
