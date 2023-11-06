@@ -244,9 +244,6 @@ double linearInterpolation(double x, double x0, double x1, double y0, double y1)
 double getDesiredVelocity(double altitude) {
     
         int altIndex = int(altitude/2);
-        
-        if(altIndex % 2 != 0 ){ //ensure that the altitude index is even so we can index into VLT
-          altIndex -= 1; //round to next lowest even (current assumption is that rounding up/down doesn't really matter due to scale) 
     return linearInterpolation(altitude, velocityTable[altIndex][0], velocityTable[altIndex + 1][0], velocityTable[altIndex][1], velocityTable[altIndex + 1][1]);
         
     }
@@ -269,8 +266,7 @@ void control() {
     // Calculate the error
     double error = setpoint - input;
 
-    // Calculate the PID terms
-    integral += error;
+ 
     double derivative = error - prevInput;
     
     double errorDecay = errorDecayFunc(altitude, altitudeThresholds, decayRates);
@@ -278,7 +274,7 @@ void control() {
     double integral_error = (error - errorDecay) + (error - errorDecay) ;
 
     // Calculate the control signal
-    output = Kp * error + Ki * integral + Kd * derivative;
+    output = Kp * error + Ki * integral_error + Kd * derivative;
     
     
     airbrakeServo.write(output * 120);// curently I just write the output directly to the servo but is there a better way to do thus
