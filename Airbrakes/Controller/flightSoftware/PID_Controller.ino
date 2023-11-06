@@ -230,15 +230,28 @@ double getVelocity() {
     return 0.0;
 }
 
-// Function to get the desired velocity from the lookup table
-double getDesiredVelocity(double altitude) {
-  int altIndex = int(altitude/2);
-  if(altIndex % 2 != 0 ){ //ensure that the altitude index is even so we can index into VLT
-    altIndex -= 1; //round to next lowest even (current assumption is that rounding up/down doesn't really matter due to scale) 
-  }
+// Function to perform linear interpolation
+double linearInterpolation(double x, double x0, double x1, double y0, double y1) {
+    // Ensure x is within the range [x0, x1]
+    if (x < x0) return y0;
+    if (x > x1) return y1;
 
-  //return the desired velocity table at current altitude
-  return velocityTable[altIndex][1];
+    // Perform linear interpolation
+    return y0 + (y1 - y0) * (x - x0) / (x1 - x0);
+}
+
+// Function to get the desired velocity for a given altitude
+double getDesiredVelocity(double altitude) {
+    
+        int altIndex = int(altitude/2);
+        
+        if(altIndex % 2 != 0 ){ //ensure that the altitude index is even so we can index into VLT
+          altIndex -= 1; //round to next lowest even (current assumption is that rounding up/down doesn't really matter due to scale) 
+    return linearInterpolation(altitude, velocityTable[altIndex][0], velocityTable[altIndex + 1][0], velocityTable[altIndex][1], velocityTable[altIndex + 1][1]);
+        
+    }
+    // Handle the case where altitude is out of range
+    return 0.0; // You can choose an appropriate default value here.
 }
 
 // PID control function
@@ -280,7 +293,7 @@ float errorDecayFunc(int altitude, int thresholds[], float decayRates[]) {
   } else if (altitude >= thresholds[2]) {
     return decayRates[2];
   } else {
-    return 1.0;  // Full error impact below the lowest threshold.
+    return 0;  // Full error impact below the lowest threshold.
   }
 }
 
