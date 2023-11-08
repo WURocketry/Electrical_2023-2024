@@ -1,6 +1,5 @@
 #include <algorithm>
 #include <bitset>
-
 #include <Adafruit_Sensor.h>
 #include <Adafruit_BNO08x.h>
 #include "Adafruit_BME680.h"
@@ -136,6 +135,7 @@ unsigned long gpsTimer = 0;
 unsigned long batteryTimer = 0;
 unsigned long rfTimer = 0;
 
+
 void setup() {
 
   Serial.begin(115200);
@@ -148,15 +148,12 @@ void setup() {
   //LoRa Setup
   pinMode(RFM95_RST, OUTPUT);
   digitalWrite(RFM95_RST, HIGH);
-  Serial.begin(115200);
-  while (!Serial) delay(1);
-  delay(100);
-  Serial.println("Feather LoRa RX Test!");
-  // manual reset
+
   digitalWrite(RFM95_RST, LOW);
   delay(10);
   digitalWrite(RFM95_RST, HIGH);
   delay(10);
+  
   int state = radio.begin();
   if (state == RADIOLIB_ERR_NONE) {
     // no error
@@ -167,6 +164,7 @@ void setup() {
     Serial.println(state);
     while (true);
   }
+
 
   //init Neopixel
   pixels.begin();
@@ -476,6 +474,7 @@ void transmitCurrentComponentReadings() {
 
 
 
+
 void radioCommunicate() {
   unsigned long currentMillis = millis();
   if (currentMillis >= rfTime + rfTimer) {
@@ -510,3 +509,4 @@ void loop() {
   delay(2000);
         
 }
+
