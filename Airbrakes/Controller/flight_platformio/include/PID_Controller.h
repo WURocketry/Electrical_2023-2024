@@ -16,21 +16,27 @@ class PID_Controller{
         float velocityTable[VLT_LENGTH][2];
         Servo airbrakeServo;
         // PID Control variables
-        int altitudeThresholds[3]; // Initialize in constructor
-        float decayRates[3]; // Initialize in constructor
         double setpoint;
         double input;
         double output;
-        double integral;
+        double integral_error;
         double prevInput;
+        // Configurable constants
+        double Ki = 0.1;
+        double Kp = 0.01;
+        double Kd = 0.001;
+        int altitudeThresholds[3]={1,2,3};
+        float decayRates[3]={1,2,3};
         // Internal methods
         double getDesiredVelocity();
+        double linearInterpolation();
         float errorDecayFunc(int altitude);
 
     public:
     // Constructor
     PID_Controller(); // Initializes velocity table, decay rates and thresholds
     // Methods
-    void control(double velocity, double altitude);
+    double control(double velocity, double altitude);
+    void pid_config(double ki, double kp, double kd, int thresholds[3], float rates[3]);
 
 }
