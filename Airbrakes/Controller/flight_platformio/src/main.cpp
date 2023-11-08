@@ -1,7 +1,7 @@
 #include <BasicLinearAlgebra.h>
 // #include <capabilities/FlightMonitor.h>
 // #include <AdafruitBNO085.h>
-// include statement for Altimeter
+// include statement for Altimeterh
 
 // Loop rates (Hz)
 #define ONE_SEC_MICROS 1000000
