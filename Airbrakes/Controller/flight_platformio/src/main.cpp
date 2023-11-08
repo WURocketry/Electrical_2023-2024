@@ -1,10 +1,9 @@
 /* Library includes */
-#include <Arduino.h>
 #include <BasicLinearAlgebra.h>
 #include "SparkFun_Qwiic_OpenLog_Arduino_Library.h"
 #include <Wire.h>
+#include <Arduino.h>
 #include <algorithm>
-#include <stdexcept>
 
 /* Our includes */
 #include <FlightMonitor.h>
@@ -84,9 +83,9 @@ FlightMonitor fm_ace(adafruit_bno085);
 
 // OpenLog objects/variables
 OpenLog logger;
-unsinged int cols    = sizeof(ringBuffer[0]) / sizeof(float);           //nos of columns in ringBuffer matrix
+unsigned int cols    = sizeof(ringBuffer[0]) / sizeof(float);           //nos of columns in ringBuffer matrix
 unsigned int rows    = sizeof(ringBuffer)    / sizeof(ringBuffer[0]);   //nos of rows in ringBuffer
-unsigned int fullidx[cols];
+unsigned int fullidx[RING_BUFFER_LENGTH];
 String logfile;
 bool writedata = true;
 
@@ -223,14 +222,15 @@ FlightState coastTransition(FlightState currentState) {
 }
 
 //writeto functions
-void writeToFile(float** flightdata, unsigned int* idx, String writeto) {
-    unsinged int cols = sizeof(idx) / sizeof(idx[0]);               //nos of cols to write (length of idx)
+void writeToFile(float flightdata[RING_BUFFER_LENGTH][11], unsigned int* idx, String writeto) {
+    unsigned int cols = sizeof(idx) / sizeof(idx[0]);               //nos of cols to write (length of idx)
     unsigned int rows = sizeof(flightdata) / sizeof(flightdata[0]); //nos of rows in flightdata
 
-    auto idx = std::max_element(idx, idx + cols);   //find largest specified index in idx
+    auto maxidx = std::max_element(idx, idx + cols);   //find largest specified index in idx
 
     if (*maxidx > (sizeof(flightdata[0]) / sizeof(float))) {
-        throw std::out_of_range("Array index too big!");
+        Serial.println("Array index too big!");
+        return;
     }
 
     logger.append(writeto); //open the file in openlog
@@ -250,7 +250,7 @@ void writeToFile(float** flightdata, unsigned int* idx, String writeto) {
 }
 
 int getNumberOfPrevFlights() {
-    String filename = "fileNumAB.txt"
+    String filename = "fileNumAB.txt";
     int fileCount = 0;
 
     // Check if the file exists
@@ -374,7 +374,7 @@ void setup() {
   logger.begin();
   
   int fileCount = getNumberOfPrevFlights();
-  logfile = "flight_" + String(filecount) + "_AB.csv";
+  logfile = "flight_" + String(fileCount) + "_AB.csv";
   Serial.println("Writing airbrake data to: " + logfile);
 
 }
@@ -535,12 +535,7 @@ void loop() {
 
   }
 
-  if (currentState = landed && writedata) {
-      try {
-          writeToFile(ringBuffer, fullidx, logfile);
-      }
-      catch (std::out_of_range& e){
-          Serial.println(e.what()); //catch idx out of bounds error
-      }
+  if ((currentState == FlightState::landed) && writedata) {
+    writeToFile(ringBuffer, fullidx, logfile);
   }
 }
