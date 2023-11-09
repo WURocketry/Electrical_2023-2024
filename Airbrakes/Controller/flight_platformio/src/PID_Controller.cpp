@@ -213,10 +213,11 @@ double PID_Controller::control(double velocity, double altitude){
     setpoint = getDesiredVelocity(altitude);
 
     // Calculate the error
-    double error = setpoint - input;
+    double prevError = error
 
-
-    double derivative = error - prevInput;
+    double error = input - setpoint;
+ 
+    double derivative = error - prevError;
 
     double errorDecay = errorDecayFunc(altitude);
 
