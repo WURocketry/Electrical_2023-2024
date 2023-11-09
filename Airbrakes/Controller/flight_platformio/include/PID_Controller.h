@@ -28,8 +28,8 @@ class PID_Controller{
         int altitudeThresholds[3]={1,2,3};
         float decayRates[3]={1,2,3};
         // Internal methods
-        double getDesiredVelocity();
-        double linearInterpolation();
+        double getDesiredVelocity(double altitude);
+        double linearInterpolation(double x, double x0, double x1, double y0, double y1);
         float errorDecayFunc(int altitude);
 
     public:
