@@ -15,21 +15,21 @@
 #define CONTROL_LOOP_FREQ 1
 
 // Configure ringBuffer for saving airbrakes sensor data
+#define RING_BUFFER_COLS 11
 #ifdef RP2040_PLATFORM
   #warning "CONFIG: Configuring ringBuffer for RP2040 platform"
   #define RING_BUFFER_LENGTH 4000
-  float ringBuffer[RING_BUFFER_LENGTH][11]; //contrains time,stateVec, and control value
-  int ringBufferIndex = 0;
 
+  float ringBuffer[RING_BUFFER_LENGTH][RING_BUFFER_COLS]; //contrains time,stateVec, and control value
 #elif PORTENTA_H7_M7_PLATFORM
   #warning "CONFIG: Configuring ringBuffer for Portenta_H7 platform"
   #include <SDRAM.h>
   #define RING_BUFFER_LENGTH 12000
 
   SDRAMClass ram;
-  float (*ringBuffer)[11] = (float (*)[11])ram.malloc(sizeof(float[RING_BUFFER_LENGTH][11]));
-  int ringBufferIndex = 0;
+  float (*ringBuffer)[RING_BUFFER_LENGTH];
 #endif
+int ringBufferIndex = 0;
 
 using namespace BLA;
 
@@ -218,12 +218,16 @@ void setup() {
     ;  // wait for serial port to connect. Needed for native USB port only
     //TODO REMOVE FOR FLIGHT
   }
+  Serial.println("Initialized Serial comms!");
 
-  // prints title with ending line break
-  Serial.println(F("Starting program"));
-  Serial.println(kdt);
+  // Initialize SDRAM
+  Serial.print("Init SDRAM...");
+  ram.begin();
+  ringBuffer = (float(*)[RING_BUFFER_LENGTH])ram.malloc(sizeof(float[RING_BUFFER_LENGTH][RING_BUFFER_COLS]));
+  Serial.println("OK!");
 
   // Initialize FSM state
+  Serial.print("Init program state...");
   currentState = FlightState::detectLaunch;
 
   // Initialize delta timing variables
@@ -231,8 +235,10 @@ void setup() {
   previousSampleTime = 0;
   previousComputeTime = 0;
   previousControlTime = 0;
+  Serial.println("OK!");
 
   // Initialize vectors/matrices
+  Serial.print("Init Kalman state...");
   stateVec = {0,0,0,0,0,0,0,0,0};
 
   Fkalman = {1,0,0,kdt,0,0,1/2*kdt*kdt,0,0,
@@ -291,6 +297,9 @@ void setup() {
              0,0,0,0,
              0,0,0,0,
              0,0,0,0};
+  Serial.println("OK!");
+
+  Serial.println("Init ACE OK! Starting program...");
 }
 
 int counter = 0;
@@ -325,7 +334,8 @@ void loop() {
      *  2. Update sample buffers
      *  3. Pack into static Measurement struct
      **/
-    
+
+    Serial.println("Performed sample loop!");
   }
 
   /* COMPUTE LOOP (per 4 SAMPLEs) */
@@ -363,16 +373,19 @@ void loop() {
 
     }
     counter++;
+    Serial.println("Performed Kalman update!");
 
     //write new information to ringBuffer
-    ringBuffer[ringBufferIndex%RING_BUFFER_LENGTH][0] = micros()/1000000.0;
-    for(int iter = 1; iter<10;iter++){
-      ringBuffer[ringBufferIndex%RING_BUFFER_LENGTH][iter] = stateVec(iter-1);
-    }
-
     //TODO add current value of control to eleventh element of the array
-
+    // ringBuffer[0][0] = 0;
+    // ringBuffer[ringBufferIndex%RING_BUFFER_LENGTH][0] = micros()/1000000.0;
+    // for(int iter = 1; iter<10;iter++){
+    //   ringBuffer[ringBufferIndex%RING_BUFFER_LENGTH][iter] = stateVec(iter-1);
+    // }
     ringBufferIndex++;
+    ringBuffer[0][0] = ringBufferIndex;
+    Serial.println(**ringBuffer);
+    Serial.println("Performed Ring Buffer store!");
 
     /* Switch statement for FSM of ACE system modes */
     switch(currentState) {
@@ -428,6 +441,7 @@ void loop() {
         break;
     }
   
+    Serial.println("Performed compute loop!");
   }
 
   /* CONTROL LOOP (xHz) */
@@ -446,6 +460,6 @@ void loop() {
      *     a. NOTE: PWM should be capable of set-and-forget, this loop should
      *        not be blocking
      */
-
+    Serial.println("Performed control loop!");
   }
 }
