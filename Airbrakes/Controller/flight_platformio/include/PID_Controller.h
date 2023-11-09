@@ -6,14 +6,8 @@
 #define VLT_LENGTH 793
 #define servoPin 8
 
-// PID constants
-#define Ki 0.1
-#define Kp 0.01
-#define Kd 0.001
-
 class PID_Controller{
     private:
-        float velocityTable[VLT_LENGTH][2];
         Servo airbrakeServo;
         // PID Control variables
         double setpoint;
@@ -39,4 +33,4 @@ class PID_Controller{
     double control(double velocity, double altitude);
     void pid_config(double ki, double kp, double kd, int thresholds[3], float rates[3]);
 
-}
+};
