@@ -8,6 +8,8 @@
 #include <AdafruitBNO085.h>
 #include <PID_Controller.h>
 // include statement for Altimeter (which will tooootally happen, right? right..?)
+#include <AdafruitBNO085.h>
+
 #include <simulation.h>
 
 // Loop rates (Hz)
@@ -83,8 +85,9 @@ BLA::Matrix<4,4> innovationCov;
 BLA::Matrix<9,4> Kkalman;
 
 // Flight monitor and sensor objects
-AdafruitBNO085 adafruit_bno085;
-FlightMonitor fm_ace(adafruit_bno085);
+// AdafruitBMP388 alt;
+AdafruitBNO085 imu;
+FlightMonitor fm_ace(imu);
 
 // Servo object
 Servo srv;
@@ -248,6 +251,10 @@ void setup() {
   currentState = FlightState::detectLaunch;
   Serial.println("OK!");
 
+  // Initializer sensor hardware
+  imu.init();
+  // imu.getInfo();
+
   // Attach servo pin to PWM7 (D0 --> PWM len min: 900 us, max: 2050us)
   Serial.print("| Init servo PWM...");
   srv.attach(0, SRV_MIN_PWM_LEN_MICROS, SRV_MAX_PWM_LEN_MICROS);
@@ -329,6 +336,11 @@ int stateVecPrintCounter = 0;
 // int counterSample=0;
 
 void loop() {
+
+  while (true) {
+    imu.readAcceleration();
+    delay(1000);
+  }
   
   /* SAMPLE LOOP (400Hz) */
   currentTime = micros();
