@@ -47,7 +47,7 @@ using namespace BLA;
 unsigned long currentTime;
 unsigned long previousFilterReset;
 unsigned long previousSampleTime;
-unsigned long previousComputeTime;
+unsigned int  previousComputeWaits; // counter for when compute should occur after n=4 samples
 unsigned long previousControlTime;
 
 const long sampleLoopMicros  = ONE_SEC_MICROS/SAMPLE_LOOP_FREQ;
@@ -233,30 +233,28 @@ void setup() {
     ;  // wait for serial port to connect. Needed for native USB port only
     //TODO REMOVE FOR FLIGHT
   }
-  Serial.println("Initialized Serial comms!");
+  delay(1000);
+  Serial.println("> Initialized Serial comms!");
 
   // Initialize SDRAM
-  Serial.print("Init SDRAM...");
+  Serial.print("| Init SDRAM...");
   ram.begin();
+  delay(100);
   ringBuffer = (float(*)[RING_BUFFER_LENGTH])ram.malloc(sizeof(float[RING_BUFFER_LENGTH][RING_BUFFER_COLS]));
   Serial.println("OK!");
 
   // Initialize FSM state
-  Serial.print("Init program state...");
+  Serial.print("| Init program state...");
   currentState = FlightState::detectLaunch;
-
-  // Initialize delta timing variables
-  previousFilterReset = 0;
-  previousSampleTime = 0;
-  previousComputeTime = 0;
-  previousControlTime = 0;
   Serial.println("OK!");
 
   // Attach servo pin to PWM7 (D0 --> PWM len min: 900 us, max: 2050us)
+  Serial.print("| Init servo PWM...");
   srv.attach(0, SRV_MIN_PWM_LEN_MICROS, SRV_MAX_PWM_LEN_MICROS);
+  Serial.println("OK!");
 
   // Initialize vectors/matrices
-  Serial.print("Init Kalman state...");
+  Serial.print("| Init Kalman state...");
   stateVec = {0,0,0,0,0,0,0,0,0};
 
   Fkalman = {1,0,0,kdt,0,0,1/2*kdt*kdt,0,0,
@@ -317,34 +315,41 @@ void setup() {
              0,0,0,0};
   Serial.println("OK!");
 
-  Serial.println("Init ACE OK! Starting program...");
+  Serial.println("> Init ACE OK! Starting program...");
+  delay(1000);
+
+  // Update all delta timing timer variables with offset
+  previousFilterReset = micros();
+  previousSampleTime = micros();
+  previousComputeWaits = 0;
+  previousControlTime = micros();
 }
 
-int counter = 0;
-int counterSample=0;
+int stateVecPrintCounter = 0;
+// int counterSample=0;
 
 void loop() {
-  currentTime = micros();
   
   /* SAMPLE LOOP (400Hz) */
   currentTime = micros();
   if (currentState!=FlightState::landed && currentTime >= previousSampleTime + sampleLoopMicros) {
     previousSampleTime += sampleLoopMicros;
+    ++previousComputeWaits;
 
-    // Temporary test of simulated OR data
-    double simSample[2];
-    getSimulatedData(currentTime/1000000.0+15.96, simSample);
+    // // Temporary test of simulated OR data
+    // double simSample[2];
+    // getSimulatedData(currentTime/1000000.0+15.96, simSample);
 
-    if(counterSample%100==0){
-      Serial.print("Interp pos: ");
-      Serial.println(simSample[0]);
-      Serial.print("Interp acc: ");
-      Serial.println(simSample[1]);
-    }
-    counterSample++;
+    // if(counterSample%100==0){
+    //   Serial.print("Interp pos: ");
+    //   Serial.println(simSample[0]);
+    //   Serial.print("Interp acc: ");
+    //   Serial.println(simSample[1]);
+    // }
+    // counterSample++;
 
-    currentPosition = simSample[0];
-    currentAcceleration = simSample[1];
+    // currentPosition = simSample[0];
+    // currentAcceleration = simSample[1];
     
     /**
      * TODO: 
@@ -353,15 +358,15 @@ void loop() {
      *  3. Pack into static Measurement struct
      **/
 
-    Serial.println("Performed sample loop!");
+    Serial.print("Performed sample loop at ");
+    Serial.println(currentTime);
   }
 
   /* COMPUTE LOOP (per 4 SAMPLEs : 100Hz) */
   currentTime = micros();
   // If num samples is multiple of 4, i.e. previousSampleTime/sampleLoopMicros % KALMAN_LOOP_FREQ_PER_SAMPLES
-  if (currentState!=FlightState::landed && previousSampleTime % computeLoopMicros == 0) {
-
-    previousComputeTime += computeLoopMicros;
+  if (currentState!=FlightState::landed && previousComputeWaits >= KALMAN_LOOP_FREQ_PER_SAMPLES) {
+    previousComputeWaits = 0; // Reset compute counter
 
     currentMeasurement = makeMeasurement();
 
@@ -386,29 +391,28 @@ void loop() {
 
     stateVec = stateVec + Kkalman*innovation;
 
-    if(counter%25==0){
+    if(stateVecPrintCounter%25==0){
       Serial << stateVec << "\n";
 
     }
-    counter++;
-    Serial.println("Performed Kalman update!");
+    stateVecPrintCounter++;
 
-    //write new information to ringBuffer
-    //TODO add current value of control to eleventh element of the array
-    // ringBuffer[0][0] = 0;
-    // ringBuffer[ringBufferIndex%RING_BUFFER_LENGTH][0] = micros()/1000000.0;
-    // for(int iter = 1; iter<10;iter++){
-    //   ringBuffer[ringBufferIndex%RING_BUFFER_LENGTH][iter] = stateVec(iter-1);
-    // }
+    // Write stateVec data to SDRAM
+    // TODO add current value of control to eleventh element of the array
+    ringBuffer[ringBufferIndex%RING_BUFFER_LENGTH][0] = micros()/1000000.0;
+    for(int i = 1; i<RING_BUFFER_COLS-1; i++){
+      ringBuffer[ringBufferIndex%RING_BUFFER_LENGTH][i] = stateVec(i-1);
+    }
+    Serial.print("Wrote to ringBuffer at idx ");
+    Serial.println(ringBufferIndex);
     ringBufferIndex++;
-    ringBuffer[0][0] = ringBufferIndex;
-    Serial.println(**ringBuffer);
-    Serial.println("Performed Ring Buffer store!");
+    
 
     /* Switch statement for FSM of ACE system modes */
     switch(currentState) {
       case FlightState::detectLaunch:
         //if one second has elapsed and not launched, reset kalman filter
+        currentTime = micros();
         if (currentTime >= previousFilterReset + ONE_SEC_MICROS){
           //Reset kalman filter
 
@@ -459,10 +463,11 @@ void loop() {
         break;
     }
   
-    Serial.println("Performed compute loop!");
+    Serial.print("Performed compute loop at ");
+    Serial.println(currentTime);
   }
 
-  /* CONTROL LOOP (xHz) */
+  /* CONTROL LOOP (1Hz) */
   currentTime = micros();
   if (currentTime >= previousControlTime + controlLoopMicros) {
     previousControlTime += controlLoopMicros;
@@ -480,6 +485,7 @@ void loop() {
       srv.write(0);
     }
     
-    Serial.println("Performed control loop!");
+    Serial.print("Performed control loop at ");
+    Serial.println(currentTime);
   }
 }
