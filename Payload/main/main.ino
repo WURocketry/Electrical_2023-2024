@@ -449,32 +449,43 @@ void initBatteryMonitor(){
 
 void transmitCurrentComponentReadings() {
 
-    // Prepare a buffer to hold the transmitted message
-    char radiopacket[256] = {0};  
+  // Prepare a buffer to hold the transmitted message
+  char radiopacket[256] = {0};  
     
-    // Iterate through the DATA_COMPONENT_READINGS array and build the message
-    for (int i = 0; i < ENUM_SIZE; i++) {
-        char buffer[32];  // Temporary buffer to hold each value
-        dtostrf(DATA_COMPONENT_READINGS[i], 6, 2, buffer);  // Convert double to string, adjust field width and decimal places as necessary
+  // Iterate through the DATA_COMPONENT_READINGS array and build the message
+  for (int i = 0; i < ENUM_SIZE; i++) {
+    char buffer[32];  // Temporary buffer to hold each value
+    dtostrf(DATA_COMPONENT_READINGS[i], 6, 2, buffer);  // Convert double to string, adjust field width and decimal places as necessary
 
-        // Append the value to radiopacket
-        strcat(radiopacket, buffer);
+    // Append the value to radiopacket
+    strcat(radiopacket, buffer);
 
-        // If not the last element, append a comma
-        if (i < ENUM_SIZE - 1) {
-            strcat(radiopacket, ",");
-        }
+    // If not the last element, append a comma
+    if (i < ENUM_SIZE - 1) {
+      strcat(radiopacket, ",");
+      }
     }
 
+    unsigned long currentMillis = millis();
+    if (currentMillis >= rfTime + rfTimer) {
+      rfTimer += rfTime;
+      Serial.println("Sending message...");
     // Send the message via RF95
-    radio.transmit((uint8_t *)radiopacket, strlen(radiopacket) + 1);  // +1 to include the null terminator
+      int state = radio.transmit((uint8_t *)radiopacket, strlen(radiopacket) + 1);  // +1 to include the null terminator
 
+      if (state == RADIOLIB_ERR_NONE) {
+        Serial.println("success!");
+      } else {
+        Serial.print("failed, error code: ");
+        Serial.println(state);
+      }
+    }
  //   radio.waitPacketSent();  // Wait for transmission to complete
 }
 
 
 
-
+/*
 void radioCommunicate() {
   unsigned long currentMillis = millis();
   if (currentMillis >= rfTime + rfTimer) {
@@ -493,7 +504,7 @@ void radioCommunicate() {
   // Wait for a bit before sending the next message.
  // delay(1000);
 }
-
+*/
 void loop() {
 
          
@@ -505,7 +516,7 @@ void loop() {
   writeToFile(DATA_COMPONENT_READINGS, smallidx, smallFileName);
   printAllData();
   transmitCurrentComponentReadings();
-  radioCommunicate();
+  //radioCommunicate();
   delay(2000);
         
 }
