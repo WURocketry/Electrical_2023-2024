@@ -1,8 +1,4 @@
-# pragma once
-
-#include <vlt.h>
-
-#include <Servo.h>
+#pragma once
 
 // Magic number definitions
 #define VLT_LENGTH 793
@@ -42,7 +38,7 @@ class PID_Controller{
     {};
 
     // Methods
-    double control(double velocity, double altitude);
+    double control(double currAltitude, double currVelocity);
     void pid_config(double ki, double kp, double kd, int thresholds[3], float rates[3]);
 
 };

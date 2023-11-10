@@ -2,21 +2,24 @@
 
 // include class header
 #include <PID_Controller.h>
+#include <vlt.h>
 
 #define I_ERROR_RESET_THRESHOLD 0.1
 
-double PID_Controller::control(double velocity, double altitude){
+// @brief: Main PID control computation that takes current
+//         z-axis velocity and altitude
+double PID_Controller::control(double currAltitude, double currVelocity){
     // Calculate the current velocity (you may need to calibrate this)
-    input = velocity;
+    input = currVelocity;
 
     // Calculate the desired velocity from the lookup table
-    setpoint = getDesiredVelocity(altitude);
+    setpoint = getDesiredVelocity(currAltitude);
 
     // Calculate proportional error
     double currError = input - setpoint;
 
     // Calculate integral error
-    integral_error += getErrorDecay(altitude, currError);
+    integral_error += getErrorDecay(currAltitude, currError);
     if (currError < I_ERROR_RESET_THRESHOLD) {
       // If current error is now close, reset integral error history
       integral_error = 0;
