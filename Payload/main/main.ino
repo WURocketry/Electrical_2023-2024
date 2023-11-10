@@ -141,9 +141,8 @@ void setup() {
   Serial.begin(115200);
   pinMode(LED_BUILTIN, OUTPUT);
 
-  delay(10000);
-
-  Serial.println("init radio");
+  float transmitPower = 20;
+  float currentFrequency = 916.23;
 
   //LoRa Setup
   pinMode(RFM95_RST, OUTPUT);
@@ -159,11 +158,31 @@ void setup() {
     // no error
     Serial.println(F("Initialization successful!"));
   } else {
-    // some error occurred
-    Serial.print(F("Initialization failed, code "));
-    Serial.println(state);
-    while (true);
+    ErrorLEDLoop("Failed to Init LoRa - Halting");
   }
+
+  // set transmit power
+  state = radio.setOutputPower(transmitPower, false);
+  if(state == RADIOLIB_ERR_NONE) {
+    Serial.print(F("Transmit Power set to: "));
+    Serial.print(transmitPower);
+    Serial.println(F(" dBm"));
+  } else {
+    Serial.print(F("Setting Output Power Failed:, code "));
+    Serial.println(state);
+  }
+
+  state = radio.setFrequency(currentFrequency);
+  
+  if(state == RADIOLIB_ERR_NONE) {
+    Serial.print(F("Frequency set to: "));
+    Serial.print(currentFrequency);
+    Serial.println(F(" MHz"));
+  } else {
+    Serial.print(F("Setting frequency failed, code "));
+    Serial.println(state);
+  }
+
 
 
   //init Neopixel
@@ -212,13 +231,22 @@ void setup() {
   writeColumnHeaders(ENUM_NAMES, fullidx, filename);
   writeColumnHeaders(ENUM_NAMES, smallidx, smallFileName);
 
-
+  //initBatteryMonitor();
 
 }
 
+
+
+
+
+
+
+
+
+
 void ErrorLEDLoop(const char* error_msg){
   while(true){
-    //Serial.println(error_msg);
+    Serial.println(error_msg);
     pixels.setPixelColor(0, pixels.Color(255, 0, 0));
     pixels.show();
     delay(1000);                      
@@ -269,12 +297,6 @@ void collectDataFromBNO() {
       DATA_COMPONENT_READINGS[BNO_XACCEL] = sensorValue.un.accelerometer.x;
       DATA_COMPONENT_READINGS[BNO_YACCEL] = sensorValue.un.accelerometer.y;
       DATA_COMPONENT_READINGS[BNO_ZACCEL] = sensorValue.un.accelerometer.z;
-
-      // syntax for linear acceleration
-      // DATA_COMPONENT_READINGS[BNO_ZACCEL] = sensorValue.un.linearAcceleration.z;
-
-      // syntax for raw accelerometer
-      // DATA_COMPONENT_READINGS[BNO_ZACCEL] = sensorValue.un.rawAccelerometer.z;
       }
     } 
   }
@@ -480,31 +502,8 @@ void transmitCurrentComponentReadings() {
         Serial.println(state);
       }
     }
- //   radio.waitPacketSent();  // Wait for transmission to complete
 }
 
-
-
-/*
-void radioCommunicate() {
-  unsigned long currentMillis = millis();
-  if (currentMillis >= rfTime + rfTimer) {
-    rfTimer += rfTime;
-
-    Serial.print("Sending message...");
-    // Send a string "Hello, World!".
-    int state = radio.transmit("Hello, World!");
-    if (state == RADIOLIB_ERR_NONE) {
-      Serial.println("success!");
-    } else {
-      Serial.print("failed, error code: ");
-      Serial.println(state);
-    }
-  }
-  // Wait for a bit before sending the next message.
- // delay(1000);
-}
-*/
 void loop() {
 
          
@@ -514,10 +513,7 @@ void loop() {
   collectDataFromBatteryMonitor();
   writeToFile(DATA_COMPONENT_READINGS, fullidx, filename);
   writeToFile(DATA_COMPONENT_READINGS, smallidx, smallFileName);
-  printAllData();
   transmitCurrentComponentReadings();
-  //radioCommunicate();
-  delay(2000);
         
 }
 
