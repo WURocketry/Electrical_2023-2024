@@ -1,10 +1,12 @@
 /* Library includes */
 #include <Arduino.h>
+#include <Servo.h>
 #include <BasicLinearAlgebra.h>
 
 /* Our includes */
 #include <FlightMonitor.h>
 #include <AdafruitBNO085.h>
+#include <PID_Controller.h>
 // include statement for Altimeter (which will tooootally happen, right? right..?)
 #include <simulation.h>
 
@@ -30,6 +32,14 @@
   float (*ringBuffer)[RING_BUFFER_LENGTH];
 #endif
 int ringBufferIndex = 0;
+
+// Servo defines
+#define SRV_MIN_PWM_LEN_MICROS  900
+#define SRV_MAX_PWM_LEN_MICROS  2050
+#define SRV_MAX_EXTENSION_ANGLE 120
+
+// Target apogee
+#define ACE_TARGET_APOGEE 5120
 
 using namespace BLA;
 
@@ -72,12 +82,17 @@ BLA::Matrix<4,4> innovationCov;
 
 BLA::Matrix<9,4> Kkalman;
 
-// Flight monitor and sensor variables
+// Flight monitor and sensor objects
 AdafruitBNO085 adafruit_bno085;
 FlightMonitor fm_ace(adafruit_bno085);
 
-// Peripheral helper functions/structs
+// Servo object
+Servo srv;
 
+// PID controller object
+PID_Controller pid(ACE_TARGET_APOGEE);
+
+// Peripheral helper functions/structs
 struct Measurement {
   /** 
    * UFS NOTE: This struct defines format for data used by
@@ -237,6 +252,9 @@ void setup() {
   previousControlTime = 0;
   Serial.println("OK!");
 
+  // Attach servo pin to PWM7 (D0 --> PWM len min: 900 us, max: 2050us)
+  srv.attach(0, SRV_MIN_PWM_LEN_MICROS, SRV_MAX_PWM_LEN_MICROS);
+
   // Initialize vectors/matrices
   Serial.print("Init Kalman state...");
   stateVec = {0,0,0,0,0,0,0,0,0};
@@ -338,9 +356,9 @@ void loop() {
     Serial.println("Performed sample loop!");
   }
 
-  /* COMPUTE LOOP (per 4 SAMPLEs) */
+  /* COMPUTE LOOP (per 4 SAMPLEs : 100Hz) */
   currentTime = micros();
-  // If no. samples is multiple of 4, i.e. previousSampleTime/sampleLoopMicros % KALMAN_LOOP_FREQ_PER_SAMPLES
+  // If num samples is multiple of 4, i.e. previousSampleTime/sampleLoopMicros % KALMAN_LOOP_FREQ_PER_SAMPLES
   if (currentState!=FlightState::landed && previousSampleTime % computeLoopMicros == 0) {
 
     previousComputeTime += computeLoopMicros;
@@ -446,20 +464,22 @@ void loop() {
 
   /* CONTROL LOOP (xHz) */
   currentTime = micros();
-  if (currentState==FlightState::control && currentTime >= previousControlTime + controlLoopMicros) {
+  if (currentTime >= previousControlTime + controlLoopMicros) {
     previousControlTime += controlLoopMicros;
-    // TODO: Stow airbrakes if too far from vertical below a certain altitude
-    /**
-     * TODO: 
-     *  1. Obtain current altitude and current velocity (prediction from 
-     *     K-filter)
-     *  2. Index into VLT for target velocity
-     *  2. Perform PID control to match current velocity to target velocity 
-     *     over timesteps
-     *  3. Send corresponding PWM to servo
-     *     a. NOTE: PWM should be capable of set-and-forget, this loop should
-     *        not be blocking
-     */
+
+    // FAULT-PROTECTION: Stow airbrakes if too far from vertical below a certain altitude
+    
+    if (currentState==FlightState::control) {
+      // Perform PID servo actuation
+      // Note: stateVec(2) --> curr_Z_Position, stateVec(5) --> curr_Z_Velocity
+      int angleExtension = SRV_MAX_EXTENSION_ANGLE * pid.control(stateVec(2), stateVec(5)) + 0.5;  // +0.5 to round to nearest whole int
+      srv.write(angleExtension);
+    }
+    else {
+      // Keep servo in stowed position if not in control
+      srv.write(0);
+    }
+    
     Serial.println("Performed control loop!");
   }
 }
