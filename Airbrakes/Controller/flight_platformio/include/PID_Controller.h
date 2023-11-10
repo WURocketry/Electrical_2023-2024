@@ -1,5 +1,7 @@
 # pragma once
 
+#include <vlt.h>
+
 #include <Servo.h>
 
 // Magic number definitions
@@ -8,27 +10,37 @@
 
 class PID_Controller{
     private:
-        Servo airbrakeServo;
+        double tgtAlt;
         // PID Control variables
         double setpoint;
         double input;
         double output;
         double integral_error;
-        double prevInput;
+        double prevError;
         // Configurable constants
-        double Ki = 0.1;
-        double Kp = 0.01;
-        double Kd = 0.001;
-        int altitudeThresholds[3]={1,2,3};
-        float decayRates[3]={1,2,3};
+        double Ki;
+        double Kp;
+        double Kd;
+        int altitudeThresholds[3];
+        float decayRates[3];
         // Internal methods
         double getDesiredVelocity(double altitude);
         double linearInterpolation(double x, double x0, double x1, double y0, double y1);
-        float errorDecayFunc(int altitude);
+        float getErrorDecay(int altitude, double origError);
 
     public:
-    // Constructor
-    PID_Controller(); // Initializes velocity table, decay rates and thresholds
+    // Default Constructor
+    PID_Controller(double targetAltitude) : 
+        tgtAlt(targetAltitude),
+        integral_error(0),
+        prevError(0),
+        Ki(0.1),
+        Kp(0.01),
+        Kd(0.001),
+        altitudeThresholds  {(int)targetAltitude/2, 7/8*(int)targetAltitude, 2*(int)targetAltitude},
+        decayRates          {6,                1.5,                0}
+    {};
+
     // Methods
     double control(double velocity, double altitude);
     void pid_config(double ki, double kp, double kd, int thresholds[3], float rates[3]);
