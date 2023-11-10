@@ -237,12 +237,16 @@ void setup() {
   Serial.println("> Initialized Serial comms!");
 
   // Initialize SDRAM
+
+#ifdef PORTENTA_H7_M7_PLATFORM
+
   Serial.print("| Init SDRAM...");
   ram.begin();
   delay(100);
   ringBuffer = (float(*)[RING_BUFFER_LENGTH])ram.malloc(sizeof(float[RING_BUFFER_LENGTH][RING_BUFFER_COLS]));
   Serial.println("OK!");
 
+#endif
   // Initialize FSM state
   Serial.print("| Init program state...");
   currentState = FlightState::detectLaunch;
