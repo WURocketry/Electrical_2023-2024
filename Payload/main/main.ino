@@ -9,7 +9,6 @@
 #include <RadioLib.h>
 #include <Adafruit_NeoPixel.h>
 
-
 // Define sensor objects
 Adafruit_BNO08x bno08x;
 Adafruit_BME680 bme;
@@ -29,7 +28,6 @@ struct euler_t {
   float roll;
 } ypr;
 
-
 //enum for global array indices
 enum{
   BNO_YAW,
@@ -38,6 +36,7 @@ enum{
   BNO_XACCEL,
   BNO_YACCEL,
   BNO_ZACCEL,
+  SECONDS_SINCE_ON,
   BME_TEMPERATURE,
   BME_PRESSURE,
   BME_HUMIDITY,
@@ -45,7 +44,6 @@ enum{
   BME_ALTITUDE,
   GPS_HOUR,
   GPS_MINUTE,
-  GPS_SECONDS,
   GPS_SPEED,
   GPS_LATITUDE,
   GPS_LONGITUDE,
@@ -63,6 +61,7 @@ const char* ENUM_NAMES[] = {
   "BNO_XACCEL",
   "BNO_YACCEL",
   "BNO_ZACCEL",
+  "SECONDS_SINCE_ON",
   "BME_TEMPERATURE",
   "BME_PRESSURE",
   "BME_HUMIDITY",
@@ -70,7 +69,6 @@ const char* ENUM_NAMES[] = {
   "BME_ALTITUDE",
   "GPS_HOUR",
   "GPS_MINUTE",
-  "GPS_SECONDS",
   "GPS_SPEED",
   "GPS_LATITUDE",
   "GPS_LONGITUDE",
@@ -107,7 +105,8 @@ unsigned int smallidx[] = {BNO_YAW,
                            BNO_ROLL, 
                            BNO_XACCEL, 
                            BNO_YACCEL, 
-                           BNO_ZACCEL};
+                           BNO_ZACCEL,
+                           SECONDS_SINCE_ON};
 
 //Battery Monitor Defintions
 float lastBatteryVoltage = 0.0;
@@ -123,7 +122,7 @@ SX1276 radio = new Module(RFM95_CS, RFM95_IRQ, RFM95_RST, RFM95_GPIO);
 int16_t packetnum = 0;  
 
 //Define timing separations for devices
-float bnoTime = 2000;
+float bnoTime = 250;
 float bmeTime = 2000;
 float gpsTime = 2000;
 float batteryTime = 2000;
@@ -288,15 +287,14 @@ void collectDataFromBNO() {
         quaternionToEulerRV(&sensorValue.un.arvrStabilizedRV, &ypr, true);
 
         DATA_COMPONENT_READINGS[BNO_YAW] = ypr.yaw;
+        DATA_COMPONENT_READINGS[BNO_PITCH] = ypr.pitch;
+        DATA_COMPONENT_READINGS[BNO_ROLL] = ypr.roll;
 
+        DATA_COMPONENT_READINGS[BNO_XACCEL] = sensorValue.un.accelerometer.x;
+        DATA_COMPONENT_READINGS[BNO_YACCEL] = sensorValue.un.accelerometer.y;
+        DATA_COMPONENT_READINGS[BNO_ZACCEL] = sensorValue.un.accelerometer.z;
 
-      DATA_COMPONENT_READINGS[BNO_PITCH] = ypr.pitch;
-
-      DATA_COMPONENT_READINGS[BNO_ROLL] = ypr.roll;
-
-      DATA_COMPONENT_READINGS[BNO_XACCEL] = sensorValue.un.accelerometer.x;
-      DATA_COMPONENT_READINGS[BNO_YACCEL] = sensorValue.un.accelerometer.y;
-      DATA_COMPONENT_READINGS[BNO_ZACCEL] = sensorValue.un.accelerometer.z;
+        DATA_COMPONENT_READINGS[SECONDS_SINCE_ON] = millis()/1000;
       }
     } 
   }
@@ -504,16 +502,13 @@ void transmitCurrentComponentReadings() {
     }
 }
 
-void loop() {
-
-         
+void loop() {       
   collectDataFromBNO();  
   collectDataFromBME();  
   collectDataFromGPS();
   collectDataFromBatteryMonitor();
   writeToFile(DATA_COMPONENT_READINGS, fullidx, filename);
   writeToFile(DATA_COMPONENT_READINGS, smallidx, smallFileName);
-  transmitCurrentComponentReadings();
-        
+  transmitCurrentComponentReadings();   
 }
 
