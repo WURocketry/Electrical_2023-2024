@@ -4,6 +4,8 @@
 #include <BasicLinearAlgebra.h>
 
 /* Our includes */
+#include <Measurement.h>
+
 #include <FlightMonitor.h>
 #include <AdafruitBNO085.h>
 #include <PID_Controller.h>
@@ -70,44 +72,30 @@ Servo srv;
 // PID controller object
 PID_Controller pid(ACE_TARGET_APOGEE);
 
-// Peripheral helper functions/structs
-struct Measurement {
-  /** 
-   * UFS NOTE: This struct defines format for data used by
-   * this flight software -- but the sampleLoop should use
-   * UFS objects to actually sample data and then pack it into
-   * this struct
-   **/
-  float xAccel;
-  float yAccel;
-  float zAccel;
-  float q0;
-  float q1;
-  float q2;
-  float q3;
-  float altitude;
-  Measurement() {}
-  Measurement(float xAcc, float yAcc, float zAcc,float que0, float que1, float que2, float que3, float alt): 
-    xAccel(xAcc), yAccel(yAcc), zAccel(zAcc),q0(que1),q1(que1), q2(que2),q3(que3), altitude(alt) {}
-};
+//Struct for holding current measurement
+static Measurement currentMeasurement;
 
-double currentPosition = 0.0;
-double currentAcceleration = 0.0;
-
-struct Measurement makeMeasurement() {
-  // TODO: placeholder measurement values
-
+bool readMeasurement() {
   dataValid = true;
 
-  struct Measurement collectedData(
-    0.0, 0.0, currentAcceleration,0.0,0.0,0.0,0.0,currentPosition
-  );
+  // Measure Acceleration
+  if (!imu.measureAcceleration(&currentMeasurement)) {
+    dataValid = false;
+  }
 
-  return collectedData;
+  // Measure Rotation Quat
+  // Note: if this is incorrect, should 
+  if(!imu.measureRotationQuaternion(&currentMeasurement)) {
+    dataValid = false;
+  }
+
+  // Measure Altitude
+  if (!alt.measureAltitude(&currentMeasurement)) {
+    dataValid = false;
+  }
+
+  return dataValid;
 }
-
-//Struct for holding current measurement
-struct Measurement currentMeasurement;
 
 //Finite State Machine Variables and State Transition Functions
 enum class FlightState {
@@ -316,7 +304,7 @@ void loop() {
   if (currentState!=FlightState::landed && previousComputeWaits >= KALMAN_LOOP_FREQ_PER_SAMPLES) {
     previousComputeWaits = 0; // Reset compute counter
 
-    currentMeasurement = makeMeasurement();
+    readMeasurement();
 
     quaternions = {currentMeasurement.q0,currentMeasurement.q1,currentMeasurement.q2,currentMeasurement.q3};
 

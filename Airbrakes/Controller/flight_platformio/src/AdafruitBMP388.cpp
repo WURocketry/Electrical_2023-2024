@@ -39,6 +39,7 @@ bool AdafruitBMP388::init() {
     return true;
 }
 
+
 double AdafruitBMP388::getPressure() {
     if (!alt_instance.performReading()) {
         return -1;
@@ -46,12 +47,14 @@ double AdafruitBMP388::getPressure() {
     return alt_instance.pressure;
 }
 
+
 double AdafruitBMP388::getRelativeAltitude() {
     if (!alt_instance.performReading()) {
         return -1;
     }
     return alt_instance.readAltitude(BASE_PRESSURE_READING);
 }
+
 
 void AdafruitBMP388::printRawAltitude(int iters, int sampleFreqMicros) {
     int i = 0;
@@ -66,4 +69,16 @@ void AdafruitBMP388::printRawAltitude(int iters, int sampleFreqMicros) {
         ++i;
         delay(sampleFreqMicros);
     }
+}
+
+// @brief: fills measurement struct with altitude data
+bool AdafruitBMP388::measureAltitude(Measurement* measure) {
+    double alt = getRelativeAltitude();
+    if (alt < 0) {
+        return false;
+    }
+
+    measure->altitude = (float)alt;
+
+    return true;
 }

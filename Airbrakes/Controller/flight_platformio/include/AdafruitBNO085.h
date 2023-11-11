@@ -4,6 +4,8 @@
 /* Note this will eventually become a derived class from BaseIMUComponent */
 // #include "BaseIMUComponent.h"
 
+#include <Measurement.h>
+
 #include <Adafruit_BNO08x.h>
 #include <Wire.h>
 
@@ -26,4 +28,5 @@ public:
     void printRawAcceleration(int iters, int sampleFreqMicros);
 
     bool measureAcceleration(struct Measurement* measure);
+    bool measureRotationQuaternion(struct Measurement* measure);
 };

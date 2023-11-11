@@ -12,10 +12,14 @@ bool AdafruitBNO085::init() {
         Serial.println("NOT OK! IMU not found");
         return false;
     }
-    // Initialize accelerometer
+    // Initialize accelerometer report
     if(!imu_instance.enableReport(SH2_LINEAR_ACCELERATION)){
         Serial.println("NOT OK! Failed to initialize accelerometer");
         return false;
+    }
+    // Initialize rotation vector report
+    if (!imu_instance.enableReport(SH2_GAME_ROTATION_VECTOR)) {
+        Serial.println("NOT OK! Failed to enable rotation vector");
     }
     Serial.println("OK!");
 
@@ -78,7 +82,20 @@ void AdafruitBNO085::readAcceleration() {
 
 
 // @brief: fills struct with measurement values
-bool AdafruitBNO085::measureAcceleration(struct Measurement* measure) {
+bool AdafruitBNO085::measureAcceleration(Measurement* measure) {
+    if (!imu_instance.getSensorEvent(&sensorValue)) {
+        return false;
+    }
+
+    measure->xAccel = (float)sensorValue.un.linearAcceleration.x;
+    measure->yAccel = (float)sensorValue.un.linearAcceleration.y;
+    measure->zAccel = (float)sensorValue.un.linearAcceleration.z;
 
     return true;
+}
+
+
+// @brief: fills measurement struct with rotation quaternion
+bool AdafruitBNO085::measureRotationQuaternion(Measurement* measure) {
+    
 }

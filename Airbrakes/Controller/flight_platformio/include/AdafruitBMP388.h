@@ -1,17 +1,20 @@
-/* Include file for AdafruitBNO085 component class */
+/* Include file for AdafruitBMP388 component class */
 #pragma once
 
-/* Note this will eventually become a derived class from BaseIMUComponent */
-// #include "BaseIMUComponent.h"
+/* Note this will eventually become a derived class from BaseAltComponent */
+// #include "BaseAltComponent.h"
+
+#include <Measurement.h>
 
 #include <Adafruit_Sensor.h>
 #include <Adafruit_BMP3XX.h>
-// #include <Wire.h>
+
+#define SEA_LEVEL_PRESSURE_PA 101325
 
 class AdafruitBMP388 {  // : public BaseAltComponent
 private:
     Adafruit_BMP3XX alt_instance;
-    double BASE_PRESSURE_READING = 101325;
+    double BASE_PRESSURE_READING = SEA_LEVEL_PRESSURE_PA;
 public:
 // Constructors
     AdafruitBMP388();   // default
@@ -20,4 +23,6 @@ public:
     double getPressure();
     double getRelativeAltitude();
     void printRawAltitude(int iters, int sampleFreqMicros);
+
+    bool measureAltitude(Measurement* measure);
 };
