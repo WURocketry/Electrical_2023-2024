@@ -23,14 +23,13 @@ bool AdafruitBNO085::init() {
 }
 
 bool AdafruitBNO085::isCalibrated() {
+    // TODO
     return true;
 }
 
-void AdafruitBNO085::printRawAccel(int iters, int sampleFreqMicros) {
-    for (int i=0; i<iters; ++i) {
-        readAcceleration();
-        delay(sampleFreqMicros);
-    }
+
+bool AdafruitBNO085::isDataReady() {
+    return true;    // interrupt pin not yet connected
 }
 
 
@@ -50,12 +49,16 @@ void AdafruitBNO085::getInfo() {
 }
 
 
-bool AdafruitBNO085::isDataReady() {
-    return true;    // interrupt pin not yet connected
+void AdafruitBNO085::printRawAcceleration(int iters, int sampleFreqMicros) {
+    for (int i=0; i<iters; ++i) {
+        readAcceleration();
+        delay(sampleFreqMicros);
+    }
 }
 
-// @brief: returns linear acceleration
-void AdafruitBNO085::readAcceleration(){
+
+// @brief: prints linear acceleration
+void AdafruitBNO085::readAcceleration() {
     if (!imu_instance.getSensorEvent(&sensorValue)) {
         Serial.println("MISS");
         return;
@@ -71,4 +74,11 @@ void AdafruitBNO085::readAcceleration(){
     else {
         return;
     }
+}
+
+
+// @brief: fills struct with measurement values
+bool AdafruitBNO085::measureAcceleration(struct Measurement* measure) {
+
+    return true;
 }

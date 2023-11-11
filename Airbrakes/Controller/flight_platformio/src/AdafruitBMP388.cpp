@@ -41,7 +41,6 @@ bool AdafruitBMP388::init() {
 
 double AdafruitBMP388::getPressure() {
     if (!alt_instance.performReading()) {
-        Serial.println("MISS");
         return -1;
     }
     return alt_instance.pressure;
@@ -49,15 +48,22 @@ double AdafruitBMP388::getPressure() {
 
 double AdafruitBMP388::getRelativeAltitude() {
     if (!alt_instance.performReading()) {
-        Serial.println("MISS");
         return -1;
     }
     return alt_instance.readAltitude(BASE_PRESSURE_READING);
 }
 
 void AdafruitBMP388::printRawAltitude(int iters, int sampleFreqMicros) {
-    for (int i=0; i<iters; ++i) {
+    int i = 0;
+    while (i < iters) {
+        double alt = getRelativeAltitude();
+
+        if (alt < 0) {
+            Serial.println("MISS");
+            continue;
+        }
         Serial.println(getRelativeAltitude(), 6);
+        ++i;
         delay(sampleFreqMicros);
     }
 }

@@ -21,8 +21,9 @@ public:
     AdafruitBNO085();   // default
 // Methods
     bool init();
-    void printRawAccel(int iters, int sampleFreqMicros);
     void getInfo();
     void readAcceleration();
+    void printRawAcceleration(int iters, int sampleFreqMicros);
 
+    bool measureAcceleration(struct Measurement* measure);
 };
