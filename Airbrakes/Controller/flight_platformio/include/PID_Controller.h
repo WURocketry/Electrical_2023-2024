@@ -1,7 +1,7 @@
 #pragma once
 
 // Magic number definitions
-#define VLT_LENGTH 793
+#define VLT_LENGTH 781
 #define servoPin 8
 
 class PID_Controller{
