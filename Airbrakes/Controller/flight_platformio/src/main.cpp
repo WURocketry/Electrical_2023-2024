@@ -221,32 +221,28 @@ FlightState coastTransition(FlightState currentState) {
   return currentState;
 }
 
-//writeto functions
-void writeToFile(float flightdata[RING_BUFFER_LENGTH][11], unsigned int* idx, String writeto) {
-    unsigned int cols = sizeof(idx) / sizeof(idx[0]);               //nos of cols to write (length of idx)
-    unsigned int rows = sizeof(flightdata) / sizeof(flightdata[0]); //nos of rows in flightdata
-
-    auto maxidx = std::max_element(idx, idx + cols);   //find largest specified index in idx
-
-    if (*maxidx > (sizeof(flightdata[0]) / sizeof(float))) {
-        Serial.println("Array index too big!");
-        return;
-    }
-
+// OpenLog write to functions
+void dumpSDRAMtoFile(String writeto) {
     logger.append(writeto); //open the file in openlog
+    
+    int writeToIndex;
 
-    for (int i = 0; i < rows; i++) {
-        for (int j = 0; j < cols; j++) {
-            logger.print(flightdata[i][idx[j]]);
-
-            if (j < cols - 1) {
-                logger.print(","); //print comma if not last column
-            }
-        }
-        logger.println(); //end line after all cols written
+    if (ringBufferIndex > RING_BUFFER_LENGTH) {
+      // Write entire buffer to file
+      writeToIndex = RING_BUFFER_LENGTH;
+    }
+    else {
+      // Write up to ringBufferIndex
+      writeToIndex = ringBufferIndex;
     }
 
-    logger.syncFile();  //save changes
+    for (int i=0; i<writeToIndex; ++i) {
+      for (int j=0; j<RING_BUFFER_COLS; ++j) {
+        logger.print((float)*(SDRAM_base + i*RING_BUFFER_COLS+j));
+      }
+      logger.println(); // newline at each row;
+    }
+  logger.syncFile();  //save changes
 }
 
 int getNumberOfPrevFlights() {
@@ -536,6 +532,8 @@ void loop() {
   }
 
   if ((currentState == FlightState::landed) && writedata) {
-    writeToFile(ringBuffer, fullidx, logfile);
+    dumpSDRAMtoFile(logfile);
+
+    writedata = false;  // write data only once
   }
 }
