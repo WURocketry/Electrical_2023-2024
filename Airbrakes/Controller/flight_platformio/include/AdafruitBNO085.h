@@ -14,7 +14,7 @@ class AdafruitBNO085 {  // : public BaseIMUComponent
 private:
     Adafruit_BNO08x imu_instance;
     sh2_SensorValue_t sensorValue;
-    bool isData();
+    bool isDataReady();
 public:
 // Constructors
     AdafruitBNO085();   // default

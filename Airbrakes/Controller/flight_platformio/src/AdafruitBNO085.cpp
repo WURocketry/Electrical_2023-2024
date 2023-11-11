@@ -45,7 +45,7 @@ void AdafruitBNO085::getInfo() {
 }
 
 
-bool AdafruitBNO085::isData() {
+bool AdafruitBNO085::isDataReady() {
     return true;    // interrupt pin not yet connected
 }
 

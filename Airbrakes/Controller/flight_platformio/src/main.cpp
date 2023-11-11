@@ -7,7 +7,7 @@
 #include <FlightMonitor.h>
 #include <AdafruitBNO085.h>
 #include <PID_Controller.h>
-// include statement for Altimeter (which will tooootally happen, right? right..?)
+#include <AdafruitBMP388.h>
 #include <AdafruitBNO085.h>
 
 #include <simulation.h>
@@ -85,7 +85,7 @@ BLA::Matrix<4,4> innovationCov;
 BLA::Matrix<9,4> Kkalman;
 
 // Flight monitor and sensor objects
-// AdafruitBMP388 alt;
+AdafruitBMP388 alt;
 AdafruitBNO085 imu;
 FlightMonitor fm_ace(imu);
 
@@ -251,9 +251,10 @@ void setup() {
   currentState = FlightState::detectLaunch;
   Serial.println("OK!");
 
-  // Initializer sensor hardware
+  // Initialize sensor hardware
+  alt.init();
   imu.init();
-  // imu.getInfo();
+  
 
   // Attach servo pin to PWM7 (D0 --> PWM len min: 900 us, max: 2050us)
   Serial.print("| Init servo PWM...");
@@ -338,7 +339,7 @@ int stateVecPrintCounter = 0;
 void loop() {
 
   while (true) {
-    imu.readAcceleration();
+    alt.readPressure();
     delay(1000);
   }
   
