@@ -30,8 +30,9 @@
   #define RING_BUFFER_LENGTH 12000
 
   SDRAMClass ram;
-  float (*ringBuffer)[RING_BUFFER_LENGTH];
+  // float (*ringBuffer)[RING_BUFFER_LENGTH]; // Not currently using
 #endif
+float* SDRAM_base = (float*)0x60000000;  // Base pointer to DRAM start address
 int ringBufferIndex = 0;
 
 // Servo defines
@@ -64,8 +65,9 @@ bool dataValid = true;
 // Servo object
 Servo srv;
 
-// PID controller object
+// PID controller object and global control
 PID_Controller pid(ACE_TARGET_APOGEE);
+double currentPIDControl = 0;
 
 // Peripheral helper functions/structs
 struct Measurement {
@@ -224,7 +226,7 @@ void setup() {
   Serial.print("| Init SDRAM...");
   ram.begin();
   delay(100);
-  ringBuffer = (float(*)[RING_BUFFER_LENGTH])ram.malloc(sizeof(float[RING_BUFFER_LENGTH][RING_BUFFER_COLS]));
+  // ringBuffer = (float(*)[RING_BUFFER_LENGTH])ram.malloc(sizeof(float[RING_BUFFER_LENGTH][RING_BUFFER_COLS]));  // Not currently used
   Serial.println("OK!");
 
 #endif
@@ -327,15 +329,21 @@ void loop() {
     }
     stateVecPrintCounter++;
 
-    // Write stateVec data to SDRAM
-    // TODO add current value of control to eleventh element of the array
-    ringBuffer[ringBufferIndex%RING_BUFFER_LENGTH][0] = micros()/1000000.0;
-    for(int i = 1; i<RING_BUFFER_COLS-1; i++){
-      ringBuffer[ringBufferIndex%RING_BUFFER_LENGTH][i] = stateVec(i-1);
+    // Perform SDRAM data saving
+    // Write timestamp data to SDRAM[0]
+    *(SDRAM_base + ((ringBufferIndex%RING_BUFFER_LENGTH)*RING_BUFFER_COLS)) = (float)currentTime; // Last currentTime should be from sample loops
+
+    // Write stateVec data to SDRAM[1-9]
+    for (int i=1; i<RING_BUFFER_COLS-1; ++i) {
+        *(SDRAM_base + ((ringBufferIndex%RING_BUFFER_LENGTH)*RING_BUFFER_COLS + i)) = (float)stateVec(i);
     }
-    //Serial.print("Wrote to ringBuffer at idx ");
-    //Serial.println(ringBufferIndex);
-    ringBufferIndex++;
+
+    // Write current control value to SDRAM[10]
+    *(SDRAM_base + ((ringBufferIndex%RING_BUFFER_LENGTH)*RING_BUFFER_COLS + 10)) = currentPIDControl;
+
+    Serial.print("Wrote to ringBuffer at row ");
+    Serial.println(ringBufferIndex%RING_BUFFER_LENGTH);
+    ++ringBufferIndex;
     
 
     /* Switch statement for FSM of ACE system modes */
@@ -407,7 +415,8 @@ void loop() {
     if (currentState==FlightState::control) {
       // Perform PID servo actuation
       // Note: stateVec(2) --> curr_Z_Position, stateVec(5) --> curr_Z_Velocity
-      int angleExtension = SRV_MAX_EXTENSION_ANGLE * pid.control(stateVec(2), stateVec(5)) + 0.5;  // +0.5 to round to nearest whole int
+      currentPIDControl = pid.control(stateVec(2), stateVec(5));
+      int angleExtension = SRV_MAX_EXTENSION_ANGLE * currentPIDControl + 0.5;  // +0.5 to round to nearest whole int
       srv.write(angleExtension);
     }
     else {
