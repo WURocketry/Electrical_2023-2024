@@ -337,10 +337,15 @@ int stateVecPrintCounter = 0;
 // int counterSample=0;
 
 void loop() {
-
   while (true) {
-    alt.readPressure();
-    delay(1000);
+    // Serial.println("Accel readings over 24,000 samples at 2500 micros frequency...");
+    // imu.printRawAccel(24000, 10);
+
+    Serial.println("Altimeter readings over 6,000 samples...");
+    alt.printRawAltitude(6000, 10);
+
+    Serial.println("DONE");
+    delay(1000000);
   }
   
   /* SAMPLE LOOP (400Hz) */

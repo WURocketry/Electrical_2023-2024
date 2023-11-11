@@ -12,7 +12,6 @@ bool AdafruitBMP388::init() {
     // Initialize I2C bus
     if(!alt_instance.begin_I2C()){
         Serial.println("NOT OK! Altimeter not found");
-        
         return false;
     }
     // Configure sample
@@ -22,30 +21,43 @@ bool AdafruitBMP388::init() {
     alt_instance.setOutputDataRate(BMP3_ODR_100_HZ);    // 50Hz?
     Serial.println("OK!");
 
+    // Serial.println("Calibrating pressure readings with 100 sample average...");
+
+    // double sumPressures = 0;
+    // int i = 0;
+    // while (i < 100) {
+    //     double pa = getPressure();
+    //     if (pa < 0) {
+    //         continue;
+    //     }
+    //     sumPressures += pa;
+    //     ++i;
+    //     delay(10);  // 100 Hz delay
+    // }
+    // BASE_PRESSURE_READING = sumPressures/100;
+
     return true;
 }
 
-void AdafruitBMP388::readPressure() {
+double AdafruitBMP388::getPressure() {
     if (!alt_instance.performReading()) {
-        Serial.println("Failed to sample altimeter");
-        return;
+        Serial.println("MISS");
+        return -1;
     }
-    Serial.print("Temperature = ");
-    Serial.print(alt_instance.temperature);
-    Serial.println(" *C");
-
-    Serial.print("Pressure = ");
-    Serial.print(alt_instance.pressure / 100.0);
-    Serial.println(" hPa");
+    return alt_instance.pressure;
 }
 
-void AdafruitBMP388::getRelativeAltitude() {
+double AdafruitBMP388::getRelativeAltitude() {
     if (!alt_instance.performReading()) {
-        Serial.println("Failed to sample altimeter");
-        return;
+        Serial.println("MISS");
+        return -1;
     }
+    return alt_instance.readAltitude(BASE_PRESSURE_READING);
+}
 
-    Serial.print("Approx. Altitude = ");
-    Serial.print(alt_instance.readAltitude(BASE_PRESSURE_READING));
-    Serial.println(" m");
+void AdafruitBMP388::printRawAltitude(int iters, int sampleFreqMicros) {
+    for (int i=0; i<iters; ++i) {
+        Serial.println(getRelativeAltitude(), 6);
+        delay(sampleFreqMicros);
+    }
 }

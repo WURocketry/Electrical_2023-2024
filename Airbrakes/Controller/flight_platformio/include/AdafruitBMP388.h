@@ -11,12 +11,13 @@
 class AdafruitBMP388 {  // : public BaseAltComponent
 private:
     Adafruit_BMP3XX alt_instance;
-    float BASE_PRESSURE_READING;
+    double BASE_PRESSURE_READING = 101325;
 public:
 // Constructors
     AdafruitBMP388();   // default
 // Methods
     bool init();
-    void readPressure();
-    void getRelativeAltitude();
+    double getPressure();
+    double getRelativeAltitude();
+    void printRawAltitude(int iters, int sampleFreqMicros);
 };

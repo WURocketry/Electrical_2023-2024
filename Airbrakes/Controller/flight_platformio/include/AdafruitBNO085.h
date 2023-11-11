@@ -14,12 +14,14 @@ class AdafruitBNO085 {  // : public BaseIMUComponent
 private:
     Adafruit_BNO08x imu_instance;
     sh2_SensorValue_t sensorValue;
+    bool isCalibrated();
     bool isDataReady();
 public:
 // Constructors
     AdafruitBNO085();   // default
 // Methods
     bool init();
+    void printRawAccel(int iters, int sampleFreqMicros);
     void getInfo();
     void readAcceleration();
 

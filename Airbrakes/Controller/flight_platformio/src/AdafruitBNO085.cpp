@@ -10,22 +10,27 @@ bool AdafruitBNO085::init() {
     // Initialize I2C bus
     if(!imu_instance.begin_I2C()){
         Serial.println("NOT OK! IMU not found");
-        
         return false;
     }
     // Initialize accelerometer
-    if(!imu_instance.enableReport(SH2_ACCELEROMETER)){
+    if(!imu_instance.enableReport(SH2_LINEAR_ACCELERATION)){
         Serial.println("NOT OK! Failed to initialize accelerometer");
-        
         return false;
-    }
-    // Initialize magnetometer
-    if(!imu_instance.enableReport(SH2_ACCELEROMETER)){
-        Serial.println("no accelerometer after reset...");
     }
     Serial.println("OK!");
 
     return true;
+}
+
+bool AdafruitBNO085::isCalibrated() {
+    return true;
+}
+
+void AdafruitBNO085::printRawAccel(int iters, int sampleFreqMicros) {
+    for (int i=0; i<iters; ++i) {
+        readAcceleration();
+        delay(sampleFreqMicros);
+    }
 }
 
 
@@ -49,20 +54,21 @@ bool AdafruitBNO085::isDataReady() {
     return true;    // interrupt pin not yet connected
 }
 
+// @brief: returns linear acceleration
 void AdafruitBNO085::readAcceleration(){
     if (!imu_instance.getSensorEvent(&sensorValue)) {
-        Serial.println("BNO_ERR: Not able to read");
+        Serial.println("MISS");
         return;
     }
 
-    if(sensorValue.sensorId == SH2_ACCELEROMETER){
-        Serial.print("x acceleration: ");
-        Serial.println(sensorValue.un.accelerometer.x);
-        Serial.print("y acceleration: ");
-        Serial.println(sensorValue.un.accelerometer.y);
-        Serial.print("z acceleration: ");
-        Serial.println(sensorValue.un.accelerometer.z);
-    } else{
+    if(sensorValue.sensorId == SH2_LINEAR_ACCELERATION){
+        Serial.print(sensorValue.un.linearAcceleration.x, 6);
+        Serial.print(",");
+        Serial.print(sensorValue.un.linearAcceleration.y, 6);
+        Serial.print(",");
+        Serial.println(sensorValue.un.linearAcceleration.z, 6);
+    } 
+    else {
         return;
     }
 }
