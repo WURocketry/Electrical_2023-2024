@@ -99,7 +99,7 @@ struct Measurement makeMeasurement() {
   dataValid = true;
 
   struct Measurement collectedData(
-    0.0, 0.0, currentAcceleration,0.0,0.0,0.0,0.0,currentPosition
+    0.0, 0.0, currentAcceleration,0.0,0.0,0.0,1.0,currentPosition // hardcode z-heading quat
   );
 
   return collectedData;
@@ -235,9 +235,9 @@ void setup() {
   currentState = FlightState::detectLaunch;
   Serial.println("OK!");
 
-  // Attach servo pin to PWM7 (D0 --> PWM len min: 900 us, max: 2050us)
+  // Attach servo pin to D9 (PWM len min: 900 us, max: 2050us)
   Serial.print("| Init servo PWM...");
-  srv.attach(0, SRV_MIN_PWM_LEN_MICROS, SRV_MAX_PWM_LEN_MICROS);
+  srv.attach(9, SRV_MIN_PWM_LEN_MICROS, SRV_MAX_PWM_LEN_MICROS);
   Serial.println("OK!");
 
   // Initialize vectors/matrices
@@ -270,7 +270,7 @@ void loop() {
 
     // Temporary test of simulated OR data
     double simSample[2];
-    getSimulatedData(currentTime/1000000.0+15.96, simSample);
+    getSimulatedData(currentTime/1000000.0, simSample);
 
     if(counterSample%100==0){
       Serial.print("Interp pos: ");
@@ -424,7 +424,7 @@ void loop() {
       srv.write(0);
     }
     
-    Serial.print("Performed control loop at ");
-    Serial.println(currentTime);
+    Serial.print("Performed control loop with signal ");
+    Serial.println(currentPIDControl);
   }
 }

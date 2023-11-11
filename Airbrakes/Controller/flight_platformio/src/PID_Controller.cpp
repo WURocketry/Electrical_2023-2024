@@ -43,9 +43,12 @@ double PID_Controller::control(double currAltitude, double currVelocity){
       output /= maxErrorThresholds[0];
     }
 
-    // Clamp output to 1
+    // Clamp output between 0 and 1
     if (output > 1) {
       output = 1;
+    }
+    else if (output < 0) {
+      output = 0;
     }
 
     return output;
