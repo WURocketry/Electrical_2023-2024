@@ -26,6 +26,14 @@ BLA::Matrix<4,4> Rkalman;
 
 BLA::Matrix<4> measurementVec;
 
+BLA::Matrix<3,3> rotMat;
+
+BLA::Matrix<3> measuredAccel;
+
+BLA::Matrix<3> intertialAccel;
+
+BLA::Matrix<4> quaternions;
+
 BLA::Matrix<4> innovation;
 
 BLA::Matrix<4,4> innovationCov;
@@ -104,6 +112,7 @@ void kalmanPredict(){
 }
 
 void kalmanUpdate(){
+
     innovation = measurementVec - Hkalman*stateVec;
 
     innovationCov = Hkalman*(Pkalman*~Hkalman) + Rkalman;
@@ -114,4 +123,21 @@ void kalmanUpdate(){
     Kkalman = Pkalman*(~Hkalman*innovationCov);
 
     stateVec = stateVec + Kkalman*innovation;
+}
+
+void getIntertialAccel(){
+
+    rotMat(0,0) = 2*(pow(quaternions(0),2)+pow(quaternions(1),2))-1;
+    rotMat(0,1) = 2*(quaternions(1)*quaternions(2)-quaternions(0)*quaternions(3));
+    rotMat(0,2) = 2*(quaternions(1)*quaternions(3)+quaternions(0)*quaternions(2));
+    rotMat(1,0) = 2*(quaternions(1)*quaternions(2)+quaternions(0)*quaternions(3));
+    rotMat(1,1) = 2*(pow(quaternions(0),2)+pow(quaternions(2),2))-1;
+    rotMat(1,2) = 2*(quaternions(2)*quaternions(3)-quaternions(0)*quaternions(1));
+    rotMat(2,0) = 2*(quaternions(1)*quaternions(3)-quaternions(0)*quaternions(2));
+    rotMat(2,1) = 2*(quaternions(2)*quaternions(3)+quaternions(0)*quaternions(1));
+    rotMat(2,2) = 2*(pow(quaternions(0),2)+pow(quaternions(3),2))-1;
+
+    intertialAccel = rotMat*measuredAccel;
+    
+
 }

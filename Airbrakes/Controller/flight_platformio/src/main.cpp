@@ -78,10 +78,14 @@ struct Measurement {
   float xAccel;
   float yAccel;
   float zAccel;
+  float q0;
+  float q1;
+  float q2;
+  float q3;
   float altitude;
   Measurement() {}
-  Measurement(float xAcc, float yAcc, float zAcc, float alt): 
-    xAccel(xAcc), yAccel(yAcc), zAccel(zAcc), altitude(alt) {}
+  Measurement(float xAcc, float yAcc, float zAcc,float que0, float que1, float que2, float que3, float alt): 
+    xAccel(xAcc), yAccel(yAcc), zAccel(zAcc),q0(que1),q1(que1), q2(que2),q3(que3), altitude(alt) {}
 };
 
 double currentPosition = 0.0;
@@ -93,7 +97,7 @@ struct Measurement makeMeasurement() {
   dataValid = true;
 
   struct Measurement collectedData(
-    0.0, 0.0, currentAcceleration, currentPosition
+    0.0, 0.0, currentAcceleration,0.0,0.0,0.0,0.0,currentPosition
   );
 
   return collectedData;
@@ -296,10 +300,18 @@ void loop() {
 
     currentMeasurement = makeMeasurement();
 
+    quaternions = {currentMeasurement.q0,currentMeasurement.q1,currentMeasurement.q2,currentMeasurement.q3};
+
+    measuredAccel = {currentMeasurement.xAccel,
+                     currentMeasurement.yAccel,
+                     currentMeasurement.zAccel};
+    
+    getIntertialAccel();
+
     measurementVec = {currentMeasurement.altitude,
-                      currentMeasurement.xAccel,
-                      currentMeasurement.yAccel,
-                      currentMeasurement.zAccel};
+                      intertialAccel(0),
+                      intertialAccel(1),
+                      intertialAccel(2)};
 
     //kalman filter steps
     kalmanPredict();
