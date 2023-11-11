@@ -11,6 +11,7 @@
 #include <PID_Controller.h>
 #include <AdafruitBMP388.h>
 #include <AdafruitBNO085.h>
+#include <accelReplace.h>
 
 #include <simulation.h>
 #include <kalman.h>
@@ -74,6 +75,12 @@ PID_Controller pid(ACE_TARGET_APOGEE);
 
 //Struct for holding current measurement
 static Measurement currentMeasurement;
+
+//variables for AccelReplacement
+float timeSinceSaturation = 0.0;
+float timeOfSaturation = 0.0;
+boolean imuSaturated = false;
+
 
 bool readMeasurement() {
   dataValid = true;
@@ -318,6 +325,16 @@ void loop() {
                       intertialAccel(0),
                       intertialAccel(1),
                       intertialAccel(2)};
+
+    if((measurementVec(3) > 70.0) && (!imuSaturated)){
+      imuSaturated = true;
+      timeOfSaturation = micros()/1000000.0;
+    }
+
+    if(measurementVec(3)>70.0){
+      timeSinceSaturation = micros()/1000000.0 - timeOfSaturation;
+      measurementVec(3) = getReplacedAccel(timeSinceSaturation)
+    }
 
     //kalman filter steps
     kalmanPredict();
