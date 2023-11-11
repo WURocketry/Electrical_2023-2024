@@ -9,6 +9,7 @@
 #include <PID_Controller.h>
 // include statement for Altimeter (which will tooootally happen, right? right..?)
 #include <simulation.h>
+#include <kalman.h>
 
 // Loop rates (Hz)
 #define ONE_SEC_MICROS 1000000
@@ -54,37 +55,11 @@ const long sampleLoopMicros  = ONE_SEC_MICROS/SAMPLE_LOOP_FREQ;
 const long computeLoopMicros = KALMAN_LOOP_FREQ_PER_SAMPLES * sampleLoopMicros;
 const long controlLoopMicros = ONE_SEC_MICROS/CONTROL_LOOP_FREQ;
 
-// Kalman filter variables
-const float kdt          = 1/((float)(SAMPLE_LOOP_FREQ/KALMAN_LOOP_FREQ_PER_SAMPLES)); //seconds
-const float processVar   = pow(0.5,2);
-const float altimeterVar = pow(.1,2);
-const float accelXVar    = pow(1,2);
-const float accelYVar    = pow(1,2);
-const float accelZVar    = pow(1,2);
-
-BLA::Matrix<9> stateVec;
-
-BLA::Matrix<9,9> Fkalman;
-
-BLA::Matrix<4,9> Hkalman;
-
-BLA::Matrix<9,9> Pkalman;
-
-BLA::Matrix<9,9> Qkalman;
-
-BLA::Matrix<4,4> Rkalman;
-
-BLA::Matrix<4> measurementVec;
-
-BLA::Matrix<4> innovation;
-
-BLA::Matrix<4,4> innovationCov;
-
-BLA::Matrix<9,4> Kkalman;
-
 // Flight monitor and sensor objects
 AdafruitBNO085 adafruit_bno085;
 FlightMonitor fm_ace(adafruit_bno085);
+
+bool dataValid = true;
 
 // Servo object
 Servo srv;
@@ -114,6 +89,9 @@ double currentAcceleration = 0.0;
 
 struct Measurement makeMeasurement() {
   // TODO: placeholder measurement values
+
+  dataValid = true;
+
   struct Measurement collectedData(
     0.0, 0.0, currentAcceleration, currentPosition
   );
@@ -236,6 +214,8 @@ void setup() {
   delay(1000);
   Serial.println("> Initialized Serial comms!");
 
+#ifdef PORTENTA_H7_M7_PLATFORM
+
   // Initialize SDRAM
   Serial.print("| Init SDRAM...");
   ram.begin();
@@ -243,6 +223,7 @@ void setup() {
   ringBuffer = (float(*)[RING_BUFFER_LENGTH])ram.malloc(sizeof(float[RING_BUFFER_LENGTH][RING_BUFFER_COLS]));
   Serial.println("OK!");
 
+#endif
   // Initialize FSM state
   Serial.print("| Init program state...");
   currentState = FlightState::detectLaunch;
@@ -255,64 +236,9 @@ void setup() {
 
   // Initialize vectors/matrices
   Serial.print("| Init Kalman state...");
-  stateVec = {0,0,0,0,0,0,0,0,0};
 
-  Fkalman = {1,0,0,kdt,0,0,1/2*kdt*kdt,0,0,
-             0,1,0,0,kdt,0,0,1/2*kdt*kdt,0,
-             0,0,1,0,0,kdt,0,0,1/2*kdt*kdt,
-             0,0,0,1,0,0,kdt,0,0,
-             0,0,0,0,1,0,0,kdt,0,
-             0,0,0,0,0,1,0,0,kdt,
-             0,0,0,0,0,0,1,0,0,
-             0,0,0,0,0,0,0,1,0,
-             0,0,0,0,0,0,0,0,1};
-
-  Hkalman = {0,0,1,0,0,0,0,0,0,
-             0,0,0,0,0,0,1,0,0,
-             0,0,0,0,0,0,0,1,0,
-             0,0,0,0,0,0,0,0,1};
-
-  Qkalman = {processVar*pow(kdt,4)/4,0,0,processVar*pow(kdt,3)/2,0,0,processVar*pow(kdt,2)/2,0,0,
-             0,processVar*pow(kdt,4)/4,0,0,processVar*pow(kdt,3)/2,0,0,processVar*pow(kdt,2)/2,0,
-             0,0,processVar*pow(kdt,4)/4,0,0,processVar*pow(kdt,3)/2,0,0,processVar*pow(kdt,2)/2,
-             processVar*pow(kdt,3)/2,0,0,processVar*pow(kdt,2),0,0,processVar*kdt,0,0,
-             0,processVar*pow(kdt,3)/2,0,0,processVar*pow(kdt,2),0,0,processVar*kdt,0,
-             0,0,processVar*pow(kdt,3)/2,0,0,processVar*pow(kdt,2),0,0,processVar*kdt,
-             processVar*pow(kdt,2)/2,0,0,processVar*kdt,0,0,processVar,0,0,
-             0,processVar*pow(kdt,2)/2,0,0,processVar*kdt,0,0,processVar,0,
-             0,0,processVar*pow(kdt,2)/2,0,0,processVar*kdt,0,0,processVar};
-
-  Rkalman = {altimeterVar,0,0,0,
-             0,accelXVar,0,0,
-             0,0,accelYVar,0,
-             0,0,0,accelZVar};
-
-  Pkalman = {10,0,0,0,0,0,0,0,0,
-             0,10,0,0,0,0,0,0,0,
-             0,0,10,0,0,0,0,0,0,
-             0,0,0,10,0,0,0,0,0,
-             0,0,0,0,10,0,0,0,0,
-             0,0,0,0,0,10,0,0,0,
-             0,0,0,0,0,0,10,0,0,
-             0,0,0,0,0,0,0,10,0,
-             0,0,0,0,0,0,0,0,10};
-
-  measurementVec = {0,0,0,0};
-
-  innovationCov = {0,0,0,0,
-                   0,0,0,0,
-                   0,0,0,0,
-                   0,0,0,0};
-
-  Kkalman = {0,0,0,0,
-             0,0,0,0,
-             0,0,0,0,
-             0,0,0,0,
-             0,0,0,0,
-             0,0,0,0,
-             0,0,0,0,
-             0,0,0,0,
-             0,0,0,0};
+  initializeKalmanFilter();
+  
   Serial.println("OK!");
 
   Serial.println("> Init ACE OK! Starting program...");
@@ -326,7 +252,7 @@ void setup() {
 }
 
 int stateVecPrintCounter = 0;
-// int counterSample=0;
+int counterSample=0;
 
 void loop() {
   
@@ -336,20 +262,20 @@ void loop() {
     previousSampleTime += sampleLoopMicros;
     ++previousComputeWaits;
 
-    // // Temporary test of simulated OR data
-    // double simSample[2];
-    // getSimulatedData(currentTime/1000000.0+15.96, simSample);
+    // Temporary test of simulated OR data
+    double simSample[2];
+    getSimulatedData(currentTime/1000000.0+15.96, simSample);
 
-    // if(counterSample%100==0){
-    //   Serial.print("Interp pos: ");
-    //   Serial.println(simSample[0]);
-    //   Serial.print("Interp acc: ");
-    //   Serial.println(simSample[1]);
-    // }
-    // counterSample++;
+    if(counterSample%100==0){
+      Serial.print("Interp pos: ");
+      Serial.println(simSample[0]);
+      Serial.print("Interp acc: ");
+      Serial.println(simSample[1]);
+    }
+    counterSample++;
 
-    // currentPosition = simSample[0];
-    // currentAcceleration = simSample[1];
+    currentPosition = simSample[0];
+    currentAcceleration = simSample[1];
     
     /**
      * TODO: 
@@ -358,8 +284,8 @@ void loop() {
      *  3. Pack into static Measurement struct
      **/
 
-    Serial.print("Performed sample loop at ");
-    Serial.println(currentTime);
+    // Serial.print("Performed sample loop at ");
+    // Serial.println(currentTime);
   }
 
   /* COMPUTE LOOP (per 4 SAMPLEs : 100Hz) */
@@ -376,20 +302,13 @@ void loop() {
                       currentMeasurement.zAccel};
 
     //kalman filter steps
-    stateVec = Fkalman*stateVec;
+    kalmanPredict();
 
-    Pkalman = Fkalman*(Pkalman*~Fkalman) + Qkalman;
+    if(dataValid){
 
-    innovation = measurementVec - Hkalman*stateVec;
+      kalmanUpdate();
 
-    innovationCov = Hkalman*(Pkalman*~Hkalman) + Rkalman;
-
-    //invert matrix inplace for next step
-    Invert(innovationCov);
-
-    Kkalman = Pkalman*(~Hkalman*innovationCov);
-
-    stateVec = stateVec + Kkalman*innovation;
+    }
 
     if(stateVecPrintCounter%25==0){
       Serial << stateVec << "\n";
@@ -403,8 +322,8 @@ void loop() {
     for(int i = 1; i<RING_BUFFER_COLS-1; i++){
       ringBuffer[ringBufferIndex%RING_BUFFER_LENGTH][i] = stateVec(i-1);
     }
-    Serial.print("Wrote to ringBuffer at idx ");
-    Serial.println(ringBufferIndex);
+    //Serial.print("Wrote to ringBuffer at idx ");
+    //Serial.println(ringBufferIndex);
     ringBufferIndex++;
     
 
@@ -463,8 +382,8 @@ void loop() {
         break;
     }
   
-    Serial.print("Performed compute loop at ");
-    Serial.println(currentTime);
+    // Serial.print("Performed compute loop at ");
+    // Serial.println(currentTime);
   }
 
   /* CONTROL LOOP (1Hz) */
