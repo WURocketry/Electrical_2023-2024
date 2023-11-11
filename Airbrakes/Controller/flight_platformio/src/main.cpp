@@ -27,7 +27,7 @@
 #elif PORTENTA_H7_M7_PLATFORM
   #warning "CONFIG: Configuring ringBuffer for Portenta_H7 platform"
   #include <SDRAM.h>
-  #define RING_BUFFER_LENGTH 12000
+  #define RING_BUFFER_LENGTH 30000
 
   SDRAMClass ram;
   // float (*ringBuffer)[RING_BUFFER_LENGTH]; // Not currently using
