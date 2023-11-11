@@ -13,9 +13,9 @@
 
 // Loop rates (Hz)
 #define ONE_SEC_MICROS 1000000
-#define SAMPLE_LOOP_FREQ 400
-#define KALMAN_LOOP_FREQ_PER_SAMPLES 4  // Compute per n=4 samples
-#define CONTROL_LOOP_FREQ 1
+#define SAMPLE_LOOP_FREQ 100
+#define KALMAN_LOOP_FREQ_PER_SAMPLES 1  // Compute per n=1 samples
+#define CONTROL_LOOP_FREQ 20
 
 // Configure ringBuffer for saving airbrakes sensor data
 #define RING_BUFFER_COLS 11
@@ -48,7 +48,7 @@ using namespace BLA;
 unsigned long currentTime;
 unsigned long previousFilterReset;
 unsigned long previousSampleTime;
-unsigned int  previousComputeWaits; // counter for when compute should occur after n=4 samples
+unsigned int  previousComputeWaits; // counter for when compute should occur after n=1 samples
 unsigned long previousControlTime;
 
 const long sampleLoopMicros  = ONE_SEC_MICROS/SAMPLE_LOOP_FREQ;
@@ -260,7 +260,7 @@ int counterSample=0;
 
 void loop() {
   
-  /* SAMPLE LOOP (400Hz) */
+  /* SAMPLE LOOP (100Hz) */
   currentTime = micros();
   if (currentState!=FlightState::landed && currentTime >= previousSampleTime + sampleLoopMicros) {
     previousSampleTime += sampleLoopMicros;
@@ -292,8 +292,7 @@ void loop() {
     // Serial.println(currentTime);
   }
 
-  /* COMPUTE LOOP (per 4 SAMPLEs : 100Hz) */
-  currentTime = micros();
+  /* COMPUTE LOOP (per 1 SAMPLEs : 100Hz) */
   // If num samples is multiple of 4, i.e. previousSampleTime/sampleLoopMicros % KALMAN_LOOP_FREQ_PER_SAMPLES
   if (currentState!=FlightState::landed && previousComputeWaits >= KALMAN_LOOP_FREQ_PER_SAMPLES) {
     previousComputeWaits = 0; // Reset compute counter
