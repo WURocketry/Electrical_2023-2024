@@ -83,9 +83,6 @@ FlightMonitor fm_ace(adafruit_bno085);
 
 // OpenLog objects/variables
 OpenLog logger;
-unsigned int cols    = sizeof(ringBuffer[0]) / sizeof(float);           //nos of columns in ringBuffer matrix
-unsigned int rows    = sizeof(ringBuffer)    / sizeof(ringBuffer[0]);   //nos of rows in ringBuffer
-unsigned int fullidx[RING_BUFFER_LENGTH];
 String logfile;
 bool writedata = true;
 
@@ -360,11 +357,6 @@ void setup() {
              0,0,0,0,
              0,0,0,0,
              0,0,0,0};
-
-  //OpenLog setup
-  for (int i = 0; i < cols; i++) {
-      fullidx[i] = i;
-  }
 
   Wire.begin();
   logger.begin();
