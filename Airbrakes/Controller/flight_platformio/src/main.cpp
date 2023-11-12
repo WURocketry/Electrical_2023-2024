@@ -273,10 +273,10 @@ int getNumberOfPrevFlights() {
 void setup() {
 
   Serial.begin(38400);
-  while (!Serial) {
-    ;  // wait for serial port to connect. Needed for native USB port only
-    //TODO REMOVE BEFORE FLIGHT
-  }
+  // while (!Serial) {
+  //   ;  // wait for serial port to connect. Needed for native USB port only
+  //   //TODO REMOVE BEFORE FLIGHT
+  // }
   delay(1000);
   Serial.println("> Initialized Serial comms!");
 
