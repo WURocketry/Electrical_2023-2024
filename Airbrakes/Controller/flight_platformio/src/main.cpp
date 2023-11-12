@@ -414,10 +414,6 @@ void loop() {
       int angleExtension = SRV_MAX_EXTENSION_ANGLE * currentPIDControl + 0.5 + SRV_ANGLE_DEG_OFFSET;  // +0.5 to round to nearest whole int
       srv.write(SRV_MAX_EXTENSION_ANGLE + SRV_ANGLE_DEG_OFFSET - angleExtension);  // Invert angle control
     }
-    else {
-      // Keep servo in stowed position if not in control
-      srv.write(140);
-    }
     
     // Serial.print("Performed control loop with signal ");
     // Serial.println(currentPIDControl);
