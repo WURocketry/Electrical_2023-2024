@@ -33,6 +33,7 @@ int ringBufferIndex = 0;
 #define SRV_MIN_PWM_LEN_MICROS  900
 #define SRV_MAX_PWM_LEN_MICROS  2050
 #define SRV_MAX_EXTENSION_ANGLE 120
+#define SRV_ANGLE_DEG_OFFSET    20
 
 // Target apogee
 #define ACE_TARGET_APOGEE 1463.04
@@ -410,12 +411,12 @@ void loop() {
       // Perform PID servo actuation
       // Note: stateVec(2) --> curr_Z_Position, stateVec(5) --> curr_Z_Velocity
       currentPIDControl = pid.control(stateVec(2), stateVec(5));
-      int angleExtension = SRV_MAX_EXTENSION_ANGLE * currentPIDControl + 0.5;  // +0.5 to round to nearest whole int
-      srv.write(angleExtension);
+      int angleExtension = SRV_MAX_EXTENSION_ANGLE * currentPIDControl + 0.5 + SRV_ANGLE_DEG_OFFSET;  // +0.5 to round to nearest whole int
+      srv.write(SRV_MAX_EXTENSION_ANGLE + SRV_ANGLE_DEG_OFFSET - angleExtension);  // Invert angle control
     }
     else {
       // Keep servo in stowed position if not in control
-      srv.write(0);
+      srv.write(140);
     }
     
     // Serial.print("Performed control loop with signal ");
