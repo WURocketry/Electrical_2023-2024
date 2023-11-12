@@ -1,3 +1,5 @@
+#pragma once
+
 #define ACCEL_ARRAY_LENGTH 49
 
 float accelReplace[ACCEL_ARRAY_LENGTH][2] {{0.0,70.0},
@@ -51,26 +53,6 @@ float accelReplace[ACCEL_ARRAY_LENGTH][2] {{0.0,70.0},
 {1.478,	70.0}};
 
 
-float getReplacedAccel(float timeSinceSat){
-
-    int accelRow = SearchAccelDataByTime(timeSinceSat);
-
-    if(accelRow==ACCEL_ARRAY_LENGTH-1){
-        return accelReplace[accelRow][1];
-    }
-
-    float x = timeSinceSat;
-    float y0 = accelReplace[accelRow][1];
-    float x0 = accelReplace[accelRow][0];
-    float y1 = accelReplace[accelRow+1][1];
-    float x1 = accelReplace[accelRow][0];
-
-    float replaceAccel = (y0*(x1-x)+y1*(x-x0))/(x1-x0);
-
-    return replaceAccel;
-
-}
-
 int SearchAccelDataByTime(float target) {
     
     int tCol = 0;    // time column
@@ -103,4 +85,24 @@ int SearchAccelDataByTime(float target) {
     }
     
     return mIdx;
+}
+
+float getReplacedAccel(float timeSinceSat){
+
+    int accelRow = SearchAccelDataByTime(timeSinceSat);
+
+    if(accelRow==ACCEL_ARRAY_LENGTH-1){
+        return accelReplace[accelRow][1];
+    }
+
+    float x = timeSinceSat;
+    float y0 = accelReplace[accelRow][1];
+    float x0 = accelReplace[accelRow][0];
+    float y1 = accelReplace[accelRow+1][1];
+    float x1 = accelReplace[accelRow][0];
+
+    float replaceAccel = (y0*(x1-x)+y1*(x-x0))/(x1-x0);
+
+    return replaceAccel;
+
 }

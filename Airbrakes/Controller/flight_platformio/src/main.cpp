@@ -5,16 +5,15 @@
 
 /* Our includes */
 #include <Measurement.h>
+#include <accelReplace.h>
+#include <simulation.h>
+#include <kalman.h>
 
 #include <FlightMonitor.h>
-#include <AdafruitBNO085.h>
 #include <PID_Controller.h>
 #include <AdafruitBMP388.h>
 #include <AdafruitBNO085.h>
-#include <accelReplace.h>
 
-#include <simulation.h>
-#include <kalman.h>
 
 // Loop rates (Hz)
 #define ONE_SEC_MICROS 1000000
@@ -258,20 +257,10 @@ void setup() {
   previousControlTime = micros();
 }
 
-int stateVecPrintCounter = 0;
-int counterSample=0;
+// int stateVecPrintCounter = 0;
+// int counterSample = 0;
 
 void loop() {
-  while (true) {
-    // Serial.println("Accel readings over 24,000 samples at 2500 micros frequency...");
-    // imu.printRawAccel(24000, 10);
-
-    Serial.println("Altimeter readings over 6,000 samples...");
-    alt.printRawAltitude(6000, 10);
-
-    Serial.println("DONE");
-    delay(1000000);
-  }
   
   /* SAMPLE LOOP (400Hz) */
   currentTime = micros();
@@ -279,27 +268,19 @@ void loop() {
     previousSampleTime += sampleLoopMicros;
     ++previousComputeWaits;
 
-    // Temporary test of simulated OR data
-    double simSample[2];
-    getSimulatedData(currentTime/1000000.0+15.96, simSample);
+    // // Temporary test of simulated OR data
+    // double simSample[2];
+    // getSimulatedData(currentTime/1000000.0+15.96, simSample);
 
-    if(counterSample%100==0){
-      Serial.print("Interp pos: ");
-      Serial.println(simSample[0]);
-      Serial.print("Interp acc: ");
-      Serial.println(simSample[1]);
-    }
-    counterSample++;
+    // if(counterSample%100==0){
+    //   Serial.print("Interp pos: ");
+    //   Serial.println(simSample[0]);
+    //   Serial.print("Interp acc: ");
+    //   Serial.println(simSample[1]);
+    // }
+    // counterSample++;
 
-    currentPosition = simSample[0];
-    currentAcceleration = simSample[1];
-    
-    /**
-     * TODO: 
-     *  1. Perform sensor samples here (UFS core)
-     *  2. Update sample buffers
-     *  3. Pack into static Measurement struct
-     **/
+    readMeasurement();  // Reads all SAMPLE loop sensors
 
     // Serial.print("Performed sample loop at ");
     // Serial.println(currentTime);
@@ -310,8 +291,6 @@ void loop() {
   // If num samples is multiple of 4, i.e. previousSampleTime/sampleLoopMicros % KALMAN_LOOP_FREQ_PER_SAMPLES
   if (currentState!=FlightState::landed && previousComputeWaits >= KALMAN_LOOP_FREQ_PER_SAMPLES) {
     previousComputeWaits = 0; // Reset compute counter
-
-    readMeasurement();
 
     quaternions = {currentMeasurement.q0,currentMeasurement.q1,currentMeasurement.q2,currentMeasurement.q3};
 
@@ -333,7 +312,7 @@ void loop() {
 
     if(measurementVec(3)>70.0){
       timeSinceSaturation = micros()/1000000.0 - timeOfSaturation;
-      measurementVec(3) = getReplacedAccel(timeSinceSaturation)
+      measurementVec(3) = getReplacedAccel(timeSinceSaturation);
     }
 
     //kalman filter steps
@@ -345,11 +324,10 @@ void loop() {
 
     }
 
-    if(stateVecPrintCounter%25==0){
-      Serial << stateVec << "\n";
-
-    }
-    stateVecPrintCounter++;
+    // if(stateVecPrintCounter%25==0){
+    //   Serial << stateVec << "\n";
+    // }
+    // stateVecPrintCounter++;
 
     // Write stateVec data to SDRAM
     // TODO add current value of control to eleventh element of the array
