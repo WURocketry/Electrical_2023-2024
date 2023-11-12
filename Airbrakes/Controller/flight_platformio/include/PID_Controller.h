@@ -20,15 +20,15 @@ class PID_Controller{
         double Ki;
         double Kp;
         double Kd;
-        int decayAltitudeThresholds[NUM_DECAY_THRESHOLDS];
-        int decayRates[NUM_DECAY_THRESHOLDS];
-        int maxErrorThresholds[NUM_MAX_ERROR_THRESHOLDS];
-        int maxErrorValues[NUM_DECAY_THRESHOLDS];
+        double decayAltitudeThresholds[NUM_DECAY_THRESHOLDS];
+        double decayRates[NUM_DECAY_THRESHOLDS];
+        double maxErrorThresholds[NUM_MAX_ERROR_THRESHOLDS];
+        double maxErrorValues[NUM_DECAY_THRESHOLDS];
 
         // Internal methods
         double getDesiredVelocity(double altitude);
         double linearInterpolation(double x, double x0, double x1, double y0, double y1);
-        float getErrorDecay(int altitude, double origError);
+        double getErrorDecay(int altitude, double origError);
 
     public:
     // Default Constructor
@@ -36,13 +36,13 @@ class PID_Controller{
         tgtAlt(targetAltitude),
         integral_error(0),
         prevError(0),
-        Ki(0.1),
-        Kp(0.01),
-        Kd(0.001),
-        decayAltitudeThresholds  {(int)targetAltitude/4, (int)targetAltitude/2, (int)targetAltitude*7/8, (int)targetAltitude*2},
-        decayRates          {40,                    20,                    10,                      0},
-        maxErrorThresholds  {(int)targetAltitude*2/8,   (int)targetAltitude*6/8,    (int)targetAltitude*2},
-        maxErrorValues      {30,                        10,                         3}
+        Ki(0.2),
+        Kp(1),
+        Kd(0.05),
+        decayAltitudeThresholds  {targetAltitude/4.0, targetAltitude/2.0, targetAltitude*7/8.0, targetAltitude*2.0},
+        decayRates          {40.0,                    20.0,                    10.0,                      0.0},
+        maxErrorThresholds  {targetAltitude*2.0/8.0,   targetAltitude*6.0/8.0,    targetAltitude*2.0},
+        maxErrorValues      {30.0,                        10.0,                         3.0}
     {};
 
     // Methods

@@ -3,6 +3,7 @@
 // include class header
 #include <PID_Controller.h>
 #include <vlt.h>
+#include <Arduino.h>
 
 #define I_ERROR_RESET_THRESHOLD 0.1
 
@@ -18,6 +19,9 @@ double PID_Controller::control(double currAltitude, double currVelocity){
     // Calculate proportional error
     double currError = input - setpoint;
 
+    Serial.print(currError,4);
+    Serial.println(" - current Velocity Error");
+
     // Calculate integral error
     integral_error += getErrorDecay(currAltitude, currError);
     if (currError < I_ERROR_RESET_THRESHOLD) {
@@ -32,16 +36,22 @@ double PID_Controller::control(double currAltitude, double currVelocity){
     // Calculate the control signal
     output = Kp * currError + Ki * integral_error + Kd * derivative;
 
+    Serial.print("Output of PID is: ");
+    Serial.println(output,4);
+
     // Normalize output as a proportion of max error
     if (currAltitude >= maxErrorThresholds[2]) {
-      output /= maxErrorThresholds[2];
+      output = output/3.0;
     }
     else if (currAltitude >= maxErrorThresholds[1]) {
-      output /= maxErrorThresholds[1];
+      output = output/10.0;
     }
     else {
-      output /= maxErrorThresholds[0];
+      output = output/30.0;
     }
+
+    Serial.print("PID output after max Error is ");
+    Serial.println(output,4);
 
     // Clamp output between 0 and 1
     if (output > 1) {
@@ -70,11 +80,16 @@ void PID_Controller::pid_config(double ki, double kp, double kd, int thresholds[
 double PID_Controller::getDesiredVelocity(double altitude){
     int altIndex = altitude/2;
     
-    if (altIndex < 0 || altIndex > 793) {
+    if (altIndex < 0) {
       // FAULT-PROTECTION: If altitude index is OoB, (currently) return very large
       // velocity so that the airbrakes stow (ace thinks it needs to minimize drag)
       return 9999.0;
     }
+
+    if( altIndex > (VLT_LENGTH -1)){
+      return 0.0;
+    }
+
     return linearInterpolation(altitude, vlt[altIndex][0], vlt[altIndex + 1][0], vlt[altIndex][1], vlt[altIndex + 1][1]);
 }
 
@@ -90,7 +105,7 @@ double PID_Controller::linearInterpolation(double x, double x0, double x1, doubl
 
 // @brief: Returns a "decaying" restriction on maximum error that is seen by Intg based on altitude
 //        (lower alt --> less strict --> larger errorDecay (to subtract from current integral error))
-float PID_Controller::getErrorDecay(int altitude, double origError) {
+double PID_Controller::getErrorDecay(int altitude, double origError) {
   double decayedError = origError;
 
   if (altitude >= decayAltitudeThresholds[3])

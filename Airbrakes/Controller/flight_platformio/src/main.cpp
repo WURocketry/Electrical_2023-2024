@@ -35,7 +35,7 @@ int ringBufferIndex = 0;
 #define SRV_MAX_EXTENSION_ANGLE 120
 
 // Target apogee
-#define ACE_TARGET_APOGEE 5120
+#define ACE_TARGET_APOGEE 1463.04
 
 using namespace BLA;
 
@@ -335,8 +335,8 @@ void loop() {
     // Write current control value to SDRAM[10]
     *(SDRAM_base + ((ringBufferIndex%RING_BUFFER_LENGTH)*RING_BUFFER_COLS + 10)) = currentPIDControl;
 
-    Serial.print("Wrote to ringBuffer at row ");
-    Serial.println(ringBufferIndex%RING_BUFFER_LENGTH);
+    // Serial.print("Wrote to ringBuffer at row ");
+    // Serial.println(ringBufferIndex%RING_BUFFER_LENGTH);
     ++ringBufferIndex;
     
 
@@ -418,7 +418,7 @@ void loop() {
       srv.write(0);
     }
     
-    Serial.print("Performed control loop with signal ");
-    Serial.println(currentPIDControl);
+    // Serial.print("Performed control loop with signal ");
+    // Serial.println(currentPIDControl);
   }
 }

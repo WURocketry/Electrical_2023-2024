@@ -8,7 +8,7 @@
 
 // Kalman filter variables
 const float kdt          = 1/((float)(SAMPLE_LOOP_FREQ/KALMAN_LOOP_FREQ_PER_SAMPLES)); //seconds
-const float processVar   = pow(0.5,2);
+const float processVar   = pow(0.8,2);
 const float altimeterVar = pow(.1,2);
 const float accelXVar    = pow(1,2);
 const float accelYVar    = pow(1,2);
