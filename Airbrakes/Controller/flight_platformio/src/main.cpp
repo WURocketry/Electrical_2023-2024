@@ -2,6 +2,10 @@
 #include <Arduino.h>
 #include <Servo.h>
 #include <BasicLinearAlgebra.h>
+#include <SparkFun_Qwiic_OpenLog_Arduino_Library.h>
+#include <Wire.h>
+#include <Arduino.h>
+#include <algorithm>
 
 /* Our includes */
 #include <Measurement.h>
@@ -67,6 +71,11 @@ Servo srv;
 // PID controller object and global control
 PID_Controller pid(ACE_TARGET_APOGEE);
 double currentPIDControl = 0;
+
+// OpenLog objects/variables
+OpenLog logger;
+String logfile;
+bool writedata = true;
 
 //Struct for holding current measurement
 static Measurement currentMeasurement;
@@ -199,6 +208,64 @@ FlightState coastTransition(FlightState currentState) {
   return currentState;
 }
 
+// OpenLog write to functions
+void dumpSDRAMtoFile(String writeto) {
+    logger.append(writeto); //open the file in openlog
+    
+    int writeToIndex;
+
+    if (ringBufferIndex > RING_BUFFER_LENGTH) {
+      // Write entire buffer to file
+      writeToIndex = RING_BUFFER_LENGTH;
+    }
+    else {
+      // Write up to ringBufferIndex
+      writeToIndex = ringBufferIndex;
+    }
+
+    for (int i=0; i<writeToIndex; ++i) {
+      for (int j=0; j<RING_BUFFER_COLS; ++j) {
+        logger.print((float)*(SDRAM_base + i*RING_BUFFER_COLS+j));
+      }
+      logger.println(); // newline at each row;
+    }
+  logger.syncFile();  //save changes
+}
+
+int getNumberOfPrevFlights() {
+    String filename = "fileNumAB.txt";
+    int fileCount = 0;
+
+    // Check if the file exists
+    long sizeOfFile = logger.size(filename);
+    if (sizeOfFile > -1) {
+        byte myBufferSize = 200; // Increase this buffer size to hold larger numbers
+        byte myBuffer[myBufferSize];
+        logger.read(myBuffer, myBufferSize, filename); // Load myBuffer with contents of fileNum.txt
+
+        String counterString = "";
+        for (int x = 0; x < myBufferSize; x++) {
+            if (myBuffer[x] >= '0' && myBuffer[x] <= '9') {
+                counterString += (char)myBuffer[x];
+            }
+        }
+
+        fileCount = counterString.toInt();
+    }
+
+    fileCount++;
+    
+    Serial.println(fileCount);
+
+    //overwrite file with new file count
+    logger.remove(filename, false);
+    logger.append(filename);
+    logger.print(String(fileCount));
+    logger.syncFile(); // save data
+
+    return fileCount;
+}
+
 
 void setup() {
 
@@ -236,10 +303,17 @@ void setup() {
 
   // Initialize vectors/matrices
   Serial.print("| Init Kalman state...");
-
   initializeKalmanFilter();
-  
   Serial.println("OK!");
+
+  // Initialize OpenLog
+  Serial.print("| Init OpenLog...");
+  Wire.begin();
+  logger.begin();
+  Serial.println("OK!");
+  int fileCount = getNumberOfPrevFlights();
+  logfile = "flight_" + String(fileCount) + "_AB.csv";
+  Serial.println("> Writing airbrake data to: " + logfile);
 
   Serial.println("> Init ACE OK! Starting program...");
   delay(1000);
@@ -419,5 +493,11 @@ void loop() {
     
     Serial.print("Performed control loop with signal ");
     Serial.println(currentPIDControl);
+  }
+
+  if ((currentState == FlightState::landed) && writedata) {
+    dumpSDRAMtoFile(logfile);
+
+    writedata = false;  // write data only once
   }
 }
