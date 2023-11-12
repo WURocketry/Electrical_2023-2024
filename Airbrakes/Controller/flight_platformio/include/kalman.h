@@ -32,7 +32,7 @@ BLA::Matrix<3,3> rotMat;
 
 BLA::Matrix<3> measuredAccel;
 
-BLA::Matrix<3> intertialAccel;
+BLA::Matrix<3> inertialAccel;
 
 BLA::Matrix<4> quaternions;
 
@@ -127,7 +127,7 @@ void kalmanUpdate(){
     stateVec = stateVec + Kkalman*innovation;
 }
 
-void getIntertialAccel(){
+void getInertialAccel(){
 
     rotMat(0,0) = 2*(pow(quaternions(0),2)+pow(quaternions(1),2))-1;
     rotMat(0,1) = 2*(quaternions(1)*quaternions(2)-quaternions(0)*quaternions(3));
@@ -139,7 +139,17 @@ void getIntertialAccel(){
     rotMat(2,1) = 2*(quaternions(2)*quaternions(3)+quaternions(0)*quaternions(1));
     rotMat(2,2) = 2*(pow(quaternions(0),2)+pow(quaternions(3),2))-1;
 
-    intertialAccel = rotMat*measuredAccel;
+    // Serial.println(rotMat(1,1));
+
+    inertialAccel = rotMat*measuredAccel;
+
+    // Serial.print("INERT ACC VEC: ");
+    // Serial.print(inertialAccel(0));
+    // Serial.print(" ");
+    // Serial.print(inertialAccel(1));
+    // Serial.print(" ");
+    // Serial.print(inertialAccel(2));
+    // Serial.print(" ");
     
 
 }

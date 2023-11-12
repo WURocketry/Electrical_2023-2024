@@ -30,7 +30,7 @@ private:
     int landingCounts;
 public:
 // Constructors
-    FlightMonitor(AdafruitBNO085 bno085);
+    FlightMonitor(AdafruitBNO085 imu);
     FlightMonitor(); 
 // Methods
     bool detectedLaunch();

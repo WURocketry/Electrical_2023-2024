@@ -2,14 +2,21 @@
 #include <Arduino.h>
 #include <Servo.h>
 #include <BasicLinearAlgebra.h>
+#include <SparkFun_Qwiic_OpenLog_Arduino_Library.h>
+#include <Wire.h>
+#include <Arduino.h>
+// #include <algorithm>
 
 /* Our includes */
-#include <FlightMonitor.h>
-#include <AdafruitBNO085.h>
-#include <PID_Controller.h>
-// include statement for Altimeter (which will tooootally happen, right? right..?)
+#include <Measurement.h>
+#include <accelReplace.h>
 #include <simulation.h>
 #include <kalman.h>
+
+#include <FlightMonitor.h>
+#include <PID_Controller.h>
+#include <AdafruitBMP388.h>
+#include <AdafruitBNO085.h>
 
 // Configure ringBuffer for saving airbrakes sensor data
 #define RING_BUFFER_COLS 11
@@ -32,7 +39,7 @@ int ringBufferIndex = 0;
 // Servo defines
 #define SRV_MIN_PWM_LEN_MICROS  900
 #define SRV_MAX_PWM_LEN_MICROS  2050
-#define SRV_MAX_EXTENSION_ANGLE 120
+#define SRV_MAX_EXTENSION_ANGLE 80
 #define SRV_ANGLE_DEG_OFFSET    20
 
 // Target apogee
@@ -52,7 +59,8 @@ const long computeLoopMicros = KALMAN_LOOP_FREQ_PER_SAMPLES * sampleLoopMicros;
 const long controlLoopMicros = ONE_SEC_MICROS/CONTROL_LOOP_FREQ;
 
 // Flight monitor and sensor objects
-AdafruitBNO085 adafruit_bno085;
+AdafruitBMP388 alt;
+AdafruitBNO085 imu;
 FlightMonitor fm_ace;
 
 bool dataValid = true;
@@ -64,44 +72,43 @@ Servo srv;
 PID_Controller pid(ACE_TARGET_APOGEE);
 double currentPIDControl = 0;
 
-// Peripheral helper functions/structs
-struct Measurement {
-  /** 
-   * UFS NOTE: This struct defines format for data used by
-   * this flight software -- but the sampleLoop should use
-   * UFS objects to actually sample data and then pack it into
-   * this struct
-   **/
-  float xAccel;
-  float yAccel;
-  float zAccel;
-  float q0;
-  float q1;
-  float q2;
-  float q3;
-  float altitude;
-  Measurement() {}
-  Measurement(float xAcc, float yAcc, float zAcc,float que0, float que1, float que2, float que3, float alt): 
-    xAccel(xAcc), yAccel(yAcc), zAccel(zAcc),q0(que1),q1(que1), q2(que2),q3(que3), altitude(alt) {}
-};
-
-double currentPosition = 0.0;
-double currentAcceleration = 0.0;
-
-struct Measurement makeMeasurement() {
-  // TODO: placeholder measurement values
-
-  dataValid = true;
-
-  struct Measurement collectedData(
-    0.0, 0.0, currentAcceleration,0.0,0.0,0.0,1.0,currentPosition // hardcode z-heading quat
-  );
-
-  return collectedData;
-}
+// OpenLog objects/variables
+OpenLog logger;
+String logfile;
+bool writedata = true;
 
 //Struct for holding current measurement
-struct Measurement currentMeasurement;
+static Measurement currentMeasurement;
+
+//variables for AccelReplacement
+float timeSinceSaturation = 0.0;
+float timeOfSaturation = 0.0;
+boolean imuSaturated = false;
+
+
+bool readMeasurement() {
+  dataValid = true;
+
+  // Measure Acceleration & Rotation Quat
+  if (!imu.measureIMU(&currentMeasurement)) {
+    dataValid = false;
+  }
+
+  // Measure Altitude
+  if (!alt.measureAltitude(&currentMeasurement)) {
+    dataValid = false;
+  }
+
+  // Serial.print(currentMeasurement.q0);
+  // Serial.print(" ");
+  // Serial.print(currentMeasurement.q1);
+  // Serial.print(" ");
+  // Serial.print(currentMeasurement.q2);
+  // Serial.print(" ");
+  // Serial.println(currentMeasurement.q3);
+
+  return dataValid;
+}
 
 //Finite State Machine Variables and State Transition Functions
 enum class FlightState {
@@ -204,13 +211,71 @@ FlightState coastTransition(FlightState currentState) {
   return currentState;
 }
 
+// OpenLog write to functions
+void dumpSDRAMtoFile(String writeto) {
+    logger.append(writeto); //open the file in openlog
+    
+    int writeToIndex;
+
+    if (ringBufferIndex > RING_BUFFER_LENGTH) {
+      // Write entire buffer to file
+      writeToIndex = RING_BUFFER_LENGTH;
+    }
+    else {
+      // Write up to ringBufferIndex
+      writeToIndex = ringBufferIndex;
+    }
+
+    for (int i=0; i<writeToIndex; ++i) {
+      for (int j=0; j<RING_BUFFER_COLS; ++j) {
+        logger.print((float)*(SDRAM_base + i*RING_BUFFER_COLS+j));
+      }
+      logger.println(); // newline at each row;
+    }
+  logger.syncFile();  //save changes
+}
+
+int getNumberOfPrevFlights() {
+    String filename = "fileNumAB.txt";
+    int fileCount = 0;
+
+    // Check if the file exists
+    long sizeOfFile = logger.size(filename);
+    if (sizeOfFile > -1) {
+        byte myBufferSize = 200; // Increase this buffer size to hold larger numbers
+        byte myBuffer[myBufferSize];
+        logger.read(myBuffer, myBufferSize, filename); // Load myBuffer with contents of fileNum.txt
+
+        String counterString = "";
+        for (int x = 0; x < myBufferSize; x++) {
+            if (myBuffer[x] >= '0' && myBuffer[x] <= '9') {
+                counterString += (char)myBuffer[x];
+            }
+        }
+
+        fileCount = counterString.toInt();
+    }
+
+    fileCount++;
+    
+    Serial.println(fileCount);
+
+    //overwrite file with new file count
+    logger.remove(filename, false);
+    logger.append(filename);
+    logger.print(String(fileCount));
+    logger.syncFile(); // save data
+
+    return fileCount;
+}
+
 
 void setup() {
 
   Serial.begin(38400);
   while (!Serial) {
     ;  // wait for serial port to connect. Needed for native USB port only
-    //TODO REMOVE FOR FLIGHT
+    //TODO REMOVE BEFORE FLIGHT
   }
   delay(1000);
   Serial.println("> Initialized Serial comms!");
@@ -230,17 +295,28 @@ void setup() {
   currentState = FlightState::detectLaunch;
   Serial.println("OK!");
 
-  // Attach servo pin to D9 (PWM len min: 900 us, max: 2050us)
+  // Initialize sensor hardware
+  alt.init();
+  imu.init();
+  
+  // Attach servo pin to D9 (PWM len min: 900 us, max: 2050us)  // this servo library is trolling us
   Serial.print("| Init servo PWM...");
   srv.attach(9, SRV_MIN_PWM_LEN_MICROS, SRV_MAX_PWM_LEN_MICROS);
   Serial.println("OK!");
 
   // Initialize vectors/matrices
   Serial.print("| Init Kalman state...");
-
   initializeKalmanFilter();
-  
   Serial.println("OK!");
+
+  // Initialize OpenLog
+  Serial.print("| Init OpenLog...");
+  Wire.begin();
+  logger.begin();
+  Serial.println("OK!");
+  int fileCount = getNumberOfPrevFlights();
+  logfile = "flight_" + String(fileCount) + "_AB.csv";
+  Serial.println("> Writing airbrake data to: " + logfile);
 
   Serial.println("> Init ACE OK! Starting program...");
   delay(1000);
@@ -252,8 +328,8 @@ void setup() {
   previousControlTime = micros();
 }
 
-int stateVecPrintCounter = 0;
-int counterSample=0;
+// int stateVecPrintCounter = 0;
+// int counterSample = 0;
 
 void loop() {
   
@@ -263,27 +339,19 @@ void loop() {
     previousSampleTime += sampleLoopMicros;
     ++previousComputeWaits;
 
-    // Temporary test of simulated OR data
-    double simSample[2];
-    getSimulatedData(currentTime/1000000.0, simSample);
+    // // Temporary test of simulated OR data
+    // double simSample[2];
+    // getSimulatedData(currentTime/1000000.0+15.96, simSample);
 
-    if(counterSample%100==0){
-      Serial.print("Interp pos: ");
-      Serial.println(simSample[0]);
-      Serial.print("Interp acc: ");
-      Serial.println(simSample[1]);
-    }
-    counterSample++;
+    // if(counterSample%100==0){
+    //   Serial.print("Interp pos: ");
+    //   Serial.println(simSample[0]);
+    //   Serial.print("Interp acc: ");
+    //   Serial.println(simSample[1]);
+    // }
+    // counterSample++;
 
-    currentPosition = simSample[0];
-    currentAcceleration = simSample[1];
-    
-    /**
-     * TODO: 
-     *  1. Perform sensor samples here (UFS core)
-     *  2. Update sample buffers
-     *  3. Pack into static Measurement struct
-     **/
+    readMeasurement();  // Reads all SAMPLE loop sensors
 
     // Serial.print("Performed sample loop at ");
     // Serial.println(currentTime);
@@ -294,20 +362,38 @@ void loop() {
   if (currentState!=FlightState::landed && previousComputeWaits >= KALMAN_LOOP_FREQ_PER_SAMPLES) {
     previousComputeWaits = 0; // Reset compute counter
 
-    currentMeasurement = makeMeasurement();
-
     quaternions = {currentMeasurement.q0,currentMeasurement.q1,currentMeasurement.q2,currentMeasurement.q3};
+
+    // Serial.print("QUAT: ");
+    // Serial.print(currentMeasurement.q0);
+    // Serial.print(" ");
+    // Serial.print(currentMeasurement.q1);
+    // Serial.print(" ");
+    // Serial.print(currentMeasurement.q2);
+    // Serial.print(" ");
+    // Serial.print(currentMeasurement.q3);
+    // Serial.print(" ");
 
     measuredAccel = {currentMeasurement.xAccel,
                      currentMeasurement.yAccel,
                      currentMeasurement.zAccel};
     
-    getIntertialAccel();
+    getInertialAccel();
 
     measurementVec = {currentMeasurement.altitude,
-                      intertialAccel(0),
-                      intertialAccel(1),
-                      intertialAccel(2)};
+                      inertialAccel(0),
+                      inertialAccel(1),
+                      inertialAccel(2)};
+
+    if((measurementVec(3) > 70.0) && (!imuSaturated)){
+      imuSaturated = true;
+      timeOfSaturation = micros()/1000000.0;
+    }
+
+    if(measurementVec(3)>70.0){
+      timeSinceSaturation = micros()/1000000.0 - timeOfSaturation;
+      measurementVec(3) = getReplacedAccel(timeSinceSaturation);
+    }
 
     //kalman filter steps
     kalmanPredict();
@@ -318,11 +404,10 @@ void loop() {
 
     }
 
-    if(stateVecPrintCounter%25==0){
-      Serial << stateVec << "\n";
-
-    }
-    stateVecPrintCounter++;
+    // if(stateVecPrintCounter%25==0){
+    //   Serial << stateVec << "\n";
+    // }
+    // stateVecPrintCounter++;
 
     // Perform SDRAM data saving
     // Write timestamp data to SDRAM[0]
