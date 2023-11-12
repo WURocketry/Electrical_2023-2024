@@ -57,7 +57,7 @@ const long controlLoopMicros = ONE_SEC_MICROS/CONTROL_LOOP_FREQ;
 // Flight monitor and sensor objects
 AdafruitBMP388 alt;
 AdafruitBNO085 imu;
-FlightMonitor fm_ace();
+FlightMonitor fm_ace;
 
 bool dataValid = true;
 
