@@ -11,12 +11,6 @@
 #include <simulation.h>
 #include <kalman.h>
 
-// Loop rates (Hz)
-#define ONE_SEC_MICROS 1000000
-#define SAMPLE_LOOP_FREQ 100
-#define KALMAN_LOOP_FREQ_PER_SAMPLES 1  // Compute per n=1 samples
-#define CONTROL_LOOP_FREQ 20
-
 // Configure ringBuffer for saving airbrakes sensor data
 #define RING_BUFFER_COLS 11
 #ifdef RP2040_PLATFORM
@@ -58,7 +52,7 @@ const long controlLoopMicros = ONE_SEC_MICROS/CONTROL_LOOP_FREQ;
 
 // Flight monitor and sensor objects
 AdafruitBNO085 adafruit_bno085;
-FlightMonitor fm_ace(adafruit_bno085);
+FlightMonitor fm_ace;
 
 bool dataValid = true;
 

@@ -1,8 +1,10 @@
 #include <BasicLinearAlgebra.h>
+
+// Loop rates (Hz)
 #define ONE_SEC_MICROS 1000000
-#define SAMPLE_LOOP_FREQ 400
-#define KALMAN_LOOP_FREQ_PER_SAMPLES 4  // Compute per n=4 samples
-#define CONTROL_LOOP_FREQ 1
+#define SAMPLE_LOOP_FREQ 100
+#define KALMAN_LOOP_FREQ_PER_SAMPLES 1  // Compute per n=1 samples
+#define CONTROL_LOOP_FREQ 20
 
 // Kalman filter variables
 const float kdt          = 1/((float)(SAMPLE_LOOP_FREQ/KALMAN_LOOP_FREQ_PER_SAMPLES)); //seconds
