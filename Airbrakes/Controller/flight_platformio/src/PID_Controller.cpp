@@ -32,6 +32,25 @@ double PID_Controller::control(double currAltitude, double currVelocity){
     // Calculate the control signal
     output = Kp * currError + Ki * integral_error + Kd * derivative;
 
+    // Normalize output as a proportion of max error
+    if (currAltitude >= maxErrorThresholds[2]) {
+      output /= maxErrorThresholds[2];
+    }
+    else if (currAltitude >= maxErrorThresholds[1]) {
+      output /= maxErrorThresholds[1];
+    }
+    else {
+      output /= maxErrorThresholds[0];
+    }
+
+    // Clamp output between 0 and 1
+    if (output > 1) {
+      output = 1;
+    }
+    else if (output < 0) {
+      output = 0;
+    }
+
     return output;
 }
 
@@ -40,7 +59,7 @@ void PID_Controller::pid_config(double ki, double kp, double kd, int thresholds[
     Kp=kp;
     Kd=kd;
     for(int i=0; i<3; i++){
-      altitudeThresholds[i] = thresholds[i];
+      decayAltitudeThresholds[i] = thresholds[i];
     }
     for(int i=0; i<3; i++){
       decayRates[i] = rates[i];
@@ -74,15 +93,15 @@ double PID_Controller::linearInterpolation(double x, double x0, double x1, doubl
 float PID_Controller::getErrorDecay(int altitude, double origError) {
   double decayedError = origError;
 
-  if (altitude >= altitudeThresholds[0])
-    decayedError -= decayRates[0];
-  else if (altitude >= altitudeThresholds[1]) 
-    decayedError -= decayRates[1];
-  else if (altitude >= altitudeThresholds[2]) 
-    decayedError -= decayRates[2];
-  else
+  if (altitude >= decayAltitudeThresholds[3])
     return decayedError;  // Full error impact when above highest threshold, no decay on original error
-  
+  else if (altitude >= decayAltitudeThresholds[2]) 
+    decayedError -= decayRates[2];
+  else if (altitude >= decayAltitudeThresholds[1]) 
+    decayedError -= decayRates[1];
+  else
+    decayedError -= decayRates[0];
+
   if (decayedError < 0) {
     // Prevent negative error decay
     return 0;

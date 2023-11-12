@@ -15,12 +15,6 @@
 #include <AdafruitBNO085.h>
 
 
-// Loop rates (Hz)
-#define ONE_SEC_MICROS 1000000
-#define SAMPLE_LOOP_FREQ 400
-#define KALMAN_LOOP_FREQ_PER_SAMPLES 4  // Compute per n=4 samples
-#define CONTROL_LOOP_FREQ 1
-
 // Configure ringBuffer for saving airbrakes sensor data
 #define RING_BUFFER_COLS 11
 #ifdef RP2040_PLATFORM
@@ -31,11 +25,12 @@
 #elif PORTENTA_H7_M7_PLATFORM
   #warning "CONFIG: Configuring ringBuffer for Portenta_H7 platform"
   #include <SDRAM.h>
-  #define RING_BUFFER_LENGTH 12000
+  #define RING_BUFFER_LENGTH 30000
 
   SDRAMClass ram;
-  float (*ringBuffer)[RING_BUFFER_LENGTH];
+  // float (*ringBuffer)[RING_BUFFER_LENGTH]; // Not currently using
 #endif
+float* SDRAM_base = (float*)0x60000000;  // Base pointer to DRAM start address
 int ringBufferIndex = 0;
 
 // Servo defines
@@ -52,7 +47,7 @@ using namespace BLA;
 unsigned long currentTime;
 unsigned long previousFilterReset;
 unsigned long previousSampleTime;
-unsigned int  previousComputeWaits; // counter for when compute should occur after n=4 samples
+unsigned int  previousComputeWaits; // counter for when compute should occur after n=1 samples
 unsigned long previousControlTime;
 
 const long sampleLoopMicros  = ONE_SEC_MICROS/SAMPLE_LOOP_FREQ;
@@ -62,15 +57,16 @@ const long controlLoopMicros = ONE_SEC_MICROS/CONTROL_LOOP_FREQ;
 // Flight monitor and sensor objects
 AdafruitBMP388 alt;
 AdafruitBNO085 imu;
-FlightMonitor fm_ace(imu);
+FlightMonitor fm_ace();
 
 bool dataValid = true;
 
 // Servo object
 Servo srv;
 
-// PID controller object
+// PID controller object and global control
 PID_Controller pid(ACE_TARGET_APOGEE);
+double currentPIDControl = 0;
 
 //Struct for holding current measurement
 static Measurement currentMeasurement;
@@ -90,7 +86,6 @@ bool readMeasurement() {
   }
 
   // Measure Rotation Quat
-  // Note: if this is incorrect, should 
   if(!imu.measureRotationQuaternion(&currentMeasurement)) {
     dataValid = false;
   }
@@ -221,7 +216,7 @@ void setup() {
   Serial.print("| Init SDRAM...");
   ram.begin();
   delay(100);
-  ringBuffer = (float(*)[RING_BUFFER_LENGTH])ram.malloc(sizeof(float[RING_BUFFER_LENGTH][RING_BUFFER_COLS]));
+  // ringBuffer = (float(*)[RING_BUFFER_LENGTH])ram.malloc(sizeof(float[RING_BUFFER_LENGTH][RING_BUFFER_COLS]));  // Not currently used
   Serial.println("OK!");
 
 #endif
@@ -234,10 +229,9 @@ void setup() {
   alt.init();
   imu.init();
   
-
-  // Attach servo pin to PWM7 (D0 --> PWM len min: 900 us, max: 2050us)
+  // Attach servo pin to D9 (PWM len min: 900 us, max: 2050us)  // this servo library is trolling us
   Serial.print("| Init servo PWM...");
-  srv.attach(0, SRV_MIN_PWM_LEN_MICROS, SRV_MAX_PWM_LEN_MICROS);
+  srv.attach(9, SRV_MIN_PWM_LEN_MICROS, SRV_MAX_PWM_LEN_MICROS);
   Serial.println("OK!");
 
   // Initialize vectors/matrices
@@ -262,7 +256,7 @@ void setup() {
 
 void loop() {
   
-  /* SAMPLE LOOP (400Hz) */
+  /* SAMPLE LOOP (100Hz) */
   currentTime = micros();
   if (currentState!=FlightState::landed && currentTime >= previousSampleTime + sampleLoopMicros) {
     previousSampleTime += sampleLoopMicros;
@@ -286,8 +280,7 @@ void loop() {
     // Serial.println(currentTime);
   }
 
-  /* COMPUTE LOOP (per 4 SAMPLEs : 100Hz) */
-  currentTime = micros();
+  /* COMPUTE LOOP (per 1 SAMPLEs : 100Hz) */
   // If num samples is multiple of 4, i.e. previousSampleTime/sampleLoopMicros % KALMAN_LOOP_FREQ_PER_SAMPLES
   if (currentState!=FlightState::landed && previousComputeWaits >= KALMAN_LOOP_FREQ_PER_SAMPLES) {
     previousComputeWaits = 0; // Reset compute counter
@@ -329,15 +322,21 @@ void loop() {
     // }
     // stateVecPrintCounter++;
 
-    // Write stateVec data to SDRAM
-    // TODO add current value of control to eleventh element of the array
-    ringBuffer[ringBufferIndex%RING_BUFFER_LENGTH][0] = micros()/1000000.0;
-    for(int i = 1; i<RING_BUFFER_COLS-1; i++){
-      ringBuffer[ringBufferIndex%RING_BUFFER_LENGTH][i] = stateVec(i-1);
+    // Perform SDRAM data saving
+    // Write timestamp data to SDRAM[0]
+    *(SDRAM_base + ((ringBufferIndex%RING_BUFFER_LENGTH)*RING_BUFFER_COLS)) = (float)currentTime; // Last currentTime should be from sample loops
+
+    // Write stateVec data to SDRAM[1-9]
+    for (int i=1; i<RING_BUFFER_COLS-1; ++i) {
+        *(SDRAM_base + ((ringBufferIndex%RING_BUFFER_LENGTH)*RING_BUFFER_COLS + i)) = (float)stateVec(i);
     }
-    //Serial.print("Wrote to ringBuffer at idx ");
-    //Serial.println(ringBufferIndex);
-    ringBufferIndex++;
+
+    // Write current control value to SDRAM[10]
+    *(SDRAM_base + ((ringBufferIndex%RING_BUFFER_LENGTH)*RING_BUFFER_COLS + 10)) = currentPIDControl;
+
+    Serial.print("Wrote to ringBuffer at row ");
+    Serial.println(ringBufferIndex%RING_BUFFER_LENGTH);
+    ++ringBufferIndex;
     
 
     /* Switch statement for FSM of ACE system modes */
@@ -409,7 +408,8 @@ void loop() {
     if (currentState==FlightState::control) {
       // Perform PID servo actuation
       // Note: stateVec(2) --> curr_Z_Position, stateVec(5) --> curr_Z_Velocity
-      int angleExtension = SRV_MAX_EXTENSION_ANGLE * pid.control(stateVec(2), stateVec(5)) + 0.5;  // +0.5 to round to nearest whole int
+      currentPIDControl = pid.control(stateVec(2), stateVec(5));
+      int angleExtension = SRV_MAX_EXTENSION_ANGLE * currentPIDControl + 0.5;  // +0.5 to round to nearest whole int
       srv.write(angleExtension);
     }
     else {
@@ -417,7 +417,7 @@ void loop() {
       srv.write(0);
     }
     
-    Serial.print("Performed control loop at ");
-    Serial.println(currentTime);
+    Serial.print("Performed control loop with signal ");
+    Serial.println(currentPIDControl);
   }
 }
