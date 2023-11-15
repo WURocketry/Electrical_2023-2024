@@ -75,7 +75,7 @@ double currentPIDControl = 0;
 // OpenLog objects/variables
 OpenLog logger;
 String logfile;
-bool writedata = true;
+bool didWriteData = false;
 
 //Struct for holding current measurement
 static Measurement currentMeasurement;
@@ -474,7 +474,12 @@ void loop() {
         currentState = coastTransition(currentState);
         break;
       case FlightState::landed:
-        //if you have gotten here wait forever
+        // Write data to OpenLog once when landed
+        if (!didWriteData) {
+          dumpSDRAMtoFile();
+          didWriteData = true;
+        }
+        
         break;
       default:
         // should not reach this state
