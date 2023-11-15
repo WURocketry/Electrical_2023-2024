@@ -1,13 +1,21 @@
+//pIO implementation of payload electrical main sketch - does not compile 11/9/23
+
+#include <Arduino.h>
+
 #include <algorithm>
 #include <bitset>
+
+#include <Wire.h>
 #include <Adafruit_Sensor.h>
 #include <Adafruit_BNO08x.h>
 #include "Adafruit_BME680.h"
 #include <Adafruit_GPS.h>
 #include "SparkFun_Qwiic_OpenLog_Arduino_Library.h"
 #include "Adafruit_MAX1704X.h"
-#include <RadioLib.h>
+#include <SPI.h>
+#include <RH_RF95.h>
 #include <Adafruit_NeoPixel.h>
+
 
 // Define sensor objects
 Adafruit_BNO08x bno08x;
@@ -28,6 +36,7 @@ struct euler_t {
   float roll;
 } ypr;
 
+
 //enum for global array indices
 enum{
   BNO_YAW,
@@ -36,7 +45,6 @@ enum{
   BNO_XACCEL,
   BNO_YACCEL,
   BNO_ZACCEL,
-  SECONDS_SINCE_ON,
   BME_TEMPERATURE,
   BME_PRESSURE,
   BME_HUMIDITY,
@@ -44,6 +52,7 @@ enum{
   BME_ALTITUDE,
   GPS_HOUR,
   GPS_MINUTE,
+  GPS_SECONDS,
   GPS_SPEED,
   GPS_LATITUDE,
   GPS_LONGITUDE,
@@ -61,7 +70,6 @@ const char* ENUM_NAMES[] = {
   "BNO_XACCEL",
   "BNO_YACCEL",
   "BNO_ZACCEL",
-  "SECONDS_SINCE_ON",
   "BME_TEMPERATURE",
   "BME_PRESSURE",
   "BME_HUMIDITY",
@@ -69,6 +77,7 @@ const char* ENUM_NAMES[] = {
   "BME_ALTITUDE",
   "GPS_HOUR",
   "GPS_MINUTE",
+  "GPS_SECONDS",
   "GPS_SPEED",
   "GPS_LATITUDE",
   "GPS_LONGITUDE",
@@ -88,10 +97,6 @@ sh2_SensorId_t reportType = SH2_ARVR_STABILIZED_RV;
 long reportIntervalUs = 5000;
 
 // BME680 Definitions 
-#define BME_SCK 13
-#define BME_MISO 12
-#define BME_MOSI 11
-#define BME_CS 10
 #define SEALEVELPRESSURE_HPA (1013.25)
 
 //GPS Defintions
@@ -109,83 +114,65 @@ unsigned int smallidx[] = {BNO_YAW,
                            BNO_ROLL, 
                            BNO_XACCEL, 
                            BNO_YACCEL, 
-                           BNO_ZACCEL,
-                           SECONDS_SINCE_ON};
+                           BNO_ZACCEL};
 
 //Battery Monitor Defintions
 float lastBatteryVoltage = 0.0;
 unsigned long lastBatteryCheck = 0;  
 
-
-// Define the pin mapping for the RFM95 LoRa module
-#define RFM95_CS    16  // Chip select pin
-#define RFM95_RST   17  // Reset pin
-#define RFM95_IRQ   21  // Interrupt pin, connected to DIO0
-#define RFM95_GPIO  22  // Additional GPIO, connected to DIO1
-SX1276 radio = new Module(RFM95_CS, RFM95_IRQ, RFM95_RST, RFM95_GPIO);
+//LoRa Radio Definitions
+#define RFM95_CS   16
+#define RFM95_INT  21
+#define RFM95_RST  17
+#define RF95_FREQ 915.0
+RH_RF95 rf95(RFM95_CS, RFM95_INT);
 int16_t packetnum = 0;  
 
 //Define timing separations for devices
 float bnoTime = 2000;
-float bmeTime = 200;
+float bmeTime = 2000;
 float gpsTime = 2000;
 float batteryTime = 2000;
-float rfTime = 1000;
 
 unsigned long bnoTimer = 0;
 unsigned long bmeTimer = 0;
 unsigned long gpsTimer = 0;
 unsigned long batteryTimer = 0;
-unsigned long rfTimer = 0;
-
 
 void setup() {
 
   Serial.begin(115200);
   pinMode(LED_BUILTIN, OUTPUT);
 
-  float transmitPower = 20;
-  float currentFrequency = 916.23;
+  delay(10000);
+
+  Serial.println("init radio");
 
   //LoRa Setup
   pinMode(RFM95_RST, OUTPUT);
   digitalWrite(RFM95_RST, HIGH);
 
+  Serial.println("init radio");
+  //Radio Reset
   digitalWrite(RFM95_RST, LOW);
   delay(10);
   digitalWrite(RFM95_RST, HIGH);
   delay(10);
-  
-  int state = radio.begin();
-  if (state == RADIOLIB_ERR_NONE) {
-    // no error
-    Serial.println(F("Initialization successful!"));
-  } else {
-    ErrorLEDLoop("Failed to Init LoRa - Halting");
-  }
 
-  // set transmit power
-  state = radio.setOutputPower(transmitPower, false);
-  if(state == RADIOLIB_ERR_NONE) {
-    Serial.print(F("Transmit Power set to: "));
-    Serial.print(transmitPower);
-    Serial.println(F(" dBm"));
-  } else {
-    Serial.print(F("Setting Output Power Failed:, code "));
-    Serial.println(state);
+  //LoRa Init & Frequency Test
+  while (!rf95.init()) {
+    Serial.println("LoRa radio init failed, Halting");
   }
+  Serial.println("LoRa radio init OK!");
+  Serial.println("init radio");
 
-  state = radio.setFrequency(currentFrequency);
-  
-  if(state == RADIOLIB_ERR_NONE) {
-    Serial.print(F("Frequency set to: "));
-    Serial.print(currentFrequency);
-    Serial.println(F(" MHz"));
-  } else {
-    Serial.print(F("Setting frequency failed, code "));
-    Serial.println(state);
+  // Defaults after init are 434.0MHz, modulation GFSK_Rb250Fd250, +13dbM
+  if (!rf95.setFrequency(RF95_FREQ)) {
+    ErrorLEDLoop("setFrequency failed, Halting");
   }
-
+  Serial.print("Set Freq to: "); Serial.println(RF95_FREQ);
+  rf95.setTxPower(23, false); //5-23 power level, 23 is max
+  Serial.println("init radio");
 
 
   //init Neopixel
@@ -234,28 +221,13 @@ void setup() {
   writeColumnHeaders(ENUM_NAMES, fullidx, filename);
   writeColumnHeaders(ENUM_NAMES, smallidx, smallFileName);
 
-  bmeTimer = millis();
-  bnoTimer = millis();
-  gpsTimer = millis();
-  batteryTimer = millis();
-  rfTimer = millis();
-  
-  //initBatteryMonitor();
+
 
 }
 
-
-
-
-
-
-
-
-
-
 void ErrorLEDLoop(const char* error_msg){
   while(true){
-    Serial.println(error_msg);
+    //Serial.println(error_msg);
     pixels.setPixelColor(0, pixels.Color(255, 0, 0));
     pixels.show();
     delay(1000);                      
@@ -297,14 +269,21 @@ void collectDataFromBNO() {
         quaternionToEulerRV(&sensorValue.un.arvrStabilizedRV, &ypr, true);
 
         DATA_COMPONENT_READINGS[BNO_YAW] = ypr.yaw;
-        DATA_COMPONENT_READINGS[BNO_PITCH] = ypr.pitch;
-        DATA_COMPONENT_READINGS[BNO_ROLL] = ypr.roll;
 
-        DATA_COMPONENT_READINGS[BNO_XACCEL] = sensorValue.un.accelerometer.x;
-        DATA_COMPONENT_READINGS[BNO_YACCEL] = sensorValue.un.accelerometer.y;
-        DATA_COMPONENT_READINGS[BNO_ZACCEL] = sensorValue.un.accelerometer.z;
 
-        DATA_COMPONENT_READINGS[SECONDS_SINCE_ON] = millis()/1000;
+      DATA_COMPONENT_READINGS[BNO_PITCH] = ypr.pitch;
+
+      DATA_COMPONENT_READINGS[BNO_ROLL] = ypr.roll;
+
+      DATA_COMPONENT_READINGS[BNO_XACCEL] = sensorValue.un.accelerometer.x;
+      DATA_COMPONENT_READINGS[BNO_YACCEL] = sensorValue.un.accelerometer.y;
+      DATA_COMPONENT_READINGS[BNO_ZACCEL] = sensorValue.un.accelerometer.z;
+
+      // syntax for linear acceleration
+      // DATA_COMPONENT_READINGS[BNO_ZACCEL] = sensorValue.un.linearAcceleration.z;
+
+      // syntax for raw accelerometer
+      // DATA_COMPONENT_READINGS[BNO_ZACCEL] = sensorValue.un.rawAccelerometer.z;
       }
     } 
   }
@@ -313,9 +292,9 @@ void collectDataFromBNO() {
 // Function to collect data from BME680
 void collectDataFromBME() {
   unsigned long currentMillis = millis();
-  if (currentMillis >= bmeTimer) {
+  if (currentMillis >= bmeTime + bmeTimer) {
     bmeTimer += bmeTime;
-    if (bme.beginReading()) {
+    if (bme.performReading()) {
 
       DATA_COMPONENT_READINGS[BME_TEMPERATURE] = bme.temperature;
       DATA_COMPONENT_READINGS[BME_PRESSURE] = bme.pressure;
@@ -323,11 +302,9 @@ void collectDataFromBME() {
       DATA_COMPONENT_READINGS[BME_GAS] = bme.gas_resistance / 1000.0;
       DATA_COMPONENT_READINGS[BME_ALTITUDE] = bme.readAltitude(SEALEVELPRESSURE_HPA);
 
-    }
-     else {
+    } else {
       Serial.println("Failed to perform BME680 reading");
     }
-    bme.endReading();
   }
 }
 
@@ -481,46 +458,45 @@ void initBatteryMonitor(){
 
 void transmitCurrentComponentReadings() {
 
-  // Prepare a buffer to hold the transmitted message
-  char radiopacket[256] = {0};  
+    // Prepare a buffer to hold the transmitted message
+    char radiopacket[256] = {0};  
     
-  // Iterate through the DATA_COMPONENT_READINGS array and build the message
-  for (int i = 0; i < ENUM_SIZE; i++) {
-    char buffer[32];  // Temporary buffer to hold each value
-    dtostrf(DATA_COMPONENT_READINGS[i], 6, 2, buffer);  // Convert double to string, adjust field width and decimal places as necessary
+    // Iterate through the DATA_COMPONENT_READINGS array and build the message
+    for (int i = 0; i < ENUM_SIZE; i++) {
+        char buffer[32];  // Temporary buffer to hold each value
+        dtostrf(DATA_COMPONENT_READINGS[i], 6, 2, buffer);  // Convert double to string, adjust field width and decimal places as necessary
 
-    // Append the value to radiopacket
-    strcat(radiopacket, buffer);
+        // Append the value to radiopacket
+        strcat(radiopacket, buffer);
 
-    // If not the last element, append a comma
-    if (i < ENUM_SIZE - 1) {
-      strcat(radiopacket, ",");
-      }
+        // If not the last element, append a comma
+        if (i < ENUM_SIZE - 1) {
+            strcat(radiopacket, ",");
+        }
     }
 
-    unsigned long currentMillis = millis();
-    if (currentMillis >= rfTime + rfTimer) {
-      rfTimer += rfTime;
-      Serial.println("Sending message...");
     // Send the message via RF95
-      int state = radio.transmit((uint8_t *)radiopacket, strlen(radiopacket) + 1);  // +1 to include the null terminator
+    rf95.send((uint8_t *)radiopacket, strlen(radiopacket) + 1);  // +1 to include the null terminator
 
-      if (state == RADIOLIB_ERR_NONE) {
-        Serial.println("success!");
-      } else {
-        Serial.print("failed, error code: ");
-        Serial.println(state);
-      }
-    }
+    rf95.waitPacketSent();  // Wait for transmission to complete
 }
 
-void loop() {       
+
+
+
+
+void loop() {
+
+         
   collectDataFromBNO();  
   collectDataFromBME();  
   collectDataFromGPS();
   collectDataFromBatteryMonitor();
   writeToFile(DATA_COMPONENT_READINGS, fullidx, filename);
   writeToFile(DATA_COMPONENT_READINGS, smallidx, smallFileName);
-  transmitCurrentComponentReadings();   
-}
+  printAllData();
+  transmitCurrentComponentReadings();
 
+  delay(2000);
+        
+}
