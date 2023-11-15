@@ -28,6 +28,12 @@ struct euler_t {
   float roll;
 } ypr;
 
+const char* ENUM_COMPONENTS[] = {
+  "BME680",
+  "IMU",
+  "BATTERY",
+  "GPS"
+};
 //enum for global array indices
 enum{
   BNO_YAW,
@@ -141,7 +147,7 @@ void setup() {
   pinMode(LED_BUILTIN, OUTPUT);
 
   float transmitPower = 20;
-  float currentFrequency = 916.23;
+  float currentFrequency = 915.00;
 
   //LoRa Setup
   pinMode(RFM95_RST, OUTPUT);
@@ -230,7 +236,7 @@ void setup() {
   writeColumnHeaders(ENUM_NAMES, fullidx, filename);
   writeColumnHeaders(ENUM_NAMES, smallidx, smallFileName);
 
-  //initBatteryMonitor();
+  initBatteryMonitor();
 
 }
 
@@ -340,8 +346,8 @@ void collectDataFromGPS() {
     gpsTimer += gpsTime;
 
     if (GPS.fix) {
-      DATA_COMPONENT_READINGS[GPS_LATITUDE] = GPS.lat;
-      DATA_COMPONENT_READINGS[GPS_LONGITUDE] = GPS.lon;
+      DATA_COMPONENT_READINGS[GPS_LATITUDE] = GPS.latitude;
+      DATA_COMPONENT_READINGS[GPS_LONGITUDE] = GPS.longitude;
       DATA_COMPONENT_READINGS[GPS_HOUR] = GPS.hour;
       DATA_COMPONENT_READINGS[GPS_SPEED] = GPS.speed;
       DATA_COMPONENT_READINGS[GPS_ALTITUDE] = GPS.altitude;
@@ -509,6 +515,7 @@ void loop() {
   collectDataFromBatteryMonitor();
   writeToFile(DATA_COMPONENT_READINGS, fullidx, filename);
   writeToFile(DATA_COMPONENT_READINGS, smallidx, smallFileName);
-  transmitCurrentComponentReadings();   
+  transmitCurrentComponentReadings();  
+  printAllData(); 
 }
 
