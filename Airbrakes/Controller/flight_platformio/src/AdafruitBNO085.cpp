@@ -93,10 +93,10 @@ bool AdafruitBNO085::measureIMU(Measurement* measure) {
     measure->yAccel = (float)sensorValue.un.linearAcceleration.y;
     measure->zAccel = (float)sensorValue.un.linearAcceleration.z;
 
-    measure->q0     = (float)sensorValue.un.rotationVector.i;
-    measure->q1     = (float)sensorValue.un.rotationVector.j;
-    measure->q2     = (float)sensorValue.un.rotationVector.k;
-    measure->q3     = (float)sensorValue.un.rotationVector.real;
+    measure->qi     = (float)sensorValue.un.rotationVector.i;
+    measure->qj     = (float)sensorValue.un.rotationVector.j;
+    measure->qk     = (float)sensorValue.un.rotationVector.k;
+    measure->qr     = (float)sensorValue.un.rotationVector.real;
 
     // Serial.print("READ QUAT:");
     // Serial.print(sensorValue.un.rotationVector.i);

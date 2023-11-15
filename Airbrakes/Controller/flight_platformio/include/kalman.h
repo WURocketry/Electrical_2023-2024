@@ -9,10 +9,10 @@
 // Kalman filter variables
 const float kdt          = 1/((float)(SAMPLE_LOOP_FREQ/KALMAN_LOOP_FREQ_PER_SAMPLES)); //seconds
 const float processVar   = pow(0.8,2);
-const float altimeterVar = pow(.1,2);
-const float accelXVar    = pow(1,2);
-const float accelYVar    = pow(1,2);
-const float accelZVar    = pow(1,2);
+const float altimeterVar = 0.00840866;
+const float accelXVar    = 0.0003199;
+const float accelYVar    = 0.0003199;
+const float accelZVar    = 0.0003199;
 
 BLA::Matrix<9> stateVec;
 
@@ -129,15 +129,15 @@ void kalmanUpdate(){
 
 void getInertialAccel(){
 
-    rotMat(0,0) = 2*(pow(quaternions(0),2)+pow(quaternions(1),2))-1;
+    rotMat(0,0) = 1 - 2*(pow(quaternions(2),2)+pow(quaternions(3),2));
     rotMat(0,1) = 2*(quaternions(1)*quaternions(2)-quaternions(0)*quaternions(3));
     rotMat(0,2) = 2*(quaternions(1)*quaternions(3)+quaternions(0)*quaternions(2));
     rotMat(1,0) = 2*(quaternions(1)*quaternions(2)+quaternions(0)*quaternions(3));
-    rotMat(1,1) = 2*(pow(quaternions(0),2)+pow(quaternions(2),2))-1;
+    rotMat(1,1) = 1 - 2*(pow(quaternions(1),2)+pow(quaternions(3),2));
     rotMat(1,2) = 2*(quaternions(2)*quaternions(3)-quaternions(0)*quaternions(1));
     rotMat(2,0) = 2*(quaternions(1)*quaternions(3)-quaternions(0)*quaternions(2));
     rotMat(2,1) = 2*(quaternions(2)*quaternions(3)+quaternions(0)*quaternions(1));
-    rotMat(2,2) = 2*(pow(quaternions(0),2)+pow(quaternions(3),2))-1;
+    rotMat(2,2) = 1 - 2*(pow(quaternions(1),2)+pow(quaternions(2),2));
 
     // Serial.println(rotMat(1,1));
 

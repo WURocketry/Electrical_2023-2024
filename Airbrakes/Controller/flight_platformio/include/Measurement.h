@@ -13,13 +13,13 @@ struct Measurement {
     float xAccel;
     float yAccel;
     float zAccel;
-    float q0;
-    float q1;
-    float q2;
-    float q3;
+    float qi;
+    float qj;
+    float qk;
+    float qr;
     float altitude;
     Measurement() {}
-    Measurement(float xAcc, float yAcc, float zAcc,float que0, float que1, float que2, float que3, float alt):
-        xAccel(xAcc), yAccel(yAcc), zAccel(zAcc),q0(que1),q1(que1), q2(que2),q3(que3), altitude(alt) {}
+    Measurement(float xAcc, float yAcc, float zAcc,float quer, float quei, float quej, float quek, float alt):
+        xAccel(xAcc), yAccel(yAcc), zAccel(zAcc),qr(quer),qi(quei), qj(quej),qk(quek), altitude(alt) {}
 };
 

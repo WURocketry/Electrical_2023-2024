@@ -330,8 +330,9 @@ void setup() {
   previousControlTime = micros();
 }
 
-// int stateVecPrintCounter = 0;
-// int counterSample = 0;
+int stateVecPrintCounter = 0;
+int counterSample = 0;
+double simSample[2] {0.0, 0.0};
 
 void loop() {
   
@@ -341,17 +342,16 @@ void loop() {
     previousSampleTime += sampleLoopMicros;
     ++previousComputeWaits;
 
-    // // Temporary test of simulated OR data
-    // double simSample[2];
-    // getSimulatedData(currentTime/1000000.0+15.96, simSample);
+    // Temporary test of simulated OR data
+    getSimulatedData(currentTime/1000000.0+15.96, simSample);
 
-    // if(counterSample%100==0){
-    //   Serial.print("Interp pos: ");
-    //   Serial.println(simSample[0]);
-    //   Serial.print("Interp acc: ");
-    //   Serial.println(simSample[1]);
-    // }
-    // counterSample++;
+    if(counterSample%100==0){
+      Serial.print("Interp pos: ");
+      Serial.println(simSample[0]);
+      Serial.print("Interp acc: ");
+      Serial.println(simSample[1]);
+    }
+    counterSample++;
 
     readMeasurement();  // Reads all SAMPLE loop sensors
 
@@ -364,17 +364,7 @@ void loop() {
   if (currentState!=FlightState::landed && previousComputeWaits >= KALMAN_LOOP_FREQ_PER_SAMPLES) {
     previousComputeWaits = 0; // Reset compute counter
 
-    quaternions = {currentMeasurement.q0,currentMeasurement.q1,currentMeasurement.q2,currentMeasurement.q3};
-
-    // Serial.print("QUAT: ");
-    // Serial.print(currentMeasurement.q0);
-    // Serial.print(" ");
-    // Serial.print(currentMeasurement.q1);
-    // Serial.print(" ");
-    // Serial.print(currentMeasurement.q2);
-    // Serial.print(" ");
-    // Serial.print(currentMeasurement.q3);
-    // Serial.print(" ");
+    quaternions = {currentMeasurement.qr,currentMeasurement.qi,currentMeasurement.qj,currentMeasurement.qk};
 
     measuredAccel = {currentMeasurement.xAccel,
                      currentMeasurement.yAccel,
@@ -382,20 +372,20 @@ void loop() {
     
     getInertialAccel();
 
-    measurementVec = {currentMeasurement.altitude,
+    measurementVec = {currentMeasurement.altitude+simSample[0],
                       inertialAccel(0),
                       inertialAccel(1),
-                      inertialAccel(2)};
+                      inertialAccel(2)+simSample[1]};
 
-    if((measurementVec(3) > 70.0) && (!imuSaturated)){
-      imuSaturated = true;
-      timeOfSaturation = micros()/1000000.0;
-    }
+    // if((measurementVec(3) > 70.0) && (!imuSaturated)){
+    //   imuSaturated = true;
+    //   timeOfSaturation = micros()/1000000.0;
+    // }
 
-    if(measurementVec(3)>70.0){
-      timeSinceSaturation = micros()/1000000.0 - timeOfSaturation;
-      measurementVec(3) = getReplacedAccel(timeSinceSaturation);
-    }
+    // if(measurementVec(3)>70.0){
+    //   timeSinceSaturation = micros()/1000000.0 - timeOfSaturation;
+    //   measurementVec(3) = getReplacedAccel(timeSinceSaturation);
+    // }
 
     //kalman filter steps
     kalmanPredict();
@@ -406,10 +396,10 @@ void loop() {
 
     }
 
-    // if(stateVecPrintCounter%25==0){
-    //   Serial << stateVec << "\n";
-    // }
-    // stateVecPrintCounter++;
+    if(stateVecPrintCounter%25==0){
+      Serial << stateVec << "\n";
+    }
+    stateVecPrintCounter++;
 
     // Perform SDRAM data saving
 #ifdef PORTENTA_H7_M7_PLATFORM
@@ -437,8 +427,8 @@ void loop() {
         if (currentTime >= previousFilterReset + ONE_SEC_MICROS){
           //Reset kalman filter
 
-          //THIS IS VERY IMPORTANT  
-          //if this is not done velocity acts very badly
+          THIS IS VERY IMPORTANT  
+          if this is not done velocity acts very badly
           Pkalman = {10,0,0,0,0,0,0,0,0,
                     0,10,0,0,0,0,0,0,0,
                     0,0,10,0,0,0,0,0,0,

@@ -10,7 +10,7 @@
 #define APOGEE_ALTITUDE_THRESHOLD 1200.0 //unit: m
 #define APOGEE_VELOCITY_THRESHOLD 10.0 //unit: m/s
 #define LANDING_ALTITUDE_THRESHOLD 10 //units: m
-#define LANDING_VELOCITY_THRESHOLD -10 //unit: m/s (negative because rocket is falling down)
+#define LANDING_VELOCITY_THRESHOLD -40 //unit: m/s (negative because rocket is falling down) - problem with kalman filter (doesn't like landings)
 
 // number of required rsequential observations to transition
 #define LAUNCH_PERSISTENCE 10
