@@ -10,12 +10,6 @@
 #define BNO08X_INT 9
 #define REPORT_FREQ_US  2500 
 
-struct euler_t {
-  float yaw;
-  float pitch;
-  float roll;
-} ypr;
-
 struct Measurement {
     /** 
      * UFS NOTE: This struct defines format for data used by
