@@ -32,8 +32,9 @@
 
   SDRAMClass ram;
   // float (*ringBuffer)[RING_BUFFER_LENGTH]; // Not currently using
+  float* SDRAM_base = (float*)0x60000000;  // Base pointer to DRAM start address
 #endif
-float* SDRAM_base = (float*)0x60000000;  // Base pointer to DRAM start address
+
 int ringBufferIndex = 0;
 
 // Servo defines
@@ -212,6 +213,7 @@ FlightState coastTransition(FlightState currentState) {
 }
 
 // OpenLog write to functions
+#ifdef PORTENTA_H7_M7_PLATFORM
 void dumpSDRAMtoFile(String writeto) {
     logger.append(writeto); //open the file in openlog
     
@@ -234,6 +236,7 @@ void dumpSDRAMtoFile(String writeto) {
     }
   logger.syncFile();  //save changes
 }
+#endif
 
 int getNumberOfPrevFlights() {
     String filename = "fileNumAB.txt";
@@ -273,23 +276,22 @@ int getNumberOfPrevFlights() {
 void setup() {
 
   Serial.begin(38400);
-  // while (!Serial) {
-  //   ;  // wait for serial port to connect. Needed for native USB port only
-  //   //TODO REMOVE BEFORE FLIGHT
-  // }
+  while (!Serial) {
+    ;  // wait for serial port to connect. Needed for native USB port only
+    //TODO REMOVE BEFORE FLIGHT
+  }
   delay(1000);
   Serial.println("> Initialized Serial comms!");
 
 #ifdef PORTENTA_H7_M7_PLATFORM
-
   // Initialize SDRAM
   Serial.print("| Init SDRAM...");
   ram.begin();
   delay(100);
   // ringBuffer = (float(*)[RING_BUFFER_LENGTH])ram.malloc(sizeof(float[RING_BUFFER_LENGTH][RING_BUFFER_COLS]));  // Not currently used
   Serial.println("OK!");
-
 #endif
+
   // Initialize FSM state
   Serial.print("| Init program state...");
   currentState = FlightState::detectLaunch;
@@ -410,6 +412,7 @@ void loop() {
     // stateVecPrintCounter++;
 
     // Perform SDRAM data saving
+#ifdef PORTENTA_H7_M7_PLATFORM
     // Write timestamp data to SDRAM[0]
     *(SDRAM_base + ((ringBufferIndex%RING_BUFFER_LENGTH)*RING_BUFFER_COLS)) = (float)currentTime; // Last currentTime should be from sample loops
 
@@ -420,7 +423,7 @@ void loop() {
 
     // Write current control value to SDRAM[10]
     *(SDRAM_base + ((ringBufferIndex%RING_BUFFER_LENGTH)*RING_BUFFER_COLS + 10)) = currentPIDControl;
-
+#endif
     // Serial.print("Wrote to ringBuffer at row ");
     // Serial.println(ringBufferIndex%RING_BUFFER_LENGTH);
     ++ringBufferIndex;
@@ -475,10 +478,12 @@ void loop() {
         break;
       case FlightState::landed:
         // Write data to OpenLog once when landed
+#ifdef PORTENTA_H7_M7_PLATFORM
         if (!didWriteData) {
           dumpSDRAMtoFile();
           didWriteData = true;
         }
+#endif
         
         break;
       default:
