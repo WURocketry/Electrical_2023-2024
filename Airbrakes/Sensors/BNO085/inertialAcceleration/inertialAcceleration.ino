@@ -77,7 +77,7 @@ void setup(void) {
 
 double speed = 0.0;
 BLA::Matrix<3> velocity = {0.0,0.0,0.0};
-double deetee = 1.0/400.0;
+double deetee = 1.0/50.0;
 
 long currentTime = micros();
 long prevTime = micros();
@@ -112,24 +112,21 @@ void loop() {
 
   currentTime = micros();
 
-  if(currentTime-prevTime > 2600){
-    Serial.print(currentTime-prevTime);
-    Serial.print("   ");
-    Serial.println("SLOW");
-  }
+  // if(currentTime-prevTime > 2600){
+  //   Serial.print(currentTime-prevTime);
+  //   Serial.print("   ");
+  //   Serial.println("SLOW");
+  // }
 
   prevTime = currentTime;
   }
 
   delayMicroseconds(REPORT_FREQ_US);
   
-
 }
 
 bool measureIMU(Measurement* measure) {
 
-   
-    
   if (!bno08x.getSensorEvent(&sensorValue)) {
       return false;
   }
