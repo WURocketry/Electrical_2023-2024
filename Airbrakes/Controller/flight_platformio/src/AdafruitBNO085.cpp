@@ -1,7 +1,7 @@
 #include <AdafruitBNO085.h>
 #include <Arduino.h>
 
-#define REPORT_FREQ_US  100000 
+#define REPORT_FREQ_US  10000
 
 AdafruitBNO085::AdafruitBNO085() {}
 

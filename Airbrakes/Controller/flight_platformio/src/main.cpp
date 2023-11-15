@@ -427,8 +427,8 @@ void loop() {
         if (currentTime >= previousFilterReset + ONE_SEC_MICROS){
           //Reset kalman filter
 
-          THIS IS VERY IMPORTANT  
-          if this is not done velocity acts very badly
+          //THIS IS VERY IMPORTANT  
+          //if this is not done velocity acts very badly
           Pkalman = {10,0,0,0,0,0,0,0,0,
                     0,10,0,0,0,0,0,0,0,
                     0,0,10,0,0,0,0,0,0,

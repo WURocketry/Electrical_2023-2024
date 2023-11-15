@@ -127,29 +127,30 @@ void kalmanUpdate(){
     stateVec = stateVec + Kkalman*innovation;
 }
 
+static BLA::Matrix<4> hamiltonProduct(BLA::Matrix<4> q1, BLA::Matrix<4> q2){
+
+  BLA::Matrix<4> returnQuat = {0.0,0.0,0.0,0.0};
+
+  returnQuat(0) = q1(0)*q2(0) - q1(1)*q2(1) - q1(2)*q2(2) - q1(3)*q2(3);
+  returnQuat(1) = q1(0)*q2(1) + q1(1)*q2(0) + q1(2)*q2(3) - q1(3)*q2(2);
+  returnQuat(2) = q1(0)*q2(2) - q1(1)*q2(3) + q1(2)*q2(0) + q1(3)*q2(1);
+  returnQuat(3) = q1(0)*q2(3) + q1(1)*q2(2) - q1(2)*q2(1) + q1(3)*q2(0);
+
+  return returnQuat;
+}
+
 void getInertialAccel(){
 
-    rotMat(0,0) = 1 - 2*(pow(quaternions(2),2)+pow(quaternions(3),2));
-    rotMat(0,1) = 2*(quaternions(1)*quaternions(2)-quaternions(0)*quaternions(3));
-    rotMat(0,2) = 2*(quaternions(1)*quaternions(3)+quaternions(0)*quaternions(2));
-    rotMat(1,0) = 2*(quaternions(1)*quaternions(2)+quaternions(0)*quaternions(3));
-    rotMat(1,1) = 1 - 2*(pow(quaternions(1),2)+pow(quaternions(3),2));
-    rotMat(1,2) = 2*(quaternions(2)*quaternions(3)-quaternions(0)*quaternions(1));
-    rotMat(2,0) = 2*(quaternions(1)*quaternions(3)-quaternions(0)*quaternions(2));
-    rotMat(2,1) = 2*(quaternions(2)*quaternions(3)+quaternions(0)*quaternions(1));
-    rotMat(2,2) = 1 - 2*(pow(quaternions(1),2)+pow(quaternions(2),2));
+  BLA::Matrix<4> measuredAccelQ = {0.0,measuredAccel(0),measuredAccel(1),measuredAccel(2)};
 
-    // Serial.println(rotMat(1,1));
+  BLA::Matrix<4> quaternionsInv = {quaternions(0),-quaternions(1),-quaternions(2),-quaternions(3)};
 
-    inertialAccel = rotMat*measuredAccel;
+  BLA::Matrix<4> inertialAccelQ = hamiltonProduct(hamiltonProduct(quaternions,measuredAccelQ),quaternionsInv);
 
-    // Serial.print("INERT ACC VEC: ");
-    // Serial.print(inertialAccel(0));
-    // Serial.print(" ");
-    // Serial.print(inertialAccel(1));
-    // Serial.print(" ");
-    // Serial.print(inertialAccel(2));
-    // Serial.print(" ");
+  inertialAccel(0) = inertialAccelQ(1);
+  inertialAccel(1) = inertialAccelQ(2);
+  inertialAccel(2) = inertialAccelQ(3);
     
 
 }
+
