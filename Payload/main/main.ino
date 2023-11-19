@@ -8,6 +8,8 @@
 #include "Adafruit_MAX1704X.h"
 #include <RadioLib.h>
 #include <Adafruit_NeoPixel.h>
+#include <SoftwareSerial.h>
+//#include <SparkFunOpenLog.h>
 
 // Define sensor objects
 Adafruit_BNO08x bno08x;
@@ -243,15 +245,6 @@ void setup() {
 
 }
 
-
-
-
-
-
-
-
-
-
 void ErrorLEDLoop(const char* error_msg){
   while(true){
     Serial.println(error_msg);
@@ -304,6 +297,15 @@ void collectDataFromBNO() {
         DATA_COMPONENT_READINGS[BNO_ZACCEL] = sensorValue.un.accelerometer.z;
 
         DATA_COMPONENT_READINGS[SECONDS_SINCE_ON] = millis()/1000;
+        const char* componentName = "BNO";
+        float data[6];
+        data[0] = DATA_COMPONENT_READINGS[BNO_YAW];
+        data[1] = DATA_COMPONENT_READINGS[BNO_PITCH];
+        data[2] = DATA_COMPONENT_READINGS[BNO_ROLL];
+        data[3] = DATA_COMPONENT_READINGS[BNO_XACCEL];
+        data[4] = DATA_COMPONENT_READINGS[BNO_YACCEL];
+        data[5] = DATA_COMPONENT_READINGS[BNO_ZACCEL];
+        logData(componentName, DATA_COMPONENT_READINGS[SECONDS_SINCE_ON], data, 6); 
       }
     } 
   }
@@ -321,6 +323,15 @@ void collectDataFromBME() {
       DATA_COMPONENT_READINGS[BME_HUMIDITY] = bme.humidity;
       DATA_COMPONENT_READINGS[BME_GAS] = bme.gas_resistance / 1000.0;
       DATA_COMPONENT_READINGS[BME_ALTITUDE] = bme.readAltitude(SEALEVELPRESSURE_HPA);
+
+      const char* componentName = "BME";
+      float data[5];
+      data[0] = DATA_COMPONENT_READINGS[BME_TEMPERATURE];
+      data[1] = DATA_COMPONENT_READINGS[BME_PRESSURE];
+      data[2] = DATA_COMPONENT_READINGS[BME_HUMIDITY];
+      data[3] = DATA_COMPONENT_READINGS[BME_GAS];
+      data[4] = DATA_COMPONENT_READINGS[BME_ALTITUDE];
+      logData(componentName, DATA_COMPONENT_READINGS[SECONDS_SINCE_ON], data, 5); 
 
     }
      else {
@@ -356,6 +367,15 @@ void collectDataFromGPS() {
       DATA_COMPONENT_READINGS[GPS_HOUR] = GPS.hour;
       DATA_COMPONENT_READINGS[GPS_SPEED] = GPS.speed;
       DATA_COMPONENT_READINGS[GPS_ALTITUDE] = GPS.altitude;
+
+      const char* componentName = "GPS";
+      float data[5];
+      data[0] = DATA_COMPONENT_READINGS[GPS_LATITUDE];
+      data[1] = DATA_COMPONENT_READINGS[GPS_LONGITUDE];
+      data[2] = DATA_COMPONENT_READINGS[GPS_HOUR];
+      data[3] = DATA_COMPONENT_READINGS[GPS_SPEED];
+      data[4] = DATA_COMPONENT_READINGS[GPS_ALTITUDE];
+      logData(componentName, DATA_COMPONENT_READINGS[SECONDS_SINCE_ON], data, 5); 
     }
     else {
       DATA_COMPONENT_READINGS[GPS_LATITUDE] = -1;
@@ -412,6 +432,27 @@ void writeToFile(double* flightdata, unsigned int* idx, String writeto) {
   logger.syncFile(); //saves changes
 }
 
+
+void logData(const char* componentName, float secondsSinceOn, float* data, int dataSize) {
+  // Construct the initial part of the string to write
+  String writeto = String(componentName) + "," + String(secondsSinceOn) + ",";
+  // Open the file for appending
+  logger.append("curr_data.txt");
+  // Write the initial part
+  logger.print(writeto);
+  // Iterate over the data array and append each value
+  for (int i = 0; i < dataSize; i++) {
+      logger.print(String(data[i]));  // Write data value
+      if (i < dataSize - 1) {
+        logger.print(",");  // Add comma if it's not the last element
+      }
+  }
+  // End line after all data values are written
+  logger.println();
+  // Save changes
+  logger.syncFile();
+}
+
 int getNumberOfPrevFlights(){
   int fileCount = 0;
   
@@ -455,6 +496,13 @@ void collectDataFromBatteryMonitor() {
     DATA_COMPONENT_READINGS[BATTERY_PERCENT] = maxlipo.cellPercent();
     DATA_COMPONENT_READINGS[BATTERY_VOLTAGE] = maxlipo.cellVoltage();
     DATA_COMPONENT_READINGS[BATTERY_DISCHARGE_RATE] = maxlipo.chargeRate();
+
+    const char* componentName = "BAT";
+    float data[3];
+    data[0] = DATA_COMPONENT_READINGS[BATTERY_PERCENT];
+    data[1] = DATA_COMPONENT_READINGS[BATTERY_VOLTAGE];
+    data[2] = DATA_COMPONENT_READINGS[BATTERY_DISCHARGE_RATE];
+    logData(componentName, DATA_COMPONENT_READINGS[SECONDS_SINCE_ON], data, 3); 
     
   }
 }
@@ -477,6 +525,8 @@ void initBatteryMonitor(){
   Serial.println(maxlipo.getChipID(), HEX);
   
 }
+
+
 
 void transmitCurrentComponentReadings() {
 
@@ -522,4 +572,6 @@ void loop() {
   writeToFile(DATA_COMPONENT_READINGS, smallidx, smallFileName);
   transmitCurrentComponentReadings();   
 }
+
+
 
