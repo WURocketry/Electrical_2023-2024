@@ -8,7 +8,7 @@
 #include "Adafruit_MAX1704X.h"
 #include <RadioLib.h>
 #include <Adafruit_NeoPixel.h>
-
+#include <SoftwareSerial.h>
 
 // Define sensor objects
 Adafruit_BNO08x bno08x;
@@ -29,7 +29,6 @@ struct euler_t {
   float roll;
 } ypr;
 
-
 //enum for global array indices
 enum{
   BNO_YAW,
@@ -38,6 +37,7 @@ enum{
   BNO_XACCEL,
   BNO_YACCEL,
   BNO_ZACCEL,
+  SECONDS_SINCE_ON,
   BME_TEMPERATURE,
   BME_PRESSURE,
   BME_HUMIDITY,
@@ -45,7 +45,6 @@ enum{
   BME_ALTITUDE,
   GPS_HOUR,
   GPS_MINUTE,
-  GPS_SECONDS,
   GPS_SPEED,
   GPS_LATITUDE,
   GPS_LONGITUDE,
@@ -63,6 +62,7 @@ const char* ENUM_NAMES[] = {
   "BNO_XACCEL",
   "BNO_YACCEL",
   "BNO_ZACCEL",
+  "SECONDS_SINCE_ON",
   "BME_TEMPERATURE",
   "BME_PRESSURE",
   "BME_HUMIDITY",
@@ -70,7 +70,6 @@ const char* ENUM_NAMES[] = {
   "BME_ALTITUDE",
   "GPS_HOUR",
   "GPS_MINUTE",
-  "GPS_SECONDS",
   "GPS_SPEED",
   "GPS_LATITUDE",
   "GPS_LONGITUDE",
@@ -111,7 +110,8 @@ unsigned int smallidx[] = {BNO_YAW,
                            BNO_ROLL, 
                            BNO_XACCEL, 
                            BNO_YACCEL, 
-                           BNO_ZACCEL};
+                           BNO_ZACCEL,
+                           SECONDS_SINCE_ON};
 
 //Battery Monitor Defintions
 float lastBatteryVoltage = 0.0;
@@ -145,9 +145,8 @@ void setup() {
   Serial.begin(115200);
   pinMode(LED_BUILTIN, OUTPUT);
 
-  delay(10000);
-
-  Serial.println("init radio");
+  float transmitPower = 20;
+  float currentFrequency = 916.23;
 
   //LoRa Setup
   pinMode(RFM95_RST, OUTPUT);
@@ -163,11 +162,31 @@ void setup() {
     // no error
     Serial.println(F("Initialization successful!"));
   } else {
-    // some error occurred
-    Serial.print(F("Initialization failed, code "));
-    Serial.println(state);
-    while (true);
+    ErrorLEDLoop("Failed to Init LoRa - Halting");
   }
+
+  // set transmit power
+  state = radio.setOutputPower(transmitPower, false);
+  if(state == RADIOLIB_ERR_NONE) {
+    Serial.print(F("Transmit Power set to: "));
+    Serial.print(transmitPower);
+    Serial.println(F(" dBm"));
+  } else {
+    Serial.print(F("Setting Output Power Failed:, code "));
+    Serial.println(state);
+  }
+
+  state = radio.setFrequency(currentFrequency);
+  
+  if(state == RADIOLIB_ERR_NONE) {
+    Serial.print(F("Frequency set to: "));
+    Serial.print(currentFrequency);
+    Serial.println(F(" MHz"));
+  } else {
+    Serial.print(F("Setting frequency failed, code "));
+    Serial.println(state);
+  }
+
 
 
   //init Neopixel
@@ -227,7 +246,7 @@ void setup() {
 
 void ErrorLEDLoop(const char* error_msg){
   while(true){
-    //Serial.println(error_msg);
+    Serial.println(error_msg);
     pixels.setPixelColor(0, pixels.Color(255, 0, 0));
     pixels.show();
     delay(1000);                      
@@ -269,21 +288,23 @@ void collectDataFromBNO() {
         quaternionToEulerRV(&sensorValue.un.arvrStabilizedRV, &ypr, true);
 
         DATA_COMPONENT_READINGS[BNO_YAW] = ypr.yaw;
+        DATA_COMPONENT_READINGS[BNO_PITCH] = ypr.pitch;
+        DATA_COMPONENT_READINGS[BNO_ROLL] = ypr.roll;
 
+        DATA_COMPONENT_READINGS[BNO_XACCEL] = sensorValue.un.accelerometer.x;
+        DATA_COMPONENT_READINGS[BNO_YACCEL] = sensorValue.un.accelerometer.y;
+        DATA_COMPONENT_READINGS[BNO_ZACCEL] = sensorValue.un.accelerometer.z;
 
-      DATA_COMPONENT_READINGS[BNO_PITCH] = ypr.pitch;
-
-      DATA_COMPONENT_READINGS[BNO_ROLL] = ypr.roll;
-
-      DATA_COMPONENT_READINGS[BNO_XACCEL] = sensorValue.un.accelerometer.x;
-      DATA_COMPONENT_READINGS[BNO_YACCEL] = sensorValue.un.accelerometer.y;
-      DATA_COMPONENT_READINGS[BNO_ZACCEL] = sensorValue.un.accelerometer.z;
-
-      // syntax for linear acceleration
-      // DATA_COMPONENT_READINGS[BNO_ZACCEL] = sensorValue.un.linearAcceleration.z;
-
-      // syntax for raw accelerometer
-      // DATA_COMPONENT_READINGS[BNO_ZACCEL] = sensorValue.un.rawAccelerometer.z;
+        DATA_COMPONENT_READINGS[SECONDS_SINCE_ON] = millis()/1000;
+        const char* componentName = "BNO";
+        float data[6];
+        data[0] = DATA_COMPONENT_READINGS[BNO_YAW];
+        data[1] = DATA_COMPONENT_READINGS[BNO_PITCH];
+        data[2] = DATA_COMPONENT_READINGS[BNO_ROLL];
+        data[3] = DATA_COMPONENT_READINGS[BNO_XACCEL];
+        data[4] = DATA_COMPONENT_READINGS[BNO_YACCEL];
+        data[5] = DATA_COMPONENT_READINGS[BNO_ZACCEL];
+        logData(componentName, DATA_COMPONENT_READINGS[SECONDS_SINCE_ON], data, 6); 
       }
     } 
   }
@@ -301,6 +322,15 @@ void collectDataFromBME() {
       DATA_COMPONENT_READINGS[BME_HUMIDITY] = bme.humidity;
       DATA_COMPONENT_READINGS[BME_GAS] = bme.gas_resistance / 1000.0;
       DATA_COMPONENT_READINGS[BME_ALTITUDE] = bme.readAltitude(SEALEVELPRESSURE_HPA);
+
+      const char* componentName = "BME";
+      float data[5];
+      data[0] = DATA_COMPONENT_READINGS[BME_TEMPERATURE];
+      data[1] = DATA_COMPONENT_READINGS[BME_PRESSURE];
+      data[2] = DATA_COMPONENT_READINGS[BME_HUMIDITY];
+      data[3] = DATA_COMPONENT_READINGS[BME_GAS];
+      data[4] = DATA_COMPONENT_READINGS[BME_ALTITUDE];
+      logData(componentName, DATA_COMPONENT_READINGS[SECONDS_SINCE_ON], data, 5); 
 
     }
      else {
@@ -336,6 +366,15 @@ void collectDataFromGPS() {
       DATA_COMPONENT_READINGS[GPS_HOUR] = GPS.hour;
       DATA_COMPONENT_READINGS[GPS_SPEED] = GPS.speed;
       DATA_COMPONENT_READINGS[GPS_ALTITUDE] = GPS.altitude;
+
+      const char* componentName = "GPS";
+      float data[5];
+      data[0] = DATA_COMPONENT_READINGS[GPS_LATITUDE];
+      data[1] = DATA_COMPONENT_READINGS[GPS_LONGITUDE];
+      data[2] = DATA_COMPONENT_READINGS[GPS_HOUR];
+      data[3] = DATA_COMPONENT_READINGS[GPS_SPEED];
+      data[4] = DATA_COMPONENT_READINGS[GPS_ALTITUDE];
+      logData(componentName, DATA_COMPONENT_READINGS[SECONDS_SINCE_ON], data, 5); 
     }
     else {
       DATA_COMPONENT_READINGS[GPS_LATITUDE] = -1;
@@ -392,6 +431,27 @@ void writeToFile(double* flightdata, unsigned int* idx, String writeto) {
   logger.syncFile(); //saves changes
 }
 
+
+void logData(const char* componentName, float secondsSinceOn, float* data, int dataSize) {
+  // Construct the initial part of the string to write
+  String writeto = String(componentName) + "," + String(secondsSinceOn) + ",";
+  // Open the file for appending
+  logger.append("curr_data.txt");
+  // Write the initial part
+  logger.print(writeto);
+  // Iterate over the data array and append each value
+  for (int i = 0; i < dataSize; i++) {
+      logger.print(String(data[i]));  // Write data value
+      if (i < dataSize - 1) {
+        logger.print(",");  // Add comma if it's not the last element
+      }
+  }
+  // End line after all data values are written
+  logger.println();
+  // Save changes
+  logger.syncFile();
+}
+
 int getNumberOfPrevFlights(){
   int fileCount = 0;
   
@@ -435,6 +495,13 @@ void collectDataFromBatteryMonitor() {
     DATA_COMPONENT_READINGS[BATTERY_PERCENT] = maxlipo.cellPercent();
     DATA_COMPONENT_READINGS[BATTERY_VOLTAGE] = maxlipo.cellVoltage();
     DATA_COMPONENT_READINGS[BATTERY_DISCHARGE_RATE] = maxlipo.chargeRate();
+
+    const char* componentName = "BAT";
+    float data[3];
+    data[0] = DATA_COMPONENT_READINGS[BATTERY_PERCENT];
+    data[1] = DATA_COMPONENT_READINGS[BATTERY_VOLTAGE];
+    data[2] = DATA_COMPONENT_READINGS[BATTERY_DISCHARGE_RATE];
+    logData(componentName, DATA_COMPONENT_READINGS[SECONDS_SINCE_ON], data, 3); 
     
   }
 }
@@ -458,66 +525,53 @@ void initBatteryMonitor(){
   
 }
 
+
+
 void transmitCurrentComponentReadings() {
 
-    // Prepare a buffer to hold the transmitted message
-    char radiopacket[256] = {0};  
+  // Prepare a buffer to hold the transmitted message
+  char radiopacket[256] = {0};  
     
-    // Iterate through the DATA_COMPONENT_READINGS array and build the message
-    for (int i = 0; i < ENUM_SIZE; i++) {
-        char buffer[32];  // Temporary buffer to hold each value
-        dtostrf(DATA_COMPONENT_READINGS[i], 6, 2, buffer);  // Convert double to string, adjust field width and decimal places as necessary
+  // Iterate through the DATA_COMPONENT_READINGS array and build the message
+  for (int i = 0; i < ENUM_SIZE; i++) {
+    char buffer[32];  // Temporary buffer to hold each value
+    dtostrf(DATA_COMPONENT_READINGS[i], 6, 2, buffer);  // Convert double to string, adjust field width and decimal places as necessary
 
-        // Append the value to radiopacket
-        strcat(radiopacket, buffer);
+    // Append the value to radiopacket
+    strcat(radiopacket, buffer);
 
-        // If not the last element, append a comma
-        if (i < ENUM_SIZE - 1) {
-            strcat(radiopacket, ",");
-        }
+    // If not the last element, append a comma
+    if (i < ENUM_SIZE - 1) {
+      strcat(radiopacket, ",");
+      }
     }
 
+    unsigned long currentMillis = millis();
+    if (currentMillis >= rfTime + rfTimer) {
+      rfTimer += rfTime;
+      Serial.println("Sending message...");
     // Send the message via RF95
-    radio.transmit((uint8_t *)radiopacket, strlen(radiopacket) + 1);  // +1 to include the null terminator
+      int state = radio.transmit((uint8_t *)radiopacket, strlen(radiopacket) + 1);  // +1 to include the null terminator
 
- //   radio.waitPacketSent();  // Wait for transmission to complete
-}
-
-
-
-
-void radioCommunicate() {
-  unsigned long currentMillis = millis();
-  if (currentMillis >= rfTime + rfTimer) {
-    rfTimer += rfTime;
-
-    Serial.print("Sending message...");
-    // Send a string "Hello, World!".
-    int state = radio.transmit("Hello, World!");
-    if (state == RADIOLIB_ERR_NONE) {
-      Serial.println("success!");
-    } else {
-      Serial.print("failed, error code: ");
-      Serial.println(state);
+      if (state == RADIOLIB_ERR_NONE) {
+        Serial.println("success!");
+      } else {
+        Serial.print("failed, error code: ");
+        Serial.println(state);
+      }
     }
-  }
-  // Wait for a bit before sending the next message.
- // delay(1000);
 }
 
-void loop() {
-
-         
+void loop() {       
   collectDataFromBNO();  
   collectDataFromBME();  
   collectDataFromGPS();
   collectDataFromBatteryMonitor();
   writeToFile(DATA_COMPONENT_READINGS, fullidx, filename);
   writeToFile(DATA_COMPONENT_READINGS, smallidx, smallFileName);
-  printAllData();
-  transmitCurrentComponentReadings();
-  radioCommunicate();
-  delay(2000);
-        
+  transmitCurrentComponentReadings();   
 }
+
+
+
 
