@@ -25,6 +25,8 @@ bool AdafruitBNO085::init() {
     }
     Serial.println("OK!");
 
+    Wire.setClock(3400000);
+
     return true;
 }
 
@@ -89,15 +91,21 @@ bool AdafruitBNO085::measureIMU(Measurement* measure) {
         return false;
     }
 
-    measure->xAccel = (float)sensorValue.un.linearAcceleration.x;
-    measure->yAccel = (float)sensorValue.un.linearAcceleration.y;
-    measure->zAccel = (float)sensorValue.un.linearAcceleration.z;
+    switch (sensorValue.sensorId) {
 
-    measure->qi     = (float)sensorValue.un.rotationVector.i;
-    measure->qj     = (float)sensorValue.un.rotationVector.j;
-    measure->qk     = (float)sensorValue.un.rotationVector.k;
-    measure->qr     = (float)sensorValue.un.rotationVector.real;
+        case SH2_LINEAR_ACCELERATION:
+            measure->xAccel = (float)sensorValue.un.linearAcceleration.x;
+            measure->yAccel = (float)sensorValue.un.linearAcceleration.y;
+            measure->zAccel = (float)sensorValue.un.linearAcceleration.z;
+            break;
+        case SH2_ROTATION_VECTOR:
+            measure->qi     = (float)sensorValue.un.rotationVector.i;
+            measure->qj     = (float)sensorValue.un.rotationVector.j;
+            measure->qk     = (float)sensorValue.un.rotationVector.k;
+            measure->qr     = (float)sensorValue.un.rotationVector.real;
+            break;
 
+    }
     // Serial.print("READ QUAT:");
     // Serial.print(sensorValue.un.rotationVector.i);
     // Serial.print(" ");
