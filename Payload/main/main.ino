@@ -270,6 +270,7 @@ void collectDataFromBNO() {
         DATA_COMPONENT_READINGS[BNO_ZACCEL] = sensorValue.un.accelerometer.z;
 
         DATA_COMPONENT_READINGS[SECONDS_SINCE_ON] = secondsSinceOn();
+
         const char* componentName = "BNO";
         float data[6];
         data[0] = DATA_COMPONENT_READINGS[BNO_YAW];
@@ -278,7 +279,9 @@ void collectDataFromBNO() {
         data[3] = DATA_COMPONENT_READINGS[BNO_XACCEL];
         data[4] = DATA_COMPONENT_READINGS[BNO_YACCEL];
         data[5] = DATA_COMPONENT_READINGS[BNO_ZACCEL];
+
         logData(componentName, secondsSinceOn(), data, 6); 
+
       }
     } 
   }
@@ -348,7 +351,9 @@ void collectDataFromGPS() {
       data[2] = DATA_COMPONENT_READINGS[GPS_HOUR];
       data[3] = DATA_COMPONENT_READINGS[GPS_SPEED];
       data[4] = DATA_COMPONENT_READINGS[GPS_ALTITUDE];
+
       logData(componentName, secondsSinceOn(), data, 5); 
+
     }
     else {
       DATA_COMPONENT_READINGS[GPS_LATITUDE] = -1;
@@ -454,6 +459,7 @@ void initBatteryMonitor(){
 
 
 void transmitCurrentComponentReadings() {
+
   // Prepare a buffer to hold the transmitted message
   char radiopacket[256] = {0};  
     
@@ -486,15 +492,13 @@ void transmitCurrentComponentReadings() {
     }
 }
 
-void loop() { 
+void loop() {       
 
   collectDataFromBNO();  
   collectDataFromBME();  
   collectDataFromGPS();
   collectDataFromBatteryMonitor();
-  printAllData();
   transmitCurrentComponentReadings();   
 }
-
 
 
