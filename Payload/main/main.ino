@@ -88,6 +88,10 @@ sh2_SensorId_t reportType = SH2_ARVR_STABILIZED_RV;
 long reportIntervalUs = 5000;
 
 // BME680 Definitions 
+#define BME_SCK 13
+#define BME_MISO 12
+#define BME_MOSI 11
+#define BME_CS 10
 #define SEALEVELPRESSURE_HPA (1013.25)
 
 //GPS Defintions
@@ -122,8 +126,8 @@ SX1276 radio = new Module(RFM95_CS, RFM95_IRQ, RFM95_RST, RFM95_GPIO);
 int16_t packetnum = 0;  
 
 //Define timing separations for devices
-float bnoTime = 250;
-float bmeTime = 2000;
+float bnoTime = 2000;
+float bmeTime = 200;
 float gpsTime = 2000;
 float batteryTime = 2000;
 float rfTime = 1000;
@@ -230,7 +234,12 @@ void setup() {
   writeColumnHeaders(ENUM_NAMES, fullidx, filename);
   writeColumnHeaders(ENUM_NAMES, smallidx, smallFileName);
 
-  //initBatteryMonitor();
+  bmeTimer = millis();
+  bnoTimer = millis();
+  gpsTimer = millis();
+  batteryTimer = millis();
+  rfTimer = millis();
+
 
 }
 
@@ -303,9 +312,9 @@ void collectDataFromBNO() {
 // Function to collect data from BME680
 void collectDataFromBME() {
   unsigned long currentMillis = millis();
-  if (currentMillis >= bmeTime + bmeTimer) {
+  if (currentMillis >= bmeTimer) {
     bmeTimer += bmeTime;
-    if (bme.performReading()) {
+    if (bme.beginReading()) {
 
       DATA_COMPONENT_READINGS[BME_TEMPERATURE] = bme.temperature;
       DATA_COMPONENT_READINGS[BME_PRESSURE] = bme.pressure;
@@ -313,9 +322,11 @@ void collectDataFromBME() {
       DATA_COMPONENT_READINGS[BME_GAS] = bme.gas_resistance / 1000.0;
       DATA_COMPONENT_READINGS[BME_ALTITUDE] = bme.readAltitude(SEALEVELPRESSURE_HPA);
 
-    } else {
+    }
+     else {
       Serial.println("Failed to perform BME680 reading");
     }
+    bme.endReading();
   }
 }
 
