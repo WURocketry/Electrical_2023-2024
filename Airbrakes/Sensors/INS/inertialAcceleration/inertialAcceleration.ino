@@ -11,7 +11,12 @@
 // For SPI mode, we need a CS pin
 #define BNO08X_CS 10
 #define BNO08X_INT 9
+
+
 #define REPORT_FREQ_US  2500 
+#define XAXISACCELBIAS 0
+#define YAXISACCELBIAS 0
+#define ZAXISACCELBIAS 0
 
 struct Measurement {
     /** 
@@ -97,65 +102,67 @@ void setup(void) {
     case LIS3DH_DATARATE_LOWPOWER_1K6HZ: Serial.println("16 Khz Low Power"); break;
   }
 
+  Wire.setClock(1000000);
+
   Serial.println("Reading events");
   delay(100);
 }
 
 double speed = 0.0;
 BLA::Matrix<3> velocity = {0.0,0.0,0.0};
-double deetee = 1.0/50.0;
+double deetee = 1.0/200.0;
 
-long currentTime = micros();
-long prevTime = micros();
+long currentTime = 0;
+long prevTime = 0;
 
 bool gotAccel = true;
 bool gotIMU = true;
+
+long deltaTiming = 0;
+
 void loop() {
-
-
-  gotAccel = measureAccel(&currentMeasurement);
-  gotIMU = measureIMU(&currentMeasurement);
-
-  if(gotAccel || gotIMU){
-
-  quaternions = {currentMeasurement.qr,currentMeasurement.qi,currentMeasurement.qj,currentMeasurement.qk};
-
-  measuredAccel = {currentMeasurement.xAccel,
-                    currentMeasurement.yAccel,
-                    currentMeasurement.zAccel};
-  
-  getInertialAccel();
-
-  inertialAccel(2) = inertialAccel(2) - 9.81;
-
-  velocity(0) += inertialAccel(0)*deetee;
-  velocity(1) += inertialAccel(1)*deetee;
-  velocity(2) += inertialAccel(2)*deetee;
-
-  speed = sqrt(sq(velocity(0))+sq(velocity(1))+sq(velocity(2)));
-
-  Serial.print(inertialAccel(0),5);
-  Serial.print("   ");
-  Serial.print(inertialAccel(1),5);
-  Serial.print("   ");
-  Serial.print(inertialAccel(2),5);
-  Serial.print("   ");
-  Serial.print(speed,5);
-  Serial.println();
-
 
   currentTime = micros();
 
-  // if(currentTime-prevTime > 2600){
-  //   Serial.print(currentTime-prevTime);
-  //   Serial.print("   ");
-  //   Serial.println("SLOW");
-  // }
+  if(currentTime-deltaTiming>5000){
+    deltaTiming = currentTime;
 
-  prevTime = currentTime;
+    gotAccel = measureAccel(&currentMeasurement);
+    gotIMU = measureIMU(&currentMeasurement);
+
+    if(gotAccel || gotIMU){
+
+    quaternions = {currentMeasurement.qr,currentMeasurement.qi,currentMeasurement.qj,currentMeasurement.qk};
+
+    measuredAccel = {currentMeasurement.xAccel,
+                      currentMeasurement.yAccel,
+                      currentMeasurement.zAccel};
+    
+    getInertialAccel();
+
+    inertialAccel(2) = inertialAccel(2) - 9.81;
+
+    velocity(0) += inertialAccel(0)*deetee;
+    velocity(1) += inertialAccel(1)*deetee;
+    velocity(2) += inertialAccel(2)*deetee;
+
+    speed = sqrt(sq(velocity(0))+sq(velocity(1))+sq(velocity(2)));
+
+    Serial.print(inertialAccel(0),5);
+    Serial.print("   ");
+    Serial.print(inertialAccel(1),5);
+    Serial.print("   ");
+    Serial.print(inertialAccel(2),5);
+    Serial.print("   ");
+    Serial.print(speed,5);
+    Serial.print("   ");
+    //Serial.print(micros()-currentTime);
+    Serial.println();
+
+    }
+
   }
 
-  delayMicroseconds(REPORT_FREQ_US);
   
 }
 
@@ -184,9 +191,9 @@ bool measureAccel(Measurement* measure) {
   if (!lis.getEvent(&AccelEvent)) {
       return false;
   }
-  measure->xAccel     = (float)AccelEvent.acceleration.x;
-  measure->yAccel     = (float)AccelEvent.acceleration.y;
-  measure->zAccel     = (float)AccelEvent.acceleration.z;
+  measure->xAccel     = (float)AccelEvent.acceleration.x+XAXISACCELBIAS;
+  measure->yAccel     = (float)AccelEvent.acceleration.y+YAXISACCELBIAS;
+  measure->zAccel     = (float)AccelEvent.acceleration.z+ZAXISACCELBIAS;
 
   return true;
 }
@@ -205,32 +212,35 @@ static BLA::Matrix<4> hamiltonProduct(BLA::Matrix<4> q1, BLA::Matrix<4> q2){
 
 void getInertialAccel(){
 
-  BLA::Matrix<4> measuredAccelQ = {0.0,measuredAccel(0),measuredAccel(1),measuredAccel(2)};
+  // BLA::Matrix<4> measuredAccelQ = {0.0,measuredAccel(0),measuredAccel(1),measuredAccel(2)};
 
-  BLA::Matrix<4> quaternionsInv = {quaternions(0),-quaternions(1),-quaternions(2),-quaternions(3)};
+  // BLA::Matrix<4> quaternionsInv = {quaternions(0),-quaternions(1),-quaternions(2),-quaternions(3)};
 
-  BLA::Matrix<4> inertialAccelQ = hamiltonProduct(hamiltonProduct(quaternions,measuredAccelQ),quaternionsInv);
-  //BLA::Matrix<4> inertialAccelQ = hamiltonProduct(hamiltonProduct(quaternionsInv,measuredAccelQ),quaternions);
+  // BLA::Matrix<4> inertialAccelQ = hamiltonProduct(hamiltonProduct(quaternions,measuredAccelQ),quaternionsInv);
+  // //BLA::Matrix<4> inertialAccelQ = hamiltonProduct(hamiltonProduct(quaternionsInv,measuredAccelQ),quaternions);
 
-  inertialAccel(0) = inertialAccelQ(1);
-  inertialAccel(1) = inertialAccelQ(2);
-  inertialAccel(2) = inertialAccelQ(3);
+  // inertialAccel(0) = inertialAccelQ(1);
+  // inertialAccel(1) = inertialAccelQ(2);
+  // inertialAccel(2) = inertialAccelQ(3);
 
 
-    // rotMat(0,0) = 1 - 2*(pow(quaternions(2),2)+pow(quaternions(3),2));
-    // rotMat(0,1) = 2*(quaternions(1)*quaternions(2)-quaternions(0)*quaternions(3));
-    // rotMat(0,2) = 2*(quaternions(1)*quaternions(3)+quaternions(0)*quaternions(2));
-    // rotMat(1,0) = 2*(quaternions(1)*quaternions(2)+quaternions(0)*quaternions(3));
-    // rotMat(1,1) = 1 - 2*(pow(quaternions(1),2)+pow(quaternions(3),2));
-    // rotMat(1,2) = 2*(quaternions(2)*quaternions(3)-quaternions(0)*quaternions(1));
-    // rotMat(2,0) = 2*(quaternions(1)*quaternions(3)-quaternions(0)*quaternions(2));
-    // rotMat(2,1) = 2*(quaternions(2)*quaternions(3)+quaternions(0)*quaternions(1));
-    // rotMat(2,2) = 1 - 2*(pow(quaternions(1),2)+pow(quaternions(2),2));
+    rotMat(0,0) = 1 - 2*(pow(quaternions(2),2)+pow(quaternions(3),2));
+    rotMat(0,1) = 2*(quaternions(1)*quaternions(2)-quaternions(0)*quaternions(3));
+    rotMat(0,2) = 2*(quaternions(1)*quaternions(3)+quaternions(0)*quaternions(2));
+    rotMat(1,0) = 2*(quaternions(1)*quaternions(2)+quaternions(0)*quaternions(3));
+    rotMat(1,1) = 1 - 2*(pow(quaternions(1),2)+pow(quaternions(3),2));
+    rotMat(1,2) = 2*(quaternions(2)*quaternions(3)-quaternions(0)*quaternions(1));
+    rotMat(2,0) = 2*(quaternions(1)*quaternions(3)-quaternions(0)*quaternions(2));
+    rotMat(2,1) = 2*(quaternions(2)*quaternions(3)+quaternions(0)*quaternions(1));
+    rotMat(2,2) = 1 - 2*(pow(quaternions(1),2)+pow(quaternions(2),2));
 
-    // // Serial.println(rotMat(1,1));
+    // Serial.println(rotMat(1,1));
 
-    // inertialAccel = rotMat*measuredAccel;
+    inertialAccel = rotMat*measuredAccel;
 
 }
+
+
+
 
 
