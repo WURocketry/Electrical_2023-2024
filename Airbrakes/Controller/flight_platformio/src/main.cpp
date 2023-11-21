@@ -470,7 +470,7 @@ void loop() {
         // Write data to OpenLog once when landed
 #ifdef PORTENTA_H7_M7_PLATFORM
         if (!didWriteData) {
-          dumpSDRAMtoFile();
+          dumpSDRAMtoFile(logfile);
           didWriteData = true;
         }
 #endif
