@@ -297,6 +297,12 @@ void setup() {
   currentState = FlightState::detectLaunch;
   Serial.println("OK!");
 
+  // Initialize I2C
+  Serial.print("| Init I2C wire...");
+  // Wire.begin();
+  // Wire.setClock(3400000);
+  Serial.println("OK!");
+
   // Initialize sensor hardware
   alt.init();
   imu.init();
@@ -313,7 +319,6 @@ void setup() {
 
   // Initialize OpenLog
   Serial.print("| Init OpenLog...");
-  Wire.begin();
   logger.begin();
   Serial.println("OK!");
   int fileCount = getNumberOfPrevFlights();

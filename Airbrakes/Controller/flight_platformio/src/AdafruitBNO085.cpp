@@ -25,8 +25,6 @@ bool AdafruitBNO085::init() {
     }
     Serial.println("OK!");
 
-    Wire.setClock(3400000);
-
     return true;
 }
 
