@@ -1,0 +1,20 @@
+{
+    "name": "Servo",
+    "version": "1.2.1",
+    "description": "Arduino Servo.h library",
+    "keywords": "servo",
+    "repository":
+    {
+      "type": "git",
+      "url": "https://github.com/arduino-libraries/Servo"
+    },
+    "license": "GPL",
+    "frameworks": "arduino",
+    "platforms": "ststm32",
+    "build": {
+        "libArchive": false,
+        "flags": [
+            "-Isrc"
+        ]
+    }
+  }
