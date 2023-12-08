@@ -43,6 +43,12 @@ int ringBufferIndex = 0;
 #define SRV_MAX_EXTENSION_ANGLE 80
 #define SRV_ANGLE_DEG_OFFSET    20
 
+float currAngle = 0; // current angle of the servo
+int targetAngle = 0; 
+unsigned long previousServoUpdate = 0; // last time the servo was updated
+const long servoUpdateInterval = 10; // update interval for servo in milliseconds (100Hz)
+
+
 // Target apogee
 #define ACE_TARGET_APOGEE 1463.04
 
@@ -272,6 +278,25 @@ int getNumberOfPrevFlights() {
     return fileCount;
 }
 
+// Function to initialize servo movement parameters
+void initializeServoMovement(int newTargetAngle) {
+  targetAngle = newTargetAngle;
+  currAngle = srv.read(); // Read current angle of servo
+}
+
+void updateServoPosition() {
+  unsigned long currentMillis = micros();
+  
+  if (currentMillis - previousServoUpdate >= servoUpdateInterval * 1000) { // Convert to microseconds
+    previousServoUpdate = currentMillis;
+
+    if (abs(currAngle - targetAngle) > 0.5) { // Only move if there is a significant difference
+      float stepAngle = (float)(targetAngle - currAngle) / 10; // Determine step size
+      currAngle += stepAngle;
+      srv.write(round(currAngle));
+    }
+  }
+}
 
 void setup() {
 
@@ -280,6 +305,7 @@ void setup() {
     ;  // wait for serial port to connect. Needed for native USB port only
     //TODO REMOVE BEFORE FLIGHT
   }
+  initializeServoMovement(0);
   delay(1000);
   Serial.println("> Initialized Serial comms!");
 
@@ -342,10 +368,13 @@ double simSample[2] {0.0, 0.0};
 void loop() {
   
   /* SAMPLE LOOP (100Hz) */
+  
   currentTime = micros();
   if (currentState!=FlightState::landed && currentTime >= previousSampleTime + sampleLoopMicros) {
     previousSampleTime += sampleLoopMicros;
     ++previousComputeWaits;
+
+    updateServoPosition();
 
     // Temporary test of simulated OR data
     getSimulatedData(currentTime/1000000.0+15.96, simSample);
