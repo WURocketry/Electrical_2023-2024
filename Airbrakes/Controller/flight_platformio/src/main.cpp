@@ -1,56 +1,44 @@
-/* Library includes */
-#include <Arduino.h>
 #include <BasicLinearAlgebra.h>
-
-/* Our includes */
-#include <FlightMonitor.h>
-#include <AdafruitBNO085.h>
-// include statement for Altimeter (which will tooootally happen, right? right..?)
-#include <simulation.h>
 
 // Loop rates (Hz)
 #define ONE_SEC_MICROS 1000000
 #define SAMPLE_LOOP_FREQ 400
-#define KALMAN_LOOP_FREQ_PER_SAMPLES 4  // Compute per n=4 samples
+#define KALMAN_LOOP_FREQ 100 
 #define CONTROL_LOOP_FREQ 1
 
-// Configure ringBuffer for saving airbrakes sensor data
-#ifdef RP2040_PLATFORM
-  #warning "CONFIG: Configuring ringBuffer for RP2040 platform"
-  #define RING_BUFFER_LENGTH 4000
-  float ringBuffer[RING_BUFFER_LENGTH][11]; //contrains time,stateVec, and control value
-  int ringBufferIndex = 0;
 
-#elif PORTENTA_H7_M7_PLATFORM
-  #warning "CONFIG: Configuring ringBuffer for Portenta_H7 platform"
-  #include <SDRAM.h>
-  #define RING_BUFFER_LENGTH 12000
+Servo myservo;  
+int servoPin = 9; 
+float currAngle = 0; // current angle of the servo, using float for finer control
+unsigned long previousMillis = 0; // will store last time servo was updated
+const long updateInterval = 10; // update interval...
 
-  SDRAMClass ram;
-  float (*ringBuffer)[11] = (float (*)[11])ram.malloc(sizeof(float[RING_BUFFER_LENGTH][11]));
-  int ringBufferIndex = 0;
-#endif
+int targetAngle = 0; // Global target 
+int totalTime = 2000; // Duration for the servo movement
+int totalSteps; // total number of steps to take
+int stepsTaken; // number of steps already taken
+float stepAngle; // angle per step
+
 
 using namespace BLA;
 
 // Delta timing variables
 unsigned long currentTime;
-unsigned long previousFilterReset;
 unsigned long previousSampleTime;
 unsigned long previousComputeTime;
 unsigned long previousControlTime;
 
 const long sampleLoopMicros  = ONE_SEC_MICROS/SAMPLE_LOOP_FREQ;
-const long computeLoopMicros = KALMAN_LOOP_FREQ_PER_SAMPLES * sampleLoopMicros;
+const long computeLoopMicros = ONE_SEC_MICROS/KALMAN_LOOP_FREQ;
 const long controlLoopMicros = ONE_SEC_MICROS/CONTROL_LOOP_FREQ;
 
 // Kalman filter variables
-const float kdt          = 1/((float)(SAMPLE_LOOP_FREQ/KALMAN_LOOP_FREQ_PER_SAMPLES)); //seconds
+const float kdt          = 1/KALMAN_LOOP_FREQ; //seconds
 const float processVar   = pow(0.5,2);
 const float altimeterVar = pow(.1,2);
-const float accelXVar    = pow(1,2);
-const float accelYVar    = pow(1,2);
-const float accelZVar    = pow(1,2);
+const float accelXVar    = pow(2,2);
+const float accelYVar    = pow(2,2);
+const float accelZVar    = pow(2,2);
 
 BLA::Matrix<9> stateVec;
 
@@ -72,10 +60,6 @@ BLA::Matrix<4,4> innovationCov;
 
 BLA::Matrix<9,4> Kkalman;
 
-// Flight monitor and sensor variables
-AdafruitBNO085 adafruit_bno085;
-FlightMonitor fm_ace(adafruit_bno085);
-
 // Peripheral helper functions/structs
 
 struct Measurement {
@@ -94,13 +78,11 @@ struct Measurement {
     xAccel(xAcc), yAccel(yAcc), zAccel(zAcc), altitude(alt) {}
 };
 
-double currentPosition = 0.0;
-double currentAcceleration = 0.0;
 
 struct Measurement makeMeasurement() {
   // TODO: placeholder measurement values
   struct Measurement collectedData(
-    0.0, 0.0, currentAcceleration, currentPosition
+    .1, .1, 0, 10
   );
 
   return collectedData;
@@ -115,7 +97,6 @@ enum class FlightState {
   detectLaunch,
   burn,
   control,
-  controlStandby,
   coast,
   landed
 };
@@ -137,8 +118,7 @@ FlightState detectLaunchTransition(FlightState currentState) {
 
   // remain prior to launch (await launch detection)
   // TODO: determine launchCondition (could be from Kalman)
-  if (fm_ace.detectedLaunch()) {
-    Serial << "**** TRANSITION TO BURN ****\n";
+  if (launchCondition) {
     return FlightState::burn;
   }
   return currentState;
@@ -151,8 +131,7 @@ FlightState burnTransition(FlightState currentState) {
    */
   // remain until burn acceleration ended
   // TODO: determine condition
-  if (fm_ace.detectedUnpoweredAscent()) {
-    Serial << "**** TRANSITION TO CONTROL ****\n";
+  if (noBurnAccelCondition) {
     return FlightState::control;
   }
   
@@ -163,35 +142,13 @@ FlightState controlTransition(FlightState currentState) {
   /* Transitions
    * this -> coast
    * this -> burn
-   * this -> controlStandby
    */
   // remain until apogee
   // TODO: determine condition
-  if (fm_ace.detectedApogee()) {
-    Serial << " **** APOGEE REACHED. TRANSITION TO COAST ****\n";
+  if (apogeeReached) {
     return FlightState::coast;
   }
-  if (fm_ace.detectedLean()) {
-    return FlightState::controlStandby;
-  }
 
-  return currentState;
-}
-
-FlightState controlStandbyTransition(FlightState currentState) {
-  /* Transitions
-   * this -> coast
-   * this -> control
-   */
-  // remain until safe control conditions (implement eventually)
-  // TODO: determine condition
-  // if (minimalLean) {
-  //   return FlightState::control;
-  // }
-  if (fm_ace.detectedApogee()) {
-    Serial << " **** APOGEE REACHED. TRANSITION TO COAST ****\n";
-    return FlightState::coast;
-  }
   return currentState;
 }
 
@@ -203,21 +160,24 @@ FlightState coastTransition(FlightState currentState) {
   
   // remain until landing
   // TOOD: determine condition
-  if (fm_ace.detectedLanding()) {
-    Serial << "**** LANDING DETECTED ****\n";
+  if (landed) {
     return FlightState::landed;
   }
   return currentState;
 }
 
-
 void setup() {
 
   Serial.begin(38400);
+
+
   while (!Serial) {
     ;  // wait for serial port to connect. Needed for native USB port only
-    //TODO REMOVE FOR FLIGHT
   }
+
+  myservo.attach(servoPin);  // attach the servo on pin 9
+  targetAngle = 0; // Initial target angle
+  initializeMovement();
 
   // prints title with ending line break
   Serial.println(F("Starting program"));
@@ -225,12 +185,6 @@ void setup() {
 
   // Initialize FSM state
   currentState = FlightState::detectLaunch;
-
-  // Initialize delta timing variables
-  previousFilterReset = 0;
-  previousSampleTime = 0;
-  previousComputeTime = 0;
-  previousControlTime = 0;
 
   // Initialize vectors/matrices
   stateVec = {0,0,0,0,0,0,0,0,0};
@@ -293,31 +247,78 @@ void setup() {
              0,0,0,0};
 }
 
-int counter = 0;
-int counterSample=0;
+void initializeMovement() {
+  totalSteps = totalTime / updateInterval; // total number of steps to take
+  stepsTaken = 0;
+  stepAngle = (float)(targetAngle - currAngle) / totalSteps;
+}
+
+void updateServo() {
+  unsigned long currentMillis = millis();
+  
+  if (currentMillis - previousMillis >= updateInterval) {
+    previousMillis = currentMillis;
+    if (stepsTaken < totalSteps) {
+      currAngle += stepAngle;
+      myservo.write(round(currAngle));
+      Serial.print("Moving to angle: ");
+      Serial.println(round(currAngle));
+      stepsTaken++;
+    } else {
+      // Ensure final position is reached
+      if (round(currAngle) != targetAngle) {
+        currAngle = targetAngle;
+        myservo.write(currAngle);
+        Serial.print("Final angle: ");
+        Serial.println(currAngle);
+      }
+    }
+  }
+}
 
 void loop() {
-  currentTime = micros();
-  
+
+   updateServo();
+
+  //example implementation to toggle the servo between 90 and 0 every three seconds... Obv we wouldn't use it this way but its a good test to have
+  // if (stepsTaken >= totalSteps) {
+  //   delay(3000); // wait for a bit
+  //   targetAngle = (targetAngle == 0) ? 90 : 0; // Toggle target angle
+  //   initializeMovement();
+  // }
+
+  /* Switch statement for FSM of ACE system modes */
+  switch(currentState) {
+    case FlightState::detectLaunch:
+      //if one second has elapsed and not launched, reset kalman filter
+      //if conditions met, transition to burn
+      currentState = detectLaunchTransition(currentState);
+      break;
+    case FlightState::burn:
+      //if rocket is decelerating, transition to control state
+      currentState = burnTransition(currentState);
+      break;
+    case FlightState::control:
+      //wait until apogee is reached, store airbrakes, transition to coast state
+      currentState = controlTransition(currentState);
+      break;
+    case FlightState::coast:
+      //if z velocity is very close to zero and altitude is low, then we are landed
+      //transition to landed
+      currentState = coastTransition(currentState);
+      break;
+    case FlightState::landed:
+      //if you have gotten here wait forever
+      break;
+    default:
+      // should not reach this state
+      break;
+  }
+
   /* SAMPLE LOOP (400Hz) */
   currentTime = micros();
-  if (currentState!=FlightState::landed && currentTime >= previousSampleTime + sampleLoopMicros) {
-    previousSampleTime += sampleLoopMicros;
-
-    // Temporary test of simulated OR data
-    double simSample[2];
-    getSimulatedData(currentTime/1000000.0+15.96, simSample);
-
-    if(counterSample%100==0){
-      Serial.print("Interp pos: ");
-      Serial.println(simSample[0]);
-      Serial.print("Interp acc: ");
-      Serial.println(simSample[1]);
-    }
-    counterSample++;
-
-    currentPosition = simSample[0];
-    currentAcceleration = simSample[1];
+  if (currentTime >= previousSampleTime + sampleLoopMicros) {
+    previousSampleTime = currentTime;
     
     /**
      * TODO: 
@@ -328,12 +329,11 @@ void loop() {
     
   }
 
-  /* COMPUTE LOOP (per 4 SAMPLEs) */
+  /* COMPUTE LOOP (100Hz) */
   currentTime = micros();
-  // If no. samples is multiple of 4, i.e. previousSampleTime/sampleLoopMicros % KALMAN_LOOP_FREQ_PER_SAMPLES
-  if (currentState!=FlightState::landed && previousSampleTime % computeLoopMicros == 0) {
+  if (currentTime >= previousComputeTime + computeLoopMicros) {
 
-    previousComputeTime += computeLoopMicros;
+    previousComputeTime = currentTime;
 
     currentMeasurement = makeMeasurement();
 
@@ -358,83 +358,13 @@ void loop() {
 
     stateVec = stateVec + Kkalman*innovation;
 
-    if(counter%25==0){
-      Serial << stateVec << "\n";
-
-    }
-    counter++;
-
-    //write new information to ringBuffer
-    ringBuffer[ringBufferIndex%RING_BUFFER_LENGTH][0] = micros()/1000000.0;
-    for(int iter = 1; iter<10;iter++){
-      ringBuffer[ringBufferIndex%RING_BUFFER_LENGTH][iter] = stateVec(iter-1);
-    }
-
-    //TODO add current value of control to eleventh element of the array
-
-    ringBufferIndex++;
-
-    /* Switch statement for FSM of ACE system modes */
-    switch(currentState) {
-      case FlightState::detectLaunch:
-        //if one second has elapsed and not launched, reset kalman filter
-        if (currentTime >= previousFilterReset + ONE_SEC_MICROS){
-          //Reset kalman filter
-
-          //THIS IS VERY IMPORTANT  
-          //if this is not done velocity acts very badly
-          Pkalman = {10,0,0,0,0,0,0,0,0,
-                    0,10,0,0,0,0,0,0,0,
-                    0,0,10,0,0,0,0,0,0,
-                    0,0,0,10,0,0,0,0,0,
-                    0,0,0,0,10,0,0,0,0,
-                    0,0,0,0,0,10,0,0,0,
-                    0,0,0,0,0,0,10,0,0,
-                    0,0,0,0,0,0,0,10,0,
-                    0,0,0,0,0,0,0,0,10};
-          
-          stateVec = {0,0,0,0,0,0,0,0,0};
-
-          //Clear data logs
-          ringBufferIndex = 0;
-
-          previousFilterReset = currentTime;
-        }
-        //if conditions met, transition to burn
-        currentState = detectLaunchTransition(currentState);
-        break;
-      case FlightState::burn:
-        //if rocket is decelerating, transition to control state
-        currentState = burnTransition(currentState);
-        break;
-      case FlightState::control:
-        //wait until apogee is reached, store airbrakes, transition to coast state
-        currentState = controlTransition(currentState);
-        break;
-      case FlightState::controlStandby:
-        //wait until rocket reverts to stable conditions, continue airbrake control
-        currentState = controlStandbyTransition(currentState);
-        break;
-      case FlightState::coast:
-        //if z velocity is very close to zero and altitude is low, then we are landed
-        //transition to landed
-        currentState = coastTransition(currentState);
-        break;
-      case FlightState::landed:
-        //if you have gotten here wait forever
-        break;
-      default:
-        // should not reach this state
-        break;
-    }
-  
   }
 
   /* CONTROL LOOP (xHz) */
   currentTime = micros();
-  if (currentState==FlightState::control && currentTime >= previousControlTime + controlLoopMicros) {
-    previousControlTime += controlLoopMicros;
-    // TODO: Stow airbrakes if too far from vertical below a certain altitude
+  if (currentTime >= previousControlTime + controlLoopMicros) {
+    previousControlTime = currentTime;
+
     /**
      * TODO: 
      *  1. Obtain current altitude and current velocity (prediction from 
