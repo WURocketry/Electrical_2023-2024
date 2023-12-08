@@ -1,4 +1,5 @@
 #include <BasicLinearAlgebra.h>
+#include <Servo.h>
 
 // Loop rates (Hz)
 #define ONE_SEC_MICROS 1000000
@@ -280,7 +281,7 @@ void loop() {
 
    updateServo();
 
-  //example implementation to toggle the servo between 90 and 0 every three seconds... Obv we wouldn't use it this way but its a good test to have
+  //example implementation to toggle the servo between 90 and 0 every three seconds... Obv we wouldn't use it this way but its a good test to have 
   // if (stepsTaken >= totalSteps) {
   //   delay(3000); // wait for a bit
   //   targetAngle = (targetAngle == 0) ? 90 : 0; // Toggle target angle
