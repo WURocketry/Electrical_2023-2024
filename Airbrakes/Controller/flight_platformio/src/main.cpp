@@ -305,10 +305,15 @@ void setup() {
     ;  // wait for serial port to connect. Needed for native USB port only
     //TODO REMOVE BEFORE FLIGHT
   }
-  initializeServoMovement(0);
-  delay(1000);
+
+
   Serial.println("> Initialized Serial comms!");
 
+  myservo.attach(servoPin);  // attach the servo on pin 9
+  targetAngle = 0; // Initial target angle
+  initializeMovement();
+  delay(1000);
+  
 #ifdef PORTENTA_H7_M7_PLATFORM
   // Initialize SDRAM
   Serial.print("| Init SDRAM...");
@@ -531,7 +536,7 @@ void loop() {
       // Note: stateVec(2) --> curr_Z_Position, stateVec(5) --> curr_Z_Velocity
       currentPIDControl = pid.control(stateVec(2), stateVec(5));
       int angleExtension = SRV_MAX_EXTENSION_ANGLE * currentPIDControl + 0.5 + SRV_ANGLE_DEG_OFFSET;  // +0.5 to round to nearest whole int
-      srv.write(SRV_MAX_EXTENSION_ANGLE + SRV_ANGLE_DEG_OFFSET - angleExtension);  // Invert angle control
+      initializeServoMovement(SRV_MAX_EXTENSION_ANGLE + SRV_ANGLE_DEG_OFFSET - angleExtension);  // Invert angle control
     }
     
     // Serial.print("Performed control loop with signal ");
