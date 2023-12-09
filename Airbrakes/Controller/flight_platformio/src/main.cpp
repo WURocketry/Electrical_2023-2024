@@ -44,9 +44,13 @@ int ringBufferIndex = 0;
 #define SRV_ANGLE_DEG_OFFSET    20
 
 float currAngle = 0; // current angle of the servo
-int targetAngle = 0; 
+float distanceThreshold = 0.5 // Only move the servo if the angle change is above this threshold
+float targetAngle = 0; 
 unsigned long previousServoUpdate = 0; // last time the servo was updated
 const long servoUpdateInterval = 10; // update interval for servo in milliseconds (100Hz)
+int numbsteps = 10; // Number of steps that it writes to the servo to get to target angle
+int servoMaxAngle = 140;
+int servoMinAngle = 20;
 
 
 // Target apogee
@@ -285,15 +289,17 @@ void initializeServoMovement(int newTargetAngle) {
 }
 
 void updateServoPosition() {
-  unsigned long currentMillis = micros();
+  unsigned long currentMicros = micros();
   
   if (currentMillis - previousServoUpdate >= servoUpdateInterval * 1000) { // Convert to microseconds
     previousServoUpdate = currentMillis;
 
-    if (abs(currAngle - targetAngle) > 0.5) { // Only move if there is a significant difference
-      float stepAngle = (float)(targetAngle - currAngle) / 10; // Determine step size
+    if (abs(currAngle - targetAngle) > distanceThreshold) { // Only move if there is a significant difference
+      float stepAngle = (float)(targetAngle - currAngle) / numSteps; // Determine step size
       currAngle += stepAngle;
+      if (currAngle >= servoMinAngle && currAngle <= servoMaxAngle){
       srv.write(round(currAngle));
+      }
     }
   }
 }
