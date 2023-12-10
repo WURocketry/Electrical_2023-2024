@@ -44,11 +44,11 @@ int ringBufferIndex = 0;
 #define SRV_ANGLE_DEG_OFFSET    20
 
 float currAngle = 0; // current angle of the servo
-float distanceThreshold = 0.5 // Only move the servo if the angle change is above this threshold
+float distanceThreshold = 0.5; // Only move the servo if the angle change is above this threshold
 float targetAngle = 0; 
 unsigned long previousServoUpdate = 0; // last time the servo was updated
 const long servoUpdateInterval = 10; // update interval for servo in milliseconds (100Hz)
-int numbsteps = 10; // Number of steps that it writes to the servo to get to target angle
+int numSteps = 10; // Number of steps that it writes to the servo to get to target angle
 int servoMaxAngle = 140;
 int servoMinAngle = 20;
 
@@ -291,8 +291,8 @@ void initializeServoMovement(int newTargetAngle) {
 void updateServoPosition() {
   unsigned long currentMicros = micros();
   
-  if (currentMillis >= previousServoUpdate + servoUpdateInterval * 1000) { // Convert to microseconds
-    previousServoUpdate += servoUpdateInterval
+  if (currentMicros >= previousServoUpdate + servoUpdateInterval * 1000) { // Convert to microseconds
+    previousServoUpdate += servoUpdateInterval;
 
     if (abs(currAngle - targetAngle) > distanceThreshold) { // Only move if there is a significant difference
       float stepAngle = (float)(targetAngle - currAngle) / numSteps; // Determine step size
@@ -315,10 +315,9 @@ void setup() {
 
   Serial.println("> Initialized Serial comms!");
 
-  myservo.attach(servoPin);  // attach the servo on pin 9
+  srv.attach(servoPin);  // attach the servo on pin 9
   targetAngle = 0; // Initial target angle
-  initializeMovement();
-  delay(1000);
+  initializeServoMovement(140);
   
 #ifdef PORTENTA_H7_M7_PLATFORM
   // Initialize SDRAM
@@ -543,6 +542,7 @@ void loop() {
       currentPIDControl = pid.control(stateVec(2), stateVec(5));
       int angleExtension = SRV_MAX_EXTENSION_ANGLE * currentPIDControl + 0.5 + SRV_ANGLE_DEG_OFFSET;  // +0.5 to round to nearest whole int
       initializeServoMovement(SRV_MAX_EXTENSION_ANGLE + SRV_ANGLE_DEG_OFFSET - angleExtension);  // Invert angle control
+      Serial.println("Writing angle to servo: " + (int)(SRV_MAX_EXTENSION_ANGLE + SRV_ANGLE_DEG_OFFSET - angleExtension));
     }
     
     // Serial.print("Performed control loop with signal ");
