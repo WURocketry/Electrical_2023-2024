@@ -291,8 +291,8 @@ void initializeServoMovement(int newTargetAngle) {
 void updateServoPosition() {
   unsigned long currentMicros = micros();
   
-  if (currentMillis - previousServoUpdate >= servoUpdateInterval * 1000) { // Convert to microseconds
-    previousServoUpdate = currentMillis;
+  if (currentMillis >= previousServoUpdate + servoUpdateInterval * 1000) { // Convert to microseconds
+    previousServoUpdate += servoUpdateInterval
 
     if (abs(currAngle - targetAngle) > distanceThreshold) { // Only move if there is a significant difference
       float stepAngle = (float)(targetAngle - currAngle) / numSteps; // Determine step size
