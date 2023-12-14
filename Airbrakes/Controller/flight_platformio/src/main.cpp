@@ -1,12 +1,27 @@
-/* Library includes */
+
+// Note: Important to keep order of includes correct to maintain consistent linking
+// 1. External 3rd party library includes
+// 2. Global definitions (may be used across our project)
+// 3. Local includes
+// 4. Local defines (used only in main.cpp)
+// 5. Static variables
+
+
+/* LIBRARY INCLUDES */
 #include <Arduino.h>
-#include <Servo.h>
 #include <BasicLinearAlgebra.h>
+#include <Servo.h>
 #include <SparkFun_Qwiic_OpenLog_Arduino_Library.h>
 #include <Wire.h>
-#include <Arduino.h>
 
-/* Our includes */
+/* GLOBAL DEFINES */
+// Loop rates (Hz)
+#define ONE_SEC_MICROS 1000000
+#define SAMPLE_LOOP_FREQ 100
+#define KALMAN_LOOP_FREQ_PER_SAMPLES 1  // Compute per n=1 samples
+#define CONTROL_LOOP_FREQ 20
+
+/* LOCAL INCLUDES */
 #include <Measurement.h>
 #include <accelReplace.h>
 #include <simulation.h>
@@ -24,90 +39,88 @@
 /**********************************************
  **********************************************/
 
-// Configure ringBuffer for saving airbrakes sensor data
-#define RING_BUFFER_COLS 11
-#ifdef RP2040_PLATFORM
-  #warning "CONFIG: Configuring ringBuffer for RP2040 platform"
-  #define RING_BUFFER_LENGTH 4000
-
-  float ringBuffer[RING_BUFFER_LENGTH][RING_BUFFER_COLS]; //contrains time,stateVec, and control value
-#elif PORTENTA_H7_M7_PLATFORM
-  #warning "CONFIG: Configuring ringBuffer for Portenta_H7 platform"
-  #include <SDRAM.h>
-  #define RING_BUFFER_LENGTH 30000
-
-  SDRAMClass ram;
-  // float (*ringBuffer)[RING_BUFFER_LENGTH]; // Not currently using
-  float* SDRAM_base = (float*)0x60000000;  // Base pointer to DRAM start address
-#endif
-
-int ringBufferIndex = 0;
-
+/* LOCAL DEFINES */
 // Servo defines
 #define SRV_MIN_PWM_LEN_MICROS  900
 #define SRV_MAX_PWM_LEN_MICROS  2050
 #define SRV_MAX_EXTENSION_ANGLE 80
 #define SRV_ANGLE_DEG_OFFSET    20
 
-using namespace BLA;
-
+/* STATIC VARIABLES */
 // Delta timing variables
-unsigned long currentTime;
-unsigned long previousFilterReset;
-unsigned long previousSampleTime;
-unsigned int  previousComputeWaits; // counter for when compute should occur after n=1 samples
-unsigned long previousControlTime;
+static unsigned long currentTime;
+static unsigned long previousFilterReset;
+static unsigned long previousSampleTime;
+static unsigned int  previousComputeWaits; // counter for when compute should occur after n=1 samples
+static unsigned long previousControlTime;
 
-const long sampleLoopMicros  = ONE_SEC_MICROS/SAMPLE_LOOP_FREQ;
-const long computeLoopMicros = KALMAN_LOOP_FREQ_PER_SAMPLES * sampleLoopMicros;
-const long controlLoopMicros = ONE_SEC_MICROS/CONTROL_LOOP_FREQ;
+static const long sampleLoopMicros  = ONE_SEC_MICROS/SAMPLE_LOOP_FREQ;
+static const long computeLoopMicros = KALMAN_LOOP_FREQ_PER_SAMPLES * sampleLoopMicros;
+static const long controlLoopMicros = ONE_SEC_MICROS/CONTROL_LOOP_FREQ;
 
-// Flight monitor and sensor objects
-AdafruitBMP388 alt;
-AdafruitBNO085 imu;
-FlightMonitor fm_ace;
-
-bool dataValid = true;
+// Flight monitor and sensor objects/variables
+static AdafruitBMP388 alt;
+static AdafruitBNO085 imu;
+static FlightMonitor fm_ace;
+static bool measurementDataValid = true;
 
 // Servo object
-Servo srv;
+static Servo srv;
 
 // PID controller object and global control
-PID_Controller pid(ACE_TARGET_APOGEE);
-double currentPIDControl = 0;
+static PID_Controller pid(ACE_TARGET_APOGEE);
+static double currentPIDControl = 0;
 
 // OpenLog objects/variables
-OpenLog logger;
-String logfile;
-bool didWriteData = false;
+static OpenLog logger;
+static String logfile;
+static bool didWriteData = false;
+
+// SDRAM configuration
+#define RING_BUFFER_COLS 11
+#ifdef RP2040_PLATFORM
+  #warning "CONFIG: Configuring ringBuffer for RP2040 platform"
+  #define RING_BUFFER_LENGTH 4000
+
+  static float ringBuffer[RING_BUFFER_LENGTH][RING_BUFFER_COLS]; //contrains time,stateVec, and control value
+#elif PORTENTA_H7_M7_PLATFORM
+  #warning "CONFIG: Configuring ringBuffer for Portenta_H7 platform"
+  #include <SDRAM.h>
+  #define RING_BUFFER_LENGTH 30000
+
+  static SDRAMClass ram;
+  // float (*ringBuffer)[RING_BUFFER_LENGTH]; // Not currently using
+  static float* SDRAM_base = (float*)0x60000000;  // Base pointer to DRAM start address
+#endif
+static int ringBufferIndex = 0;
 
 // Struct for holding current measurement
 static Measurement currentMeasurement;
 
 // Variables for AccelReplacement
-float timeSinceSaturation = 0.0;
-float timeOfSaturation = 0.0;
-boolean imuSaturated = false;
+static float timeSinceSaturation = 0.0;
+static float timeOfSaturation = 0.0;
+static boolean imuSaturated = false;
 
-// DEBUG VARIABLES
-int stateVecPrintCounter = 0;
-int counterSample = 0;
-float simSample[2] {0.0, 0.0};
+// Debug variables
+static int stateVecPrintCounter = 0;
+static int counterSample = 0;
+static float simSample[2] {0.0, 0.0};
 
-bool readMeasurement() {
-  dataValid = true;
+static bool readMeasurement() {
+  measurementDataValid = true;
 
   // Measure Acceleration & Rotation Quat
   if (!imu.measureIMU(&currentMeasurement)) {
-    dataValid = false;
+    measurementDataValid = false;
   }
 
   // Measure Altitude
   if (!alt.measureAltitude(&currentMeasurement)) {
-    dataValid = false;
+    measurementDataValid = false;
   }
 
-  return dataValid;
+  return measurementDataValid;
 }
 
 //Finite State Machine Variables and State Transition Functions
@@ -130,7 +143,7 @@ FlightState detectLaunchTransition(FlightState currentState) {
 
   // remain prior to launch (await launch detection)
   if (fm_ace.detectedLaunch()) {
-    Serial << "**** TRANSITION TO BURN ****\n";
+    Serial.println("**** TRANSITION TO BURN ****\n");
     return FlightState::burn;
   }
   return currentState;
@@ -143,7 +156,7 @@ FlightState burnTransition(FlightState currentState) {
    */
   // remain until burn acceleration ended
   if (fm_ace.detectedUnpoweredAscent()) {
-    Serial << "**** TRANSITION TO CONTROL ****\n";
+    Serial.println("**** TRANSITION TO CONTROL ****\n");
     return FlightState::control;
   }
   
@@ -158,7 +171,7 @@ FlightState controlTransition(FlightState currentState) {
    */
   // remain until apogee
   if (fm_ace.detectedApogee()) {
-    Serial << " **** APOGEE REACHED. TRANSITION TO COAST ****\n";
+    Serial.println(" **** APOGEE REACHED. TRANSITION TO COAST ****\n");
     return FlightState::coast;
   }
   if (fm_ace.detectedLean()) {
@@ -177,7 +190,7 @@ FlightState controlStandbyTransition(FlightState currentState) {
   // if (minimalLean) {
   //   return FlightState::control;
   // }
-  Serial << " **** IN STANBY. WILL TRANSITION WHEN IN NOMINAL STATE ****\n";
+  Serial.println("**** IN STANBY. WILL TRANSITION WHEN IN NOMINAL STATE ****\n");
   return currentState;
 }
 
@@ -189,7 +202,7 @@ FlightState coastTransition(FlightState currentState) {
   
   // remain until landing
   if (fm_ace.detectedLanding()) {
-    Serial << "**** LANDING DETECTED ****\n";
+    Serial.println("**** LANDING DETECTED ****\n");
     return FlightState::landed;
   }
   return currentState;
@@ -359,14 +372,18 @@ void loop() {
     //kalman filter steps
     kalmanPredict();
 
-    if(dataValid){
+    if(measurementDataValid){
 
       kalmanUpdate();
 
     }
 
     if(stateVecPrintCounter%25==0){
-      Serial << stateVec << "\n";
+      Serial.print("Statevec: ");
+      {
+        using namespace BLA;
+        Serial << stateVec << "\n";
+      }
     }
     stateVecPrintCounter++;
 
