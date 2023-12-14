@@ -256,11 +256,11 @@ void collectDataFromBNO() {
       Serial.print("sensor was reset ");
       bno08x.enableReport(reportType, reportIntervalUs);
     }
-    
+   
     if (bno08x.getSensorEvent(&sensorValue)) {
       if (sensorValue.sensorId == reportType) {
         quaternionToEulerRV(&sensorValue.un.arvrStabilizedRV, &ypr, true);
-
+ 
         DATA_COMPONENT_READINGS[BNO_YAW] = ypr.yaw;
         DATA_COMPONENT_READINGS[BNO_PITCH] = ypr.pitch;
         DATA_COMPONENT_READINGS[BNO_ROLL] = ypr.roll;
@@ -288,6 +288,12 @@ void collectDataFromBNO() {
 }
 
 // Function to collect data from BME680
+/*
+The bme.performReading() function is blocking, it takes like 3 seconds to run. The delta timing loop is useless
+since the program will get stuck on the if-statement for 3 seconds before taking any other measurements. To avoid
+this we updated the delta timing loop to update every 3200 milliseconds (needs more testing) and we asynchronously collect the data by using 'beginReading()' and then 'endReading()' Still needs more testing to find out what the largest time it may take to gather that data. Probably around 3000. --Chase
+
+*/
 void collectDataFromBME() {
   unsigned long currentMillis = millis();
   if (currentMillis >= bmeTimer) {
