@@ -46,8 +46,8 @@ int ringBufferIndex = 0;
 float currAngle = 0; // current angle of the servo
 float distanceThreshold = 0.5; // Only move the servo if the angle change is above this threshold
 float targetAngle = 0; 
-unsigned long previousServoUpdate = 0; // last time the servo was updated
-const long servoUpdateInterval = 10; // update interval for servo in milliseconds (100Hz)
+unsigned long previousServoUpdate = 0; // last time the servo was updated (in microseconds)
+const long servoUpdateIntervalMicros = 10 * 1000; // update interval for servo (in microseconds) (100Hz)
 int numSteps = 10; // Number of steps that it writes to the servo to get to target angle
 int servoMaxAngle = 140;
 int servoMinAngle = 20;
@@ -291,8 +291,8 @@ void initializeServoMovement(int newTargetAngle) {
 void updateServoPosition() {
   unsigned long currentMicros = micros();
   
-  if (currentMicros >= previousServoUpdate + servoUpdateInterval * 1000) { // Convert to microseconds
-    previousServoUpdate += servoUpdateInterval;
+  if (currentMicros >= previousServoUpdate + servoUpdateIntervalMicros) {
+    previousServoUpdate += servoUpdateIntervalMicros;
 
     if (abs(currAngle - targetAngle) > distanceThreshold) { // Only move if there is a significant difference
       float stepAngle = (float)(targetAngle - currAngle) / numSteps; // Determine step size
