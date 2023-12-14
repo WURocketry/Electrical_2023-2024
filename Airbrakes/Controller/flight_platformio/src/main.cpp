@@ -100,14 +100,6 @@ bool readMeasurement() {
     dataValid = false;
   }
 
-  // Serial.print(currentMeasurement.q0);
-  // Serial.print(" ");
-  // Serial.print(currentMeasurement.q1);
-  // Serial.print(" ");
-  // Serial.print(currentMeasurement.q2);
-  // Serial.print(" ");
-  // Serial.println(currentMeasurement.q3);
-
   return dataValid;
 }
 
@@ -123,14 +115,6 @@ enum class FlightState {
 };
 FlightState currentState;
 
-/**
- * TODO: Implement flight states of ACE FSM.
- *       Refer to "Airbrakes Controller State Machine"
- *       in GDrive
- * 
- * NOTE: These functions are state TRANSITIONS and 
- *       do not provide control. 
- **/
 FlightState detectLaunchTransition(FlightState currentState) {
   /* Transitions: 
    * this -> burn
@@ -138,7 +122,6 @@ FlightState detectLaunchTransition(FlightState currentState) {
    */
 
   // remain prior to launch (await launch detection)
-  // TODO: determine launchCondition (could be from Kalman)
   if (fm_ace.detectedLaunch()) {
     Serial << "**** TRANSITION TO BURN ****\n";
     return FlightState::burn;
@@ -152,7 +135,6 @@ FlightState burnTransition(FlightState currentState) {
    * this -> burn
    */
   // remain until burn acceleration ended
-  // TODO: determine condition
   if (fm_ace.detectedUnpoweredAscent()) {
     Serial << "**** TRANSITION TO CONTROL ****\n";
     return FlightState::control;
@@ -168,7 +150,6 @@ FlightState controlTransition(FlightState currentState) {
    * this -> controlStandby
    */
   // remain until apogee
-  // TODO: determine condition
   if (fm_ace.detectedApogee()) {
     Serial << " **** APOGEE REACHED. TRANSITION TO COAST ****\n";
     return FlightState::coast;
@@ -185,15 +166,11 @@ FlightState controlStandbyTransition(FlightState currentState) {
    * this -> coast
    * this -> control
    */
-  // remain until safe control conditions (implement eventually)
-  // TODO: determine condition
+  // TODO: remain until safe control conditions (implement eventually)
   // if (minimalLean) {
   //   return FlightState::control;
   // }
-  if (fm_ace.detectedApogee()) {
-    Serial << " **** APOGEE REACHED. TRANSITION TO COAST ****\n";
-    return FlightState::coast;
-  }
+  Serial << " **** IN STANBY. WILL TRANSITION WHEN IN NOMINAL STATE ****\n";
   return currentState;
 }
 
@@ -204,7 +181,6 @@ FlightState coastTransition(FlightState currentState) {
    */
   
   // remain until landing
-  // TOOD: determine condition
   if (fm_ace.detectedLanding()) {
     Serial << "**** LANDING DETECTED ****\n";
     return FlightState::landed;
@@ -359,13 +335,9 @@ void loop() {
     counterSample++;
 
     readMeasurement();  // Reads all SAMPLE loop sensors
-
-    // Serial.print("Performed sample loop at ");
-    // Serial.println(currentTime);
   }
 
   /* COMPUTE LOOP (per 1 SAMPLEs : 100Hz) */
-  // If num samples is multiple of 4, i.e. previousSampleTime/sampleLoopMicros % KALMAN_LOOP_FREQ_PER_SAMPLES
   if (currentState!=FlightState::landed && previousComputeWaits >= KALMAN_LOOP_FREQ_PER_SAMPLES) {
     previousComputeWaits = 0; // Reset compute counter
 
@@ -381,16 +353,6 @@ void loop() {
                       inertialAccel(0),
                       inertialAccel(1),
                       inertialAccel(2)+simSample[1]};
-
-    // if((measurementVec(3) > 70.0) && (!imuSaturated)){
-    //   imuSaturated = true;
-    //   timeOfSaturation = micros()/1000000.0;
-    // }
-
-    // if(measurementVec(3)>70.0){
-    //   timeSinceSaturation = micros()/1000000.0 - timeOfSaturation;
-    //   measurementVec(3) = getReplacedAccel(timeSinceSaturation);
-    // }
 
     //kalman filter steps
     kalmanPredict();
@@ -419,21 +381,18 @@ void loop() {
     // Write current control value to SDRAM[10]
     *(SDRAM_base + ((ringBufferIndex%RING_BUFFER_LENGTH)*RING_BUFFER_COLS + 10)) = currentPIDControl;
 #endif
-    // Serial.print("Wrote to ringBuffer at row ");
-    // Serial.println(ringBufferIndex%RING_BUFFER_LENGTH);
     ++ringBufferIndex;
     
 
     /* Switch statement for FSM of ACE system modes */
     switch(currentState) {
       case FlightState::detectLaunch:
-        //if one second has elapsed and not launched, reset kalman filter
+        
         currentTime = micros();
         if (currentTime >= previousFilterReset + ONE_SEC_MICROS){
-          //Reset kalman filter
+          // If one second has elapsed and not launched, reset kalman filter
 
-          //THIS IS VERY IMPORTANT  
-          //if this is not done velocity acts very badly
+          // THIS RESET IS VERY IMPORTANT: ensures velocity behaves well
           Pkalman = {10,0,0,0,0,0,0,0,0,
                     0,10,0,0,0,0,0,0,0,
                     0,0,10,0,0,0,0,0,0,
@@ -443,59 +402,52 @@ void loop() {
                     0,0,0,0,0,0,10,0,0,
                     0,0,0,0,0,0,0,10,0,
                     0,0,0,0,0,0,0,0,10};
-          
           stateVec = {0,0,0,0,0,0,0,0,0};
 
-          //Clear data logs
+          // Clear data logs
           ringBufferIndex = 0;
-
           previousFilterReset = currentTime;
         }
-        //if conditions met, transition to burn
+        // Next transition: acceleration detected (motor burn) --> burn
         currentState = detectLaunchTransition(currentState);
         break;
       case FlightState::burn:
-        //if rocket is decelerating, transition to control state
+        // Next transition: deceleration detected (motor burnout) --> control
         currentState = burnTransition(currentState);
         break;
       case FlightState::control:
-        //wait until apogee is reached, store airbrakes, transition to coast state
+        // Next transition: reaching apogee --> stow --> separate --> coast
         currentState = controlTransition(currentState);
         break;
       case FlightState::controlStandby:
-        //wait until rocket reverts to stable conditions, continue airbrake control
+        // Next transition: re-stabilized --> control
         currentState = controlStandbyTransition(currentState);
         break;
       case FlightState::coast:
-        //if z velocity is very close to zero and altitude is low, then we are landed
-        //transition to landed
+        // Next transition: z velocity apprx. 0 and altitude is low --> landed
         currentState = coastTransition(currentState);
         break;
       case FlightState::landed:
-        // Write data to OpenLog once when landed
+        // Next transition: none, continuously write data to storage
 #ifdef PORTENTA_H7_M7_PLATFORM
         if (!didWriteData) {
           dumpSDRAMtoFile(logfile);
           didWriteData = true;
         }
 #endif
-        
         break;
       default:
-        // should not reach this state
+        // Error state
+        Serial.println("FATAL-ERROR: FSM reached unknown state, resetting to standby");
+        currentState = FlightState::controlStandby;
         break;
     }
-  
-    // Serial.print("Performed compute loop at ");
-    // Serial.println(currentTime);
   }
 
   /* CONTROL LOOP (1Hz) */
   currentTime = micros();
   if (currentTime >= previousControlTime + controlLoopMicros) {
     previousControlTime += controlLoopMicros;
-
-    // FAULT-PROTECTION: Stow airbrakes if too far from vertical below a certain altitude
     
     if (currentState==FlightState::control) {
       // Perform PID servo actuation
@@ -504,8 +456,5 @@ void loop() {
       int angleExtension = SRV_MAX_EXTENSION_ANGLE * currentPIDControl + 0.5 + SRV_ANGLE_DEG_OFFSET;  // +0.5 to round to nearest whole int
       srv.write(SRV_MAX_EXTENSION_ANGLE + SRV_ANGLE_DEG_OFFSET - angleExtension);  // Invert angle control
     }
-    
-    // Serial.print("Performed control loop with signal ");
-    // Serial.println(currentPIDControl);
   }
 }
