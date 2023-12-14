@@ -81,14 +81,18 @@ OpenLog logger;
 String logfile;
 bool didWriteData = false;
 
-//Struct for holding current measurement
+// Struct for holding current measurement
 static Measurement currentMeasurement;
 
-//variables for AccelReplacement
+// Variables for AccelReplacement
 float timeSinceSaturation = 0.0;
 float timeOfSaturation = 0.0;
 boolean imuSaturated = false;
 
+// DEBUG VARIABLES
+int stateVecPrintCounter = 0;
+int counterSample = 0;
+float simSample[2] {0.0, 0.0};
 
 bool readMeasurement() {
   dataValid = true;
@@ -224,23 +228,19 @@ int getNumberOfPrevFlights() {
     // Check if the file exists
     long sizeOfFile = logger.size(filename);
     if (sizeOfFile > -1) {
-        byte myBufferSize = 200; // Increase this buffer size to hold larger numbers
-        byte myBuffer[myBufferSize];
-        logger.read(myBuffer, myBufferSize, filename); // Load myBuffer with contents of fileNum.txt
+        #define OPEN_LOG_BUFSIZE 200 // Increase this buffer size to hold larger numbers
+        byte openLogBuffer[OPEN_LOG_BUFSIZE];
+        logger.read(openLogBuffer, OPEN_LOG_BUFSIZE, filename); // Load openLogBuffer with contents of fileNum.txt
 
         String counterString = "";
-        for (int x = 0; x < myBufferSize; x++) {
-            if (myBuffer[x] >= '0' && myBuffer[x] <= '9') {
-                counterString += (char)myBuffer[x];
+        for (int x = 0; x < OPEN_LOG_BUFSIZE; x++) {
+            if (openLogBuffer[x] >= '0' && openLogBuffer[x] <= '9') {
+                counterString += (char)openLogBuffer[x];
             }
         }
-
         fileCount = counterString.toInt();
     }
-
     fileCount++;
-    
-    Serial.println(fileCount);
 
     //overwrite file with new file count
     logger.remove(filename, false);
@@ -270,7 +270,7 @@ void setup() {
   Serial.print("| Init SDRAM...");
   ram.begin();
   delay(100);
-  // ringBuffer = (float(*)[RING_BUFFER_LENGTH])ram.malloc(sizeof(float[RING_BUFFER_LENGTH][RING_BUFFER_COLS]));  // Not currently used
+  // ringBuffer = (float(*)[RING_BUFFER_LENGTH])ram.malloc(sizeof(float[RING_BUFFER_LENGTH][RING_BUFFER_COLS]));  // Malloc not currently used
   Serial.println("OK!");
 #endif
 
@@ -283,7 +283,7 @@ void setup() {
   Serial.print("| Init I2C wire...");
   // Wire.begin();
   // Wire.setClock(3400000);
-  Serial.println("OK!");
+  Serial.println("TODO: NOT OK!");
 
   // Initialize sensor hardware
   alt.init();
@@ -302,24 +302,20 @@ void setup() {
   // Initialize OpenLog
   Serial.print("| Init OpenLog...");
   logger.begin();
-  Serial.println("OK!");
-  int fileCount = getNumberOfPrevFlights();
-  logfile = "flight_" + String(fileCount) + "_AB.csv";
+  logfile = "flight_" + String(getNumberOfPrevFlights()) + "_AB.csv";
   Serial.println("> Writing airbrake data to: " + logfile);
+  Serial.println("OK!");
 
   Serial.println("> Init ACE OK! Starting program...");
-  delay(1000);
 
-  // Update all delta timing timer variables with offset
+  // Update all delta timing timer variables with offset to REAL core loop start time
+  delay(1000);
   previousFilterReset = micros();
   previousSampleTime = micros();
   previousComputeWaits = 0;
   previousControlTime = micros();
 }
 
-int stateVecPrintCounter = 0;
-int counterSample = 0;
-double simSample[2] {0.0, 0.0};
 
 void loop() {
   
@@ -381,7 +377,7 @@ void loop() {
 
     // Write stateVec data to SDRAM[1-9]
     for (int i=1; i<RING_BUFFER_COLS-1; ++i) {
-        *(SDRAM_base + ((ringBufferIndex%RING_BUFFER_LENGTH)*RING_BUFFER_COLS + i)) = (float)stateVec(i);
+        *(SDRAM_base + ((ringBufferIndex%RING_BUFFER_LENGTH)*RING_BUFFER_COLS + i)) = (float)stateVec(i-1); // i-1 to write from beginning of stateVec
     }
 
     // Write current control value to SDRAM[10]

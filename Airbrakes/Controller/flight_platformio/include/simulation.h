@@ -5,4 +5,4 @@ extern double simData[733][3];
 
 int SearchVltByTime(double target);
 
-void getSimulatedData(double time, double *returnArray);
+void getSimulatedData(double time, float* returnArray);
