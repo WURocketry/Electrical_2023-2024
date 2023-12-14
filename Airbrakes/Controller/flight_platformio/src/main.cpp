@@ -5,7 +5,6 @@
 #include <SparkFun_Qwiic_OpenLog_Arduino_Library.h>
 #include <Wire.h>
 #include <Arduino.h>
-// #include <algorithm>
 
 /* Our includes */
 #include <Measurement.h>
@@ -17,6 +16,13 @@
 #include <PID_Controller.h>
 #include <AdafruitBMP388.h>
 #include <AdafruitBNO085.h>
+
+/**********************************************
+ *** CHECK CONFIG CONSTANTS PRIOR TO LAUNCH ***
+ **********************************************/
+#include <IMPORTANT_CONFIG.h>
+/**********************************************
+ **********************************************/
 
 // Configure ringBuffer for saving airbrakes sensor data
 #define RING_BUFFER_COLS 11
@@ -42,9 +48,6 @@ int ringBufferIndex = 0;
 #define SRV_MAX_PWM_LEN_MICROS  2050
 #define SRV_MAX_EXTENSION_ANGLE 80
 #define SRV_ANGLE_DEG_OFFSET    20
-
-// Target apogee
-#define ACE_TARGET_APOGEE 1463.04
 
 using namespace BLA;
 
@@ -250,14 +253,17 @@ int getNumberOfPrevFlights() {
 
 
 void setup() {
-
   Serial.begin(38400);
+#if IS_FLIGHT_READY
   while (!Serial) {
     ;  // wait for serial port to connect. Needed for native USB port only
-    //TODO REMOVE BEFORE FLIGHT
   }
   delay(1000);
   Serial.println("> Initialized Serial comms!");
+  Serial.println("\n\n\n\n\n");
+  Serial.println("==== NOTE ====");
+  Serial.println("THE ACE IS IN DEVELOPMENT MODE - PLEASE CONFIGURE FOR FLIGHT IN IMPORTANT_CONFIG.h");
+#endif
 
 #ifdef PORTENTA_H7_M7_PLATFORM
   // Initialize SDRAM
