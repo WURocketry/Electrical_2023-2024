@@ -162,15 +162,16 @@ int getNumberOfPrevFlights() {
 
 void setup() {
   Serial.begin(38400);
-#if IS_FLIGHT_READY
+#if IS_DEVELOPMENT_MODE
   while (!Serial) {
     ;  // wait for serial port to connect. Needed for native USB port only
   }
   delay(1000);
   Serial.println("> Initialized Serial comms!");
-  Serial.println("\n\n\n\n\n");
+  Serial.println("\n\n\n\n\n\n\n");
   Serial.println("==== NOTE ====");
   Serial.println("THE ACE IS IN DEVELOPMENT MODE - PLEASE CONFIGURE FOR FLIGHT IN IMPORTANT_CONFIG.h");
+  Serial.println("\n\n\n\n\n\n\n");
 #endif
 
 #ifdef PORTENTA_H7_M7_PLATFORM
