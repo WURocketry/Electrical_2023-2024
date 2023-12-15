@@ -76,7 +76,7 @@ static double currentPIDControl = 0;
 
 // OpenLog objects/variables
 static OpenLog logger;
-static String logfile;
+static String logfile = "INIT_FAILED.log";
 static bool didWriteData = false;
 
 // SDRAM configuration
@@ -210,10 +210,16 @@ void setup() {
 
   // Initialize OpenLog
   Serial.print("| Init OpenLog...");
-  logger.begin();
-  logfile = "flight_" + String(getNumberOfPrevFlights()) + "_AB.csv";
-  Serial.println("> Writing airbrake data to: " + logfile);
-  Serial.println("OK!");
+  bool didInitLogger = logger.begin();
+  Serial.println(didInitLogger);
+  if (!didInitLogger) {
+    Serial.println("NOT OK!");
+  } else {
+    logfile = "flight_" + String(getNumberOfPrevFlights()) + "_AB.csv";
+    Serial.println("> Writing airbrake data to: " + logfile);
+    Serial.println("OK!");
+  }
+  
 
   Serial.println("> Init ACE OK! Starting program...");
 
@@ -269,6 +275,8 @@ void loop() {
     }
 
     if(stateVecPrintCounter%25==0){
+      Serial.print("FLIGHT STATE: ");
+      Serial.println((int)currentState);
       Serial.print("Statevec: ");
       {
         using namespace BLA;
@@ -295,7 +303,6 @@ void loop() {
     /* Switch statement for FSM of ACE system modes */
     switch(currentState) {
       case FlightState::detectLaunch:
-        
         currentTime = micros();
         if (currentTime >= previousFilterReset + ONE_SEC_MICROS){
           // If one second has elapsed and not launched, reset kalman filter

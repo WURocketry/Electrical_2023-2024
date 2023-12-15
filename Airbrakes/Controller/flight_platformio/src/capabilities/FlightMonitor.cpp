@@ -5,31 +5,28 @@
 
 extern BLA::Matrix<9> stateVec;
 
-FlightMonitor::FlightMonitor(AdafruitBNO085 bno085): imu(bno085)
-{
-}
-
 FlightMonitor::FlightMonitor()
 {
-
-    launchCounts = 0;
-    burnoutCounts = 0;
-    apogeeCounts = 0;
-    landingCounts = 0;
+    this->launchCounts = 0;
+    this->burnoutCounts = 0;
+    this->apogeeCounts = 0;
+    this->landingCounts = 0;
 }
 
 bool FlightMonitor::detectedLaunch()
 {
-
-    if((stateVec(2)>LAUNCH_HEIGHT_THRESHOLD)&&(stateVec(5)>LAUNCH_VELOCITY_THRESHOLD)){
-        launchCounts++;
-    }else{
-        launchCounts = 0;
+    if ((stateVec(2) > LAUNCH_HEIGHT_THRESHOLD) && (stateVec(5) > LAUNCH_VELOCITY_THRESHOLD)){
+        this->launchCounts++;
+        Serial.print("launch counted: ");
+        Serial.println(this->launchCounts);
+     } else {
+        Serial.println("reset launchCounts...");
+        this->launchCounts = 0;
     }
 
-    if(launchCounts>=LAUNCH_PERSISTENCE){
+    if (launchCounts >= LAUNCH_PERSISTENCE){
         return true;
-    }else{
+    } else {
         return false;
     }
 
