@@ -28,6 +28,7 @@
 #include <kalman.h>
 
 #include <FlightMonitor.h>
+#include <FSM.h>
 #include <PID_Controller.h>
 #include <AdafruitBMP388.h>
 #include <AdafruitBNO085.h>
@@ -62,6 +63,7 @@ static const long controlLoopMicros = ONE_SEC_MICROS/CONTROL_LOOP_FREQ;
 static AdafruitBMP388 alt;
 static AdafruitBNO085 imu;
 static FlightMonitor fm_ace;
+static FlightState currentState;
 static bool measurementDataValid = true;
 
 // Servo object
@@ -97,11 +99,6 @@ static int ringBufferIndex = 0;
 // Struct for holding current measurement
 static Measurement currentMeasurement;
 
-// Variables for AccelReplacement
-static float timeSinceSaturation = 0.0;
-static float timeOfSaturation = 0.0;
-static boolean imuSaturated = false;
-
 // Debug variables
 static int stateVecPrintCounter = 0;
 static int counterSample = 0;
@@ -121,91 +118,6 @@ static bool readMeasurement() {
   }
 
   return measurementDataValid;
-}
-
-//Finite State Machine Variables and State Transition Functions
-enum class FlightState {
-  unknown,
-  detectLaunch,
-  burn,
-  control,
-  controlStandby,
-  coast,
-  landed
-};
-FlightState currentState;
-
-FlightState detectLaunchTransition(FlightState currentState) {
-  /* Transitions: 
-   * this -> burn
-   * this -> detectLaunch 
-   */
-
-  // remain prior to launch (await launch detection)
-  if (fm_ace.detectedLaunch()) {
-    Serial.println("**** TRANSITION TO BURN ****\n");
-    return FlightState::burn;
-  }
-  return currentState;
-}
-
-FlightState burnTransition(FlightState currentState) {
-  /* Transitions:
-   * this -> control
-   * this -> burn
-   */
-  // remain until burn acceleration ended
-  if (fm_ace.detectedUnpoweredAscent()) {
-    Serial.println("**** TRANSITION TO CONTROL ****\n");
-    return FlightState::control;
-  }
-  
-  return currentState;
-}
-
-FlightState controlTransition(FlightState currentState) {
-  /* Transitions
-   * this -> coast
-   * this -> burn
-   * this -> controlStandby
-   */
-  // remain until apogee
-  if (fm_ace.detectedApogee()) {
-    Serial.println(" **** APOGEE REACHED. TRANSITION TO COAST ****\n");
-    return FlightState::coast;
-  }
-  if (fm_ace.detectedLean()) {
-    return FlightState::controlStandby;
-  }
-
-  return currentState;
-}
-
-FlightState controlStandbyTransition(FlightState currentState) {
-  /* Transitions
-   * this -> coast
-   * this -> control
-   */
-  // TODO: remain until safe control conditions (implement eventually)
-  // if (minimalLean) {
-  //   return FlightState::control;
-  // }
-  Serial.println("**** IN STANBY. WILL TRANSITION WHEN IN NOMINAL STATE ****\n");
-  return currentState;
-}
-
-FlightState coastTransition(FlightState currentState) {
-  /* Transitions:
-   * this -> landed
-   * this -> coast
-   */
-  
-  // remain until landing
-  if (fm_ace.detectedLanding()) {
-    Serial.println("**** LANDING DETECTED ****\n");
-    return FlightState::landed;
-  }
-  return currentState;
 }
 
 // OpenLog write to functions
@@ -357,25 +269,19 @@ void loop() {
     previousComputeWaits = 0; // Reset compute counter
 
     quaternions = {currentMeasurement.qr,currentMeasurement.qi,currentMeasurement.qj,currentMeasurement.qk};
-
     measuredAccel = {currentMeasurement.xAccel,
                      currentMeasurement.yAccel,
                      currentMeasurement.zAccel};
-    
     getInertialAccel();
-
     measurementVec = {currentMeasurement.altitude+simSample[0],
                       inertialAccel(0),
                       inertialAccel(1),
                       inertialAccel(2)+simSample[1]};
-
     //kalman filter steps
     kalmanPredict();
 
     if(measurementDataValid){
-
       kalmanUpdate();
-
     }
 
     if(stateVecPrintCounter%25==0){
@@ -402,7 +308,6 @@ void loop() {
 #endif
     ++ringBufferIndex;
     
-
     /* Switch statement for FSM of ACE system modes */
     switch(currentState) {
       case FlightState::detectLaunch:
@@ -428,23 +333,23 @@ void loop() {
           previousFilterReset = currentTime;
         }
         // Next transition: acceleration detected (motor burn) --> burn
-        currentState = detectLaunchTransition(currentState);
+        currentState = Flight_FSM::detectLaunchTransition(fm_ace, currentState);
         break;
       case FlightState::burn:
         // Next transition: deceleration detected (motor burnout) --> control
-        currentState = burnTransition(currentState);
+        currentState = Flight_FSM::burnTransition(fm_ace, currentState);
         break;
       case FlightState::control:
         // Next transition: reaching apogee --> stow --> separate --> coast
-        currentState = controlTransition(currentState);
+        currentState = Flight_FSM::controlTransition(fm_ace, currentState);
         break;
       case FlightState::controlStandby:
         // Next transition: re-stabilized --> control
-        currentState = controlStandbyTransition(currentState);
+        currentState = Flight_FSM::controlStandbyTransition(fm_ace, currentState);
         break;
       case FlightState::coast:
         // Next transition: z velocity apprx. 0 and altitude is low --> landed
-        currentState = coastTransition(currentState);
+        currentState = Flight_FSM::coastTransition(fm_ace, currentState);
         break;
       case FlightState::landed:
         // Next transition: none, continuously write data to storage
