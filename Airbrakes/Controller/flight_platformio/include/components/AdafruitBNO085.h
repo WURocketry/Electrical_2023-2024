@@ -4,10 +4,12 @@
 /* Note this will eventually become a derived class from BaseIMUComponent */
 // #include "BaseIMUComponent.h"
 
-#include <Measurement.h>
-
 #include <Adafruit_BNO08x.h>
-#include <Wire.h>
+
+namespace Sample
+{
+    struct Measurement;
+}
 
 //define IMU pins
 // #define imuINT 9 // INT not connected on portenta
@@ -27,5 +29,5 @@ public:
     void readAcceleration();
     void printRawAcceleration(int iters, int sampleFreqMicros);
 
-    bool measureIMU(struct Measurement* measure);
+    bool measureIMU(struct Sample::Measurement* measure);
 };

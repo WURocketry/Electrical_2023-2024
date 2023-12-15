@@ -1,5 +1,9 @@
-#include <AdafruitBNO085.h>
+
+#include <Adafruit_Sensor.h>
 #include <Arduino.h>
+
+#include <AdafruitBNO085.h>
+#include <Measurement.h>
 
 #define REPORT_FREQ_US  10000
 
@@ -84,7 +88,7 @@ void AdafruitBNO085::readAcceleration() {
 
 
 // @brief: fills struct with measurement values
-bool AdafruitBNO085::measureIMU(Measurement* measure) {
+bool AdafruitBNO085::measureIMU(Sample::Measurement* measure) {
     if (!imu_instance.getSensorEvent(&sensorValue)) {
         return false;
     }

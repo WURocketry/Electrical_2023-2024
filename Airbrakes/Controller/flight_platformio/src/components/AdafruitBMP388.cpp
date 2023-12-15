@@ -1,5 +1,8 @@
-#include <AdafruitBMP388.h>
+#include <Adafruit_Sensor.h>
 #include <Arduino.h>
+
+#include <AdafruitBMP388.h>
+#include <Measurement.h>
 
 AdafruitBMP388::AdafruitBMP388() {}
 
@@ -22,18 +25,6 @@ bool AdafruitBMP388::init() {
     Serial.println("OK!");
 
     Serial.println("Calibrating pressure readings with 100 sample average...");
-
-    // double sumPressures = 0;
-    // int i = 0;
-    // while (i < 100) {
-    //     double pa = getPressure();
-    //     if (pa < 0) {
-    //         continue;
-    //     }
-    //     sumPressures += pa;
-    //     ++i;
-    //     delay(10);  // 100 Hz delay
-    // }
     
     int j = 0;
     double baseAltitudes = 0;
@@ -91,7 +82,7 @@ void AdafruitBMP388::printRawAltitude(int iters, int sampleFreqMicros) {
 }
 
 // @brief: fills measurement struct with altitude data
-bool AdafruitBMP388::measureAltitude(Measurement* measure) {
+bool AdafruitBMP388::measureAltitude(Sample::Measurement* measure) {
     double alt = getRelativeAltitude();
     if (alt < 0) {
         return false;

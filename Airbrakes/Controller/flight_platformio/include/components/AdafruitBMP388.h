@@ -4,10 +4,12 @@
 /* Note this will eventually become a derived class from BaseAltComponent */
 // #include "BaseAltComponent.h"
 
-#include <Measurement.h>
-
-#include <Adafruit_Sensor.h>
 #include <Adafruit_BMP3XX.h>
+
+namespace Sample
+{
+    struct Measurement;
+}
 
 #define SEA_LEVEL_PRESSURE_PA 101325
 
@@ -25,5 +27,5 @@ public:
     double getRelativeAltitude();
     void printRawAltitude(int iters, int sampleFreqMicros);
 
-    bool measureAltitude(Measurement* measure);
+    bool measureAltitude(Sample::Measurement* measure);
 };

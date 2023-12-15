@@ -23,7 +23,7 @@
 
 /* LOCAL INCLUDES */
 #include <Measurement.h>
-// #include <accelReplace.h>
+// #include <accelReplace.h>  // Not using saturated IMU sim
 #include <simulation.h>
 #include <kalman.h>
 
@@ -64,7 +64,8 @@ static AdafruitBMP388 alt;
 static AdafruitBNO085 imu;
 static FlightMonitor fm_ace;
 static FlightState currentState;
-static bool measurementDataValid = true;
+static bool measurementDataValid;
+static Sample::Measurement currentMeasurement;  // Struct for holding current measurement
 
 // Servo object
 static Servo srv;
@@ -96,29 +97,11 @@ static bool didWriteData = false;
 #endif
 static int ringBufferIndex = 0;
 
-// Struct for holding current measurement
-static Measurement currentMeasurement;
-
 // Debug variables
 static int stateVecPrintCounter = 0;
 static int counterSample = 0;
 static float simSample[2] {0.0, 0.0};
 
-static bool readMeasurement() {
-  measurementDataValid = true;
-
-  // Measure Acceleration & Rotation Quat
-  if (!imu.measureIMU(&currentMeasurement)) {
-    measurementDataValid = false;
-  }
-
-  // Measure Altitude
-  if (!alt.measureAltitude(&currentMeasurement)) {
-    measurementDataValid = false;
-  }
-
-  return measurementDataValid;
-}
 
 // OpenLog write to functions
 #ifdef PORTENTA_H7_M7_PLATFORM
@@ -261,7 +244,7 @@ void loop() {
     }
     counterSample++;
 
-    readMeasurement();  // Reads all SAMPLE loop sensors
+    measurementDataValid = readMeasurement(&currentMeasurement, imu, alt);  // Reads all SAMPLE loop sensors
   }
 
   /* COMPUTE LOOP (per 1 SAMPLEs : 100Hz) */
