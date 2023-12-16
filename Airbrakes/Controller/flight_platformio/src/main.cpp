@@ -245,7 +245,7 @@ void setup() {
   alt.init();
   imu.init();
   logger.init();
-  
+
   // Attach servo pin to D9 (PWM len min: 900 us, max: 2050us)  // this servo library is trolling us
   Serial.print("| Init servo PWM...");
   srv.attach(9, SRV_MIN_PWM_LEN_MICROS, SRV_MAX_PWM_LEN_MICROS);
@@ -386,7 +386,7 @@ void loop() {
       case FlightState::landed:
         // Next transition: none, continuously write data to storage
 #ifdef PORTENTA_H7_M7_PLATFORM
-        if (!didWriteData) {
+        if (!didWriteData && logger.didInit) {
           logger.dumpSDRAMtoFile(SDRAM_base, ringBufferIndex, RING_BUFFER_LENGTH, RING_BUFFER_COLS);
           didWriteData = true;
         }

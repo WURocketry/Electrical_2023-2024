@@ -12,6 +12,7 @@ private:
     int getNumberOfPrevFlights();
     String logfile;
 public:
+    bool didInit = false;
 // Constructors
     SparkFunOpenLog();
 // Methods

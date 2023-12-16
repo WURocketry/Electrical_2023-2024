@@ -5,12 +5,18 @@ SparkFunOpenLog::SparkFunOpenLog() {}
 
 bool SparkFunOpenLog::init() {
     Serial.print("| Init OpenLog...");
-    this->logger.begin();
-    this->logfile = "flight_" + String(getNumberOfPrevFlights()) + "_AB.csv";
-    Serial.println("> Writing airbrake data to: " + logfile);
-    Serial.println("OK!");
+    didInit = logger.begin();
+    if (didInit) {
+        logfile = "flight_" + String(getNumberOfPrevFlights()) + "_AB.csv";
+        Serial.println("| Writing airbrake data to: " + logfile);
+        Serial.println("OK!");
+    }
+    else {
+        logfile = "FAILED_INIT.log";
+        Serial.println("NOT OK!");
+    }
 
-    return true;
+    return didInit;   
 }
 
 int SparkFunOpenLog::getNumberOfPrevFlights() {
@@ -44,7 +50,7 @@ int SparkFunOpenLog::getNumberOfPrevFlights() {
 }
 
 void SparkFunOpenLog::dumpSDRAMtoFile(float* SDRAM_base, int ringBufferIndex, int rows, int cols) {
-    logger.append(this->logfile); //open the file in openlog
+    logger.append(logfile); //open the file in openlog
     
     int writeToIndex;
     if (ringBufferIndex > rows) {
