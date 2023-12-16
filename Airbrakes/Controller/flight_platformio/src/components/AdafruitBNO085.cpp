@@ -14,17 +14,17 @@ bool AdafruitBNO085::init() {
     Wire.begin();
 
     // Initialize I2C bus
-    if(!imu_instance.begin_I2C()){
+    if(!instance.begin_I2C()){
         // Serial.println("NOT OK! IMU not found");
         return false;
     }
     // Initialize accelerometer report
-    if(!imu_instance.enableReport(SH2_LINEAR_ACCELERATION, REPORT_FREQ_US)){
+    if(!instance.enableReport(SH2_LINEAR_ACCELERATION, REPORT_FREQ_US)){
         Serial.println("NOT OK! Failed to initialize accelerometer");
         return false;
     }
     // Initialize rotation vector report
-    if (!imu_instance.enableReport(SH2_ROTATION_VECTOR, REPORT_FREQ_US)) {
+    if (!instance.enableReport(SH2_ROTATION_VECTOR, REPORT_FREQ_US)) {
         Serial.println("NOT OK! Failed to enable rotation vector");
     }
     Serial.println("OK!");
@@ -46,17 +46,17 @@ bool AdafruitBNO085::isDataReady() {
 
 
 void AdafruitBNO085::getInfo() {
-    for (int n = 0; n < imu_instance.prodIds.numEntries; n++) {
+    for (int n = 0; n < instance.prodIds.numEntries; n++) {
         Serial.print("Part ");
-        Serial.print(imu_instance.prodIds.entry[n].swPartNumber);
+        Serial.print(instance.prodIds.entry[n].swPartNumber);
         Serial.print(": Version :");
-        Serial.print(imu_instance.prodIds.entry[n].swVersionMajor);
+        Serial.print(instance.prodIds.entry[n].swVersionMajor);
         Serial.print(".");
-        Serial.print(imu_instance.prodIds.entry[n].swVersionMinor);
+        Serial.print(instance.prodIds.entry[n].swVersionMinor);
         Serial.print(".");
-        Serial.print(imu_instance.prodIds.entry[n].swVersionPatch);
+        Serial.print(instance.prodIds.entry[n].swVersionPatch);
         Serial.print(" Build ");
-        Serial.println(imu_instance.prodIds.entry[n].swBuildNumber);
+        Serial.println(instance.prodIds.entry[n].swBuildNumber);
   }
 }
 
@@ -71,7 +71,7 @@ void AdafruitBNO085::printRawAcceleration(int iters, int sampleFreqMicros) {
 
 // @brief: prints linear acceleration
 void AdafruitBNO085::readAcceleration() {
-    if (!imu_instance.getSensorEvent(&sensorValue)) {
+    if (!instance.getSensorEvent(&sensorValue)) {
         Serial.println("MISS");
         return;
     }
@@ -91,7 +91,7 @@ void AdafruitBNO085::readAcceleration() {
 
 // @brief: fills struct with measurement values
 bool AdafruitBNO085::measureIMU(Sample::Measurement* measure) {
-    if (!didInit || !imu_instance.getSensorEvent(&sensorValue)) {
+    if (!didInit || !instance.getSensorEvent(&sensorValue)) {
         return false;
     }
 

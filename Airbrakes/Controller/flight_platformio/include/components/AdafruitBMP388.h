@@ -15,7 +15,7 @@ namespace Sample
 
 class AdafruitBMP388 {  // : public BaseAltComponent
 private:
-    Adafruit_BMP3XX alt_instance;
+    Adafruit_BMP3XX instance;
     double BASE_PRESSURE_READING = SEA_LEVEL_PRESSURE_PA;
     double BASE_ALTITUDE_OFFSET = 0;
 public:
