@@ -19,6 +19,7 @@ private:
     double BASE_PRESSURE_READING = SEA_LEVEL_PRESSURE_PA;
     double BASE_ALTITUDE_OFFSET = 0;
 public:
+    bool didInit = false;
 // Constructors
     AdafruitBMP388();   // default
 // Methods

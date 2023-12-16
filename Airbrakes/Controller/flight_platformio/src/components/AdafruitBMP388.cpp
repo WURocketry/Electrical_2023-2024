@@ -42,6 +42,8 @@ bool AdafruitBMP388::init() {
     }
     BASE_ALTITUDE_OFFSET = baseAltitudes/90;
 
+    didInit = true;
+
     return true;
 }
 
@@ -55,9 +57,10 @@ double AdafruitBMP388::getPressure() {
 
 
 double AdafruitBMP388::getRelativeAltitude() {
-    if (!alt_instance.performReading()) {
+    if (!didInit || !alt_instance.performReading()) {
         return -1;
     }
+    
     double relativeAlt = alt_instance.readAltitude(BASE_PRESSURE_READING) - BASE_ALTITUDE_OFFSET;
     if (relativeAlt < 0) {
         return 0;

@@ -15,7 +15,7 @@ bool AdafruitBNO085::init() {
 
     // Initialize I2C bus
     if(!imu_instance.begin_I2C()){
-        Serial.println("NOT OK! IMU not found");
+        // Serial.println("NOT OK! IMU not found");
         return false;
     }
     // Initialize accelerometer report
@@ -28,6 +28,8 @@ bool AdafruitBNO085::init() {
         Serial.println("NOT OK! Failed to enable rotation vector");
     }
     Serial.println("OK!");
+
+    didInit = true;
 
     return true;
 }
@@ -89,7 +91,7 @@ void AdafruitBNO085::readAcceleration() {
 
 // @brief: fills struct with measurement values
 bool AdafruitBNO085::measureIMU(Sample::Measurement* measure) {
-    if (!imu_instance.getSensorEvent(&sensorValue)) {
+    if (!didInit || !imu_instance.getSensorEvent(&sensorValue)) {
         return false;
     }
 

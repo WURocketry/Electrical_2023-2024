@@ -21,6 +21,7 @@ private:
     bool isCalibrated();
     bool isDataReady();
 public:
+    bool didInit = false;
 // Constructors
     AdafruitBNO085();   // default
 // Methods
