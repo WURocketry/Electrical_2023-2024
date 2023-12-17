@@ -24,6 +24,8 @@ bool AdafruitBMP388::init() {
     instance.setOutputDataRate(BMP3_ODR_100_HZ);    // 50Hz?
     Serial.println("OK!");
 
+    didInit = true;
+
     Serial.println("Calibrating pressure readings with 100 sample average...");
     
     int j = 0;
@@ -42,9 +44,7 @@ bool AdafruitBMP388::init() {
     }
     BASE_ALTITUDE_OFFSET = baseAltitudes/90;
 
-    didInit = true;
-
-    return true;
+    return didInit;
 }
 
 
