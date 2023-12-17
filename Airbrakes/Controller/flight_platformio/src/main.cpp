@@ -11,7 +11,6 @@
 #include <Arduino.h>
 #include <BasicLinearAlgebra.h>
 #include <Servo.h>
-#include <SparkFun_Qwiic_OpenLog_Arduino_Library.h>
 #include <Wire.h>
 
 /* GLOBAL DEFINES */
@@ -33,6 +32,7 @@
 #include <AdafruitBMP388.h>
 #include <AdafruitBNO085.h>
 #include <AdafruitADXL345.h>
+#include <SparkFunOpenLog.h>
 
 /**********************************************
  *** CHECK CONFIG CONSTANTS PRIOR TO LAUNCH ***
@@ -77,8 +77,7 @@ static PID_Controller pid(ACE_TARGET_APOGEE);
 static double currentPIDControl = 0;
 
 // OpenLog objects/variables
-static OpenLog logger;
-static String logfile;
+static SparkFunOpenLog logger;
 static bool didWriteData = false;
 
 // SDRAM configuration
@@ -105,63 +104,6 @@ static int counterSample = 0;
 static float simSample[2] {0.0, 0.0};
 
 
-// OpenLog write to functions
-#ifdef PORTENTA_H7_M7_PLATFORM
-void dumpSDRAMtoFile(String writeto) {
-    logger.append(writeto); //open the file in openlog
-    
-    int writeToIndex;
-
-    if (ringBufferIndex > RING_BUFFER_LENGTH) {
-      // Write entire buffer to file
-      writeToIndex = RING_BUFFER_LENGTH;
-    }
-    else {
-      // Write up to ringBufferIndex
-      writeToIndex = ringBufferIndex;
-    }
-
-    for (int i=0; i<writeToIndex; ++i) {
-      for (int j=0; j<RING_BUFFER_COLS; ++j) {
-        logger.print((float)*(SDRAM_base + i*RING_BUFFER_COLS+j));
-      }
-      logger.println(); // newline at each row;
-    }
-  logger.syncFile();  //save changes
-}
-#endif
-
-int getNumberOfPrevFlights() {
-    String filename = "fileNumAB.txt";
-    int fileCount = 0;
-
-    // Check if the file exists
-    long sizeOfFile = logger.size(filename);
-    if (sizeOfFile > -1) {
-        #define OPEN_LOG_BUFSIZE 200 // Increase this buffer size to hold larger numbers
-        byte openLogBuffer[OPEN_LOG_BUFSIZE];
-        logger.read(openLogBuffer, OPEN_LOG_BUFSIZE, filename); // Load openLogBuffer with contents of fileNum.txt
-
-        String counterString = "";
-        for (int x = 0; x < OPEN_LOG_BUFSIZE; x++) {
-            if (openLogBuffer[x] >= '0' && openLogBuffer[x] <= '9') {
-                counterString += (char)openLogBuffer[x];
-            }
-        }
-        fileCount = counterString.toInt();
-    }
-    fileCount++;
-
-    //overwrite file with new file count
-    logger.remove(filename, false);
-    logger.append(filename);
-    logger.print(String(fileCount));
-    logger.syncFile(); // save data
-
-    return fileCount;
-}
-
-
 void setup() {
   int aceInitFails = 0;
   Serial.begin(38400);
@@ -178,7 +120,6 @@ void setup() {
   Serial.println("\n\n\n\n\n\n\n");
 #endif
 
-
 #ifdef PORTENTA_H7_M7_PLATFORM
   // Initialize SDRAM
   Serial.print("| Init SDRAM...");
@@ -191,8 +132,6 @@ void setup() {
   }
 
 #endif
-
-
 
   // Initialize FSM state
   Serial.print("| Init program state...");
@@ -235,11 +174,9 @@ void setup() {
   }
 
   // Initialize OpenLog
-  Serial.print("| Init OpenLog...");
-  logger.begin();
-  logfile = "flight_" + String(getNumberOfPrevFlights()) + "_AB.csv";
-  Serial.println("> Writing airbrake data to: " + logfile);
-  Serial.println("OK!");
+  if (!logger.init()) {
+    ++aceInitFails;
+  }
 
   // ACE initialization summary status check
   if (!aceInitFails) {
@@ -377,8 +314,8 @@ void loop() {
       case FlightState::landed:
         // Next transition: none, continuously write data to storage
 #ifdef PORTENTA_H7_M7_PLATFORM
-        if (!didWriteData) {
-          dumpSDRAMtoFile(logfile);
+        if (!didWriteData && logger.didInit) {
+          logger.dumpSDRAMtoFile(SDRAM_base, ringBufferIndex, RING_BUFFER_LENGTH, RING_BUFFER_COLS);
           didWriteData = true;
         }
 #endif
