@@ -16,13 +16,13 @@ enum class FlightState {
 
 namespace Flight_FSM 
 {
-    FlightState detectLaunchTransition(FlightMonitor fm, FlightState currentState);
+    FlightState detectLaunchTransition(FlightMonitor* fm, FlightState currentState);
 
-    FlightState burnTransition(FlightMonitor fm, FlightState currentState);
+    FlightState burnTransition(FlightMonitor* fm, FlightState currentState);
 
-    FlightState controlTransition(FlightMonitor fm, FlightState currentState);
+    FlightState controlTransition(FlightMonitor* fm, FlightState currentState);
 
-    FlightState controlStandbyTransition(FlightMonitor fm, FlightState currentState);
+    FlightState controlStandbyTransition(FlightMonitor* fm, FlightState currentState);
 
-    FlightState coastTransition(FlightMonitor fm, FlightState currentState);
+    FlightState coastTransition(FlightMonitor* fm, FlightState currentState);
 }

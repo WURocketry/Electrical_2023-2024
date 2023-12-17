@@ -3,27 +3,27 @@
 
 #include <FSM.h>
 
-FlightState Flight_FSM::detectLaunchTransition(FlightMonitor fm, FlightState currentState) {
+FlightState Flight_FSM::detectLaunchTransition(FlightMonitor* fm, FlightState currentState) {
   /* Transitions: 
    * this -> burn
    * this -> detectLaunch 
    */
 
   // remain prior to launch (await launch detection)
-  if (fm.detectedLaunch()) {
+  if (fm->detectedLaunch()) {
     Serial.println("**** TRANSITION TO BURN ****\n");
     return FlightState::burn;
   }
   return currentState;
 }
 
-FlightState Flight_FSM::burnTransition(FlightMonitor fm, FlightState currentState) {
+FlightState Flight_FSM::burnTransition(FlightMonitor* fm, FlightState currentState) {
   /* Transitions:
    * this -> control
    * this -> burn
    */
   // remain until burn acceleration ended
-  if (fm.detectedUnpoweredAscent()) {
+  if (fm->detectedUnpoweredAscent()) {
     Serial.println("**** TRANSITION TO CONTROL ****\n");
     return FlightState::control;
   }
@@ -31,25 +31,25 @@ FlightState Flight_FSM::burnTransition(FlightMonitor fm, FlightState currentStat
   return currentState;
 }
 
-FlightState Flight_FSM::controlTransition(FlightMonitor fm, FlightState currentState) {
+FlightState Flight_FSM::controlTransition(FlightMonitor* fm, FlightState currentState) {
   /* Transitions
    * this -> coast
    * this -> burn
    * this -> controlStandby
    */
   // remain until apogee
-  if (fm.detectedApogee()) {
+  if (fm->detectedApogee()) {
     Serial.println(" **** APOGEE REACHED. TRANSITION TO COAST ****\n");
     return FlightState::coast;
   }
-  if (fm.detectedLean()) {
+  if (fm->detectedLean()) {
     return FlightState::controlStandby;
   }
 
   return currentState;
 }
 
-FlightState Flight_FSM::controlStandbyTransition(FlightMonitor fm, FlightState currentState) {
+FlightState Flight_FSM::controlStandbyTransition(FlightMonitor* fm, FlightState currentState) {
   /* Transitions
    * this -> coast
    * this -> control
@@ -62,14 +62,14 @@ FlightState Flight_FSM::controlStandbyTransition(FlightMonitor fm, FlightState c
   return currentState;
 }
 
-FlightState Flight_FSM::coastTransition(FlightMonitor fm, FlightState currentState) {
+FlightState Flight_FSM::coastTransition(FlightMonitor* fm, FlightState currentState) {
   /* Transitions:
    * this -> landed
    * this -> coast
    */
   
   // remain until landing
-  if (fm.detectedLanding()) {
+  if (fm->detectedLanding()) {
     Serial.println("**** LANDING DETECTED ****\n");
     return FlightState::landed;
   }

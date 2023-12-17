@@ -4,12 +4,12 @@
 #include <BasicLinearAlgebra.h>
 
 // Magic number definitions
-#define LAUNCH_VELOCITY_THRESHOLD 5.0 // unit: m/s
-#define LAUNCH_HEIGHT_THRESHOLD 2.0 // unit: m
-#define APOGEE_ALTITUDE_THRESHOLD 1200.0 //unit: m
-#define APOGEE_VELOCITY_THRESHOLD 10.0 //unit: m/s
-#define LANDING_ALTITUDE_THRESHOLD 10 //units: m
-#define LANDING_VELOCITY_THRESHOLD -40 //unit: m/s (negative because rocket is falling down) - problem with kalman filter (doesn't like landings)
+#define LAUNCH_VELOCITY_THRESHOLD 5.0       // unit: m/s
+#define LAUNCH_HEIGHT_THRESHOLD 2.0         // unit: m
+#define APOGEE_ALTITUDE_THRESHOLD 1200.0    // unit: m
+#define APOGEE_VELOCITY_THRESHOLD 10.0      // unit: m/s
+#define LANDING_ALTITUDE_THRESHOLD 10       // unit: m
+#define LANDING_VELOCITY_THRESHOLD -40      // unit: m/s (negative because rocket is falling down) - problem with kalman filter (doesn't like landings)
 
 // number of required sequential observations to transition
 #define LAUNCH_PERSISTENCE 10
@@ -19,12 +19,12 @@
 
 extern BLA::Matrix<9> stateVec;
 
-/* Flight Monitor class defines flight stages relevant to airbrakes*/
+/* Flight Monitor class provides underlying logic for FSM flight stage transitions */
 class FlightMonitor {
 private:
-    int launchCounts; //holds number of sequential observations of met launch conditons
-    int burnoutCounts; //hold number of sequential observations of motor burn out
-    int apogeeCounts; //hold number of sequential observations of reaching apogee 
+    int launchCounts;   // holds number of sequential observations of met launch conditons
+    int burnoutCounts;  // holds number of sequential observations of motor burn out
+    int apogeeCounts;   // holds number of sequential observations of reaching apogee 
     int landingCounts;
 public:
 // Constructors

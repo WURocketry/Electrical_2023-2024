@@ -7,29 +7,29 @@ extern BLA::Matrix<9> stateVec;
 
 FlightMonitor::FlightMonitor()
 {
-    this->launchCounts = 0;
-    this->burnoutCounts = 0;
-    this->apogeeCounts = 0;
-    this->landingCounts = 0;
+    launchCounts = 0;
+    burnoutCounts = 0;
+    apogeeCounts = 0;
+    landingCounts = 0;
 }
 
 bool FlightMonitor::detectedLaunch()
 {
-    if ((stateVec(2) > LAUNCH_HEIGHT_THRESHOLD) && (stateVec(5) > LAUNCH_VELOCITY_THRESHOLD)){
-        this->launchCounts++;
+    if ((stateVec(2) > LAUNCH_HEIGHT_THRESHOLD) && (stateVec(5) > LAUNCH_VELOCITY_THRESHOLD)) {
+        launchCounts += 1;
         Serial.print("launch counted: ");
-        Serial.println(this->launchCounts);
      } else {
-        Serial.println("reset launchCounts...");
-        this->launchCounts = 0;
+        Serial.print("reset launchCounts...");
+        launchCounts = 0;
     }
+
+    Serial.println(launchCounts);
 
     if (launchCounts >= LAUNCH_PERSISTENCE){
         return true;
     } else {
         return false;
     }
-
 }
 
 bool FlightMonitor::detectedUnpoweredAscent()
