@@ -16,9 +16,9 @@
 /* GLOBAL DEFINES */
 // Loop rates (Hz)
 #define ONE_SEC_MICROS 1000000
-#define SAMPLE_LOOP_FREQ 100
+#define SAMPLE_LOOP_FREQ 50 // Sample loop freq in Hz
 #define KALMAN_LOOP_FREQ_PER_SAMPLES 1  // Compute per n=1 samples
-#define CONTROL_LOOP_FREQ 20
+#define CONTROL_LOOP_FREQ 20  // Control loop freq in Hz
 
 /* LOCAL INCLUDES */
 #include <Measurement.h>
@@ -53,11 +53,12 @@
 static unsigned long currentTime;
 static unsigned long previousFilterReset;
 static unsigned long previousSampleTime;
-static unsigned int  previousComputeWaits; // counter for when compute should occur after n=1 samples
+static unsigned int  previousComputeCounts; // counter for when compute should occur after n=1 samples
 static unsigned long previousControlTime;
 
 static const long sampleLoopMicros  = ONE_SEC_MICROS/SAMPLE_LOOP_FREQ;
-static const long computeLoopMicros = KALMAN_LOOP_FREQ_PER_SAMPLES * sampleLoopMicros;
+// @note: DEPRECATED - compute loop is determined by counter instead of sample loop micros (previousComputeCounts)
+// static const long computeLoopMicros = KALMAN_LOOP_FREQ_PER_SAMPLES * sampleLoopMicros;
 static const long controlLoopMicros = ONE_SEC_MICROS/CONTROL_LOOP_FREQ;
 
 // Flight monitor and sensor objects/variables
@@ -138,12 +139,6 @@ void setup() {
   currentState = FlightState::detectLaunch;
   Serial.println("OK!");
 
-  // Initialize I2C
-  Serial.print("| Init I2C wire...");
-  // Wire.begin();
-  // Wire.setClock(3400000);
-  Serial.println("TODO: NOT OK!");
-
   // Initialize sensor hardware
   if (!imu_sensor.init()) {
     ++aceInitFails;
@@ -195,20 +190,20 @@ void setup() {
   delay(5000);
 
   // Update all delta timing timer variables with offset to REAL core loop start time
+  previousComputeCounts = 0;
   previousFilterReset = micros();
   previousSampleTime = micros();
-  previousComputeWaits = 0;
   previousControlTime = micros();
 }
 
 
 void loop() {
   
-  /* SAMPLE LOOP (100Hz) */
+  /* SAMPLE LOOP (50Hz) */
   currentTime = micros();
   if (currentState!=FlightState::landed && currentTime >= previousSampleTime + sampleLoopMicros) {
     previousSampleTime += sampleLoopMicros;
-    ++previousComputeWaits;
+    ++previousComputeCounts;
 
     // Temporary test of simulated OR data
     getSimulatedData(currentTime/1000000.0+15.96, simSample);
@@ -224,9 +219,9 @@ void loop() {
     measurementDataValid = readMeasurement(&currentMeasurement, imu_sensor, alt_sensor, acc_sensor);  // Reads all SAMPLE loop sensors
   }
 
-  /* COMPUTE LOOP (per 1 SAMPLEs : 100Hz) */
-  if (currentState!=FlightState::landed && previousComputeWaits >= KALMAN_LOOP_FREQ_PER_SAMPLES) {
-    previousComputeWaits = 0; // Reset compute counter
+  /* COMPUTE LOOP (per 1 SAMPLEs : 50Hz) */
+  if (currentState!=FlightState::landed && previousComputeCounts >= KALMAN_LOOP_FREQ_PER_SAMPLES) {
+    previousComputeCounts = 0; // Reset compute counter
 
     /* Acceleration transformation (to Earth frame) */
     quaternions = {currentMeasurement.qr,currentMeasurement.qi,currentMeasurement.qj,currentMeasurement.qk};
