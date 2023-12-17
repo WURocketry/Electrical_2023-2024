@@ -99,11 +99,12 @@ static bool didWriteData = false;
 #endif
 static int ringBufferIndex = 0;
 
+#if IS_DEVELOPMENT_MODE
 // Debug variables
 static int stateVecPrintCounter = 0;
 static int counterSample = 0;
 static float simSample[2] {0.0, 0.0};
-
+#endif
 
 void setup() {
   int aceInitFails = 0;
@@ -199,7 +200,13 @@ void setup() {
     Serial.println(" fails!");
     Serial.println("> Refer to above output to view failures...");
 #if CHECK_STRICT_INITIALIZATION
-    for ( ; ; ); // Spin infinitely on failed init
+    // Spin infinitely on failed init
+    for ( ; ; ) {
+      delay(5000);
+      Serial.print("ACE INIT FAILED WITH ");
+      Serial.print(aceInitFails);
+      Serial.println(" ERRORS");
+    } 
 #endif
     Serial.println("\n\n\n!!! WARNING: ACE IS CONTINUING WITH FAILED INITIALIZATIONS !!!!\n");
   }
@@ -221,9 +228,13 @@ void loop() {
     previousSampleTime += sampleLoopMicros;
     ++previousComputeCounts;
 
+#if IS_DEVELOPMENT_MODE
     // Temporary test of simulated OR data
     getSimulatedData(currentTime/1000000.0+15.96, simSample);
+#endif
 
+#if IS_DEVELOPMENT_MODE
+    // Debug prints
     if(counterSample%100==0){
       Serial.print("Interp pos: ");
       Serial.println(simSample[0]);
@@ -231,6 +242,7 @@ void loop() {
       Serial.println(simSample[1]);
     }
     counterSample++;
+#endif
 
     measurementDataValid = readMeasurement(&currentMeasurement, imu_sensor, alt_sensor, acc_sensor);  // Reads all SAMPLE loop sensors
   }
@@ -245,16 +257,28 @@ void loop() {
                      currentMeasurement.yAccel,
                      currentMeasurement.zAccel};
     getInertialAccel(); // Transforms acceleration
+
+#if IS_DEVELOPMENT_MODE
+    // Development injected simulated data
     measurementVec = {currentMeasurement.altitude + simSample[0],
                       inertialAccel(0),
                       inertialAccel(1),
                       inertialAccel(2) + simSample[1]};
+#else
+    measurementVec = {currentMeasurement.altitude,
+                      inertialAccel(0),
+                      inertialAccel(1),
+                      inertialAccel(2)};
+#endif
 
     /* Kalman filter */
     kalmanPredict();
     if(measurementDataValid){
       kalmanUpdate();
     }
+
+#if IS_DEVELOPMENT_MODE
+    // Debug prints
     if(stateVecPrintCounter%25==0){
       Serial.print("FLIGHT STATE: ");
       Serial.println((int)currentState);
@@ -265,6 +289,7 @@ void loop() {
       }
     }
     stateVecPrintCounter++;
+#endif
 
     /* SDRAM data logging */
 #ifdef PORTENTA_H7_M7_PLATFORM
@@ -328,7 +353,9 @@ void loop() {
         break;
       default:
         // Error state
+#if IS_DEVELOPMENT_MODE
         Serial.println("FATAL-ERROR: FSM reached unknown state, resetting to standby");
+#endif
         currentState = FlightState::controlStandby;
         break;
     }
@@ -344,7 +371,7 @@ void loop() {
       // Note: stateVec(2) --> curr_Z_Position, stateVec(5) --> curr_Z_Velocity
       currentPIDControl = pid.control(stateVec(2), stateVec(5));
       int angleExtension = SRV_MAX_EXTENSION_ANGLE * currentPIDControl + 0.5 + SRV_ANGLE_DEG_OFFSET;  // +0.5 to round to nearest whole int
-      srv.write(SRV_MAX_EXTENSION_ANGLE + SRV_ANGLE_DEG_OFFSET - angleExtension);  // Invert angle control
+      srv.write(angleExtension);  // Invert angle control with (SRV_MAX_EXTENSION_ANGLE + SRV_ANGLE_DEG_OFFSET - angleExtension)
     }
   }
 
