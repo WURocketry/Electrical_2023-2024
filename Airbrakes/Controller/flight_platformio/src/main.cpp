@@ -22,14 +22,16 @@
 
 /* LOCAL INCLUDES */
 #include <Measurement.h>
-// #include <accelReplace.h>
+// #include <accelReplace.h>  // Not using saturated IMU sim
 #include <simulation.h>
 #include <kalman.h>
 
 #include <FlightMonitor.h>
+#include <FSM.h>
 #include <PID_Controller.h>
 #include <AdafruitBMP388.h>
 #include <AdafruitBNO085.h>
+#include <AdafruitADXL345.h>
 #include <SparkFunOpenLog.h>
 
 /**********************************************
@@ -59,10 +61,13 @@ static const long computeLoopMicros = KALMAN_LOOP_FREQ_PER_SAMPLES * sampleLoopM
 static const long controlLoopMicros = ONE_SEC_MICROS/CONTROL_LOOP_FREQ;
 
 // Flight monitor and sensor objects/variables
-static AdafruitBMP388 alt;
-static AdafruitBNO085 imu;
+static AdafruitBMP388 alt_sensor;
+static AdafruitBNO085 imu_sensor;
+static AdafruitADXL345 acc_sensor;
 static FlightMonitor fm_ace;
-static bool measurementDataValid = true;
+static FlightState currentState;
+static bool measurementDataValid;
+static Sample::Measurement currentMeasurement;  // Struct for holding current measurement
 
 // Servo object
 static Servo srv;
@@ -93,141 +98,39 @@ static bool didWriteData = false;
 #endif
 static int ringBufferIndex = 0;
 
-// Struct for holding current measurement
-static Measurement currentMeasurement;
-
-// Variables for AccelReplacement
-static float timeSinceSaturation = 0.0;
-static float timeOfSaturation = 0.0;
-static boolean imuSaturated = false;
-
 // Debug variables
 static int stateVecPrintCounter = 0;
 static int counterSample = 0;
 static float simSample[2] {0.0, 0.0};
 
-static bool readMeasurement() {
-  measurementDataValid = true;
-
-  // Measure Acceleration & Rotation Quat
-  if (!imu.measureIMU(&currentMeasurement)) {
-    measurementDataValid = false;
-  }
-
-  // Measure Altitude
-  if (!alt.measureAltitude(&currentMeasurement)) {
-    measurementDataValid = false;
-  }
-
-  return measurementDataValid;
-}
-
-//Finite State Machine Variables and State Transition Functions
-enum class FlightState {
-  unknown,
-  detectLaunch,
-  burn,
-  control,
-  controlStandby,
-  coast,
-  landed
-};
-FlightState currentState;
-
-FlightState detectLaunchTransition(FlightState currentState) {
-  /* Transitions: 
-   * this -> burn
-   * this -> detectLaunch 
-   */
-
-  // remain prior to launch (await launch detection)
-  if (fm_ace.detectedLaunch()) {
-    Serial.println("**** TRANSITION TO BURN ****\n");
-    return FlightState::burn;
-  }
-  return currentState;
-}
-
-FlightState burnTransition(FlightState currentState) {
-  /* Transitions:
-   * this -> control
-   * this -> burn
-   */
-  // remain until burn acceleration ended
-  if (fm_ace.detectedUnpoweredAscent()) {
-    Serial.println("**** TRANSITION TO CONTROL ****\n");
-    return FlightState::control;
-  }
-  
-  return currentState;
-}
-
-FlightState controlTransition(FlightState currentState) {
-  /* Transitions
-   * this -> coast
-   * this -> burn
-   * this -> controlStandby
-   */
-  // remain until apogee
-  if (fm_ace.detectedApogee()) {
-    Serial.println(" **** APOGEE REACHED. TRANSITION TO COAST ****\n");
-    return FlightState::coast;
-  }
-  if (fm_ace.detectedLean()) {
-    return FlightState::controlStandby;
-  }
-
-  return currentState;
-}
-
-FlightState controlStandbyTransition(FlightState currentState) {
-  /* Transitions
-   * this -> coast
-   * this -> control
-   */
-  // TODO: remain until safe control conditions (implement eventually)
-  // if (minimalLean) {
-  //   return FlightState::control;
-  // }
-  Serial.println("**** IN STANBY. WILL TRANSITION WHEN IN NOMINAL STATE ****\n");
-  return currentState;
-}
-
-FlightState coastTransition(FlightState currentState) {
-  /* Transitions:
-   * this -> landed
-   * this -> coast
-   */
-  
-  // remain until landing
-  if (fm_ace.detectedLanding()) {
-    Serial.println("**** LANDING DETECTED ****\n");
-    return FlightState::landed;
-  }
-  return currentState;
-}
-
 
 void setup() {
+  int aceInitFails = 0;
   Serial.begin(38400);
-#if IS_FLIGHT_READY
+
+#if IS_DEVELOPMENT_MODE
   while (!Serial) {
     ;  // wait for serial port to connect. Needed for native USB port only
   }
   delay(1000);
   Serial.println("> Initialized Serial comms!");
-  Serial.println("\n\n\n\n\n");
+  Serial.println("\n\n\n\n\n\n\n");
   Serial.println("==== NOTE ====");
   Serial.println("THE ACE IS IN DEVELOPMENT MODE - PLEASE CONFIGURE FOR FLIGHT IN IMPORTANT_CONFIG.h");
+  Serial.println("\n\n\n\n\n\n\n");
 #endif
 
 #ifdef PORTENTA_H7_M7_PLATFORM
   // Initialize SDRAM
   Serial.print("| Init SDRAM...");
-  ram.begin();
-  delay(100);
-  // ringBuffer = (float(*)[RING_BUFFER_LENGTH])ram.malloc(sizeof(float[RING_BUFFER_LENGTH][RING_BUFFER_COLS]));  // Malloc not currently used
-  Serial.println("OK!");
+  if (!ram.begin()) {
+    ++aceInitFails;
+    Serial.println("NOT OK!");
+  } else {
+    delay(100);
+    Serial.println("OK!");
+  }
+
 #endif
 
   // Initialize FSM state
@@ -241,25 +144,57 @@ void setup() {
   // Wire.setClock(3400000);
   Serial.println("TODO: NOT OK!");
 
-  // Initialize sensor/component hardware
-  alt.init();
-  imu.init();
-  logger.init();
-
+  // Initialize sensor hardware
+  if (!imu_sensor.init()) {
+    ++aceInitFails;
+  }
+  if (!alt_sensor.init()) {
+    ++aceInitFails;
+  }
+  if (!acc_sensor.init()) {
+    ++aceInitFails;
+  }
+  
   // Attach servo pin to D9 (PWM len min: 900 us, max: 2050us)  // this servo library is trolling us
   Serial.print("| Init servo PWM...");
-  srv.attach(9, SRV_MIN_PWM_LEN_MICROS, SRV_MAX_PWM_LEN_MICROS);
-  Serial.println("OK!");
+  if (!srv.attach(9, SRV_MIN_PWM_LEN_MICROS, SRV_MAX_PWM_LEN_MICROS)) {
+    ++aceInitFails;
+    Serial.println("NOT OK!");
+  } else {
+    Serial.println("OK!");
+  }
 
   // Initialize vectors/matrices
   Serial.print("| Init Kalman state...");
-  initializeKalmanFilter();
-  Serial.println("OK!");
+  if (!initializeKalmanFilter()) {
+    ++aceInitFails;
+    Serial.println("NOT OK!");
+  } else {
+    Serial.println("OK!");
+  }
 
-  Serial.println("> Init ACE OK! Starting program...");
+  // Initialize OpenLog
+  if (!logger.begin()) {
+    ++aceInitFails;
+  }
+
+  // ACE initialization summary status check
+  if (!aceInitFails) {
+    Serial.println("> Init ACE OK! Starting program...");
+  } else {
+    Serial.println("\n\n\n");
+    Serial.print("WARNING: ACE did not initialize successfully! There were ");
+    Serial.print(aceInitFails);
+    Serial.println(" fails!");
+    Serial.println("> Refer to above output to view failures...");
+#if CHECK_STRICT_INITIALIZATION
+    for ( ; ; ); // Spin infinitely on failed init
+#endif
+    Serial.println("\n\n\n!!! WARNING: ACE IS CONTINUING WITH FAILED INITIALIZATIONS !!!!\n");
+  }
+  delay(5000);
 
   // Update all delta timing timer variables with offset to REAL core loop start time
-  delay(1000);
   previousFilterReset = micros();
   previousSampleTime = micros();
   previousComputeWaits = 0;
@@ -286,35 +221,29 @@ void loop() {
     }
     counterSample++;
 
-    readMeasurement();  // Reads all SAMPLE loop sensors
+    measurementDataValid = readMeasurement(&currentMeasurement, imu_sensor, alt_sensor, acc_sensor);  // Reads all SAMPLE loop sensors
   }
 
   /* COMPUTE LOOP (per 1 SAMPLEs : 100Hz) */
   if (currentState!=FlightState::landed && previousComputeWaits >= KALMAN_LOOP_FREQ_PER_SAMPLES) {
     previousComputeWaits = 0; // Reset compute counter
 
+    /* Acceleration transformation (to Earth frame) */
     quaternions = {currentMeasurement.qr,currentMeasurement.qi,currentMeasurement.qj,currentMeasurement.qk};
-
     measuredAccel = {currentMeasurement.xAccel,
                      currentMeasurement.yAccel,
                      currentMeasurement.zAccel};
-    
-    getInertialAccel();
-
-    measurementVec = {currentMeasurement.altitude+simSample[0],
+    getInertialAccel(); // Transforms acceleration
+    measurementVec = {currentMeasurement.altitude,  //+simSample[0],
                       inertialAccel(0),
                       inertialAccel(1),
-                      inertialAccel(2)+simSample[1]};
+                      inertialAccel(2)};  //+simSample[1]};
 
-    //kalman filter steps
+    /* Kalman filter */
     kalmanPredict();
-
     if(measurementDataValid){
-
       kalmanUpdate();
-
     }
-
     if(stateVecPrintCounter%25==0){
       Serial.print("Statevec: ");
       {
@@ -324,7 +253,7 @@ void loop() {
     }
     stateVecPrintCounter++;
 
-    // Perform SDRAM data saving
+    /* SDRAM data logging */
 #ifdef PORTENTA_H7_M7_PLATFORM
     // Write timestamp data to SDRAM[0]
     *(SDRAM_base + ((ringBufferIndex%RING_BUFFER_LENGTH)*RING_BUFFER_COLS)) = (float)currentTime; // Last currentTime should be from sample loops
@@ -339,8 +268,7 @@ void loop() {
 #endif
     ++ringBufferIndex;
     
-
-    /* Switch statement for FSM of ACE system modes */
+    /* FSM transition */
     switch(currentState) {
       case FlightState::detectLaunch:
         
@@ -365,23 +293,23 @@ void loop() {
           previousFilterReset = currentTime;
         }
         // Next transition: acceleration detected (motor burn) --> burn
-        currentState = detectLaunchTransition(currentState);
+        currentState = Flight_FSM::detectLaunchTransition(fm_ace, currentState);
         break;
       case FlightState::burn:
         // Next transition: deceleration detected (motor burnout) --> control
-        currentState = burnTransition(currentState);
+        currentState = Flight_FSM::burnTransition(fm_ace, currentState);
         break;
       case FlightState::control:
         // Next transition: reaching apogee --> stow --> separate --> coast
-        currentState = controlTransition(currentState);
+        currentState = Flight_FSM::controlTransition(fm_ace, currentState);
         break;
       case FlightState::controlStandby:
         // Next transition: re-stabilized --> control
-        currentState = controlStandbyTransition(currentState);
+        currentState = Flight_FSM::controlStandbyTransition(fm_ace, currentState);
         break;
       case FlightState::coast:
         // Next transition: z velocity apprx. 0 and altitude is low --> landed
-        currentState = coastTransition(currentState);
+        currentState = Flight_FSM::coastTransition(fm_ace, currentState);
         break;
       case FlightState::landed:
         // Next transition: none, continuously write data to storage

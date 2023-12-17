@@ -1,5 +1,10 @@
-#include <AdafruitBNO085.h>
+
+#include <Wire.h>
+#include <Adafruit_Sensor.h>
 #include <Arduino.h>
+
+#include <AdafruitBNO085.h>
+#include <Measurement.h>
 
 #define REPORT_FREQ_US  10000
 
@@ -10,21 +15,22 @@ bool AdafruitBNO085::init() {
     Wire.begin();
 
     // Initialize I2C bus
-    if(!imu_instance.begin_I2C()){
-        Serial.println("NOT OK! IMU not found");
+    if(!instance.begin_I2C()){
+        Serial.println("NOT OK!");
         return false;
     }
-    // Initialize accelerometer report
-    if(!imu_instance.enableReport(SH2_LINEAR_ACCELERATION, REPORT_FREQ_US)){
-        Serial.println("NOT OK! Failed to initialize accelerometer");
-        return false;
-    }
-    // Initialize rotation vector report
-    if (!imu_instance.enableReport(SH2_ROTATION_VECTOR, REPORT_FREQ_US)) {
-        Serial.println("NOT OK! Failed to enable rotation vector");
-    }
-    Serial.println("OK!");
 
+    // Initialize rotation vector report
+    if (!instance.enableReport(SH2_ROTATION_VECTOR, REPORT_FREQ_US)) {
+        Serial.println("NOT OK! Failed to enable rotation vector");
+        return false;
+    }
+
+    Serial.println("OK!");
+    didInit = true;
+    Serial.println("> Status check");
+    getInfo();
+    
     return true;
 }
 
@@ -39,19 +45,25 @@ bool AdafruitBNO085::isDataReady() {
 }
 
 
+// @brief: Status check function to display sensor info
 void AdafruitBNO085::getInfo() {
-    for (int n = 0; n < imu_instance.prodIds.numEntries; n++) {
-        Serial.print("Part ");
-        Serial.print(imu_instance.prodIds.entry[n].swPartNumber);
-        Serial.print(": Version :");
-        Serial.print(imu_instance.prodIds.entry[n].swVersionMajor);
-        Serial.print(".");
-        Serial.print(imu_instance.prodIds.entry[n].swVersionMinor);
-        Serial.print(".");
-        Serial.print(imu_instance.prodIds.entry[n].swVersionPatch);
-        Serial.print(" Build ");
-        Serial.println(imu_instance.prodIds.entry[n].swBuildNumber);
-  }
+    if (didInit) {
+        for (int n = 0; n < instance.prodIds.numEntries; n++) {
+            Serial.print("> Part ");
+            Serial.print(instance.prodIds.entry[n].swPartNumber);
+            Serial.print(": Version :");
+            Serial.print(instance.prodIds.entry[n].swVersionMajor);
+            Serial.print(".");
+            Serial.print(instance.prodIds.entry[n].swVersionMinor);
+            Serial.print(".");
+            Serial.print(instance.prodIds.entry[n].swVersionPatch);
+            Serial.print(" Build ");
+            Serial.println(instance.prodIds.entry[n].swBuildNumber);
+        }
+    }
+    else {
+        Serial.println("BNO085: Could not retrieve info -- not initialized!");
+    }
 }
 
 
@@ -64,8 +76,9 @@ void AdafruitBNO085::printRawAcceleration(int iters, int sampleFreqMicros) {
 
 
 // @brief: prints linear acceleration
+// @note: DEPRECATED FUNCTION -- defer to using accelerometer for acceleration samples
 void AdafruitBNO085::readAcceleration() {
-    if (!imu_instance.getSensorEvent(&sensorValue)) {
+    if (!instance.getSensorEvent(&sensorValue)) {
         Serial.println("MISS");
         return;
     }
@@ -84,18 +97,12 @@ void AdafruitBNO085::readAcceleration() {
 
 
 // @brief: fills struct with measurement values
-bool AdafruitBNO085::measureIMU(Measurement* measure) {
-    if (!imu_instance.getSensorEvent(&sensorValue)) {
+bool AdafruitBNO085::measureIMU(Sample::Measurement* measure) {
+    if (!didInit || !instance.getSensorEvent(&sensorValue)) {
         return false;
     }
 
     switch (sensorValue.sensorId) {
-
-        case SH2_LINEAR_ACCELERATION:
-            measure->xAccel = (float)sensorValue.un.linearAcceleration.x;
-            measure->yAccel = (float)sensorValue.un.linearAcceleration.y;
-            measure->zAccel = (float)sensorValue.un.linearAcceleration.z;
-            break;
         case SH2_ROTATION_VECTOR:
             measure->qi     = (float)sensorValue.un.rotationVector.i;
             measure->qj     = (float)sensorValue.un.rotationVector.j;
@@ -104,15 +111,6 @@ bool AdafruitBNO085::measureIMU(Measurement* measure) {
             break;
 
     }
-    // Serial.print("READ QUAT:");
-    // Serial.print(sensorValue.un.rotationVector.i);
-    // Serial.print(" ");
-    // Serial.print(sensorValue.un.rotationVector.j);
-    // Serial.print(" ");
-    // Serial.print(sensorValue.un.rotationVector.k);
-    // Serial.print(" ");
-    // Serial.print(sensorValue.un.rotationVector.real);
-    // Serial.print(" ");
 
     return true;
 }

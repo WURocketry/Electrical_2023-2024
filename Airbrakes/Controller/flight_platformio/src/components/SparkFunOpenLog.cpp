@@ -6,6 +6,7 @@ SparkFunOpenLog::SparkFunOpenLog() {}
 bool SparkFunOpenLog::init() {
     Serial.print("| Init OpenLog...");
     didInit = logger.begin();
+    
     if (didInit) {
         logfile = "flight_" + String(getNumberOfPrevFlights()) + "_AB.csv";
         Serial.println("| Writing airbrake data to: " + logfile);
