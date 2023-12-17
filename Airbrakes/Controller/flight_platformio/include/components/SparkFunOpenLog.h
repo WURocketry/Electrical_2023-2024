@@ -8,7 +8,7 @@
 
 class SparkFunOpenLog {
 private:
-    OpenLog logger;
+    OpenLog instance;
     int getNumberOfPrevFlights();
     String logfile;
 public:

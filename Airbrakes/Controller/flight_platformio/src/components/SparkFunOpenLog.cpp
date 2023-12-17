@@ -5,8 +5,8 @@ SparkFunOpenLog::SparkFunOpenLog() {}
 
 bool SparkFunOpenLog::init() {
     Serial.print("| Init OpenLog...");
-    didInit = logger.begin();
-    
+    didInit = instance.begin();
+
     if (didInit) {
         logfile = "flight_" + String(getNumberOfPrevFlights()) + "_AB.csv";
         Serial.println("| Writing airbrake data to: " + logfile);
@@ -25,11 +25,11 @@ int SparkFunOpenLog::getNumberOfPrevFlights() {
     int fileCount = 0;
 
     // Check if the file exists
-    long sizeOfFile = logger.size(filename);
+    long sizeOfFile = instance.size(filename);
     if (sizeOfFile > -1) {
         #define OPEN_LOG_BUFSIZE 200 // Increase this buffer size to hold larger numbers
         byte openLogBuffer[OPEN_LOG_BUFSIZE];
-        logger.read(openLogBuffer, OPEN_LOG_BUFSIZE, filename); // Load openLogBuffer with contents of fileNum.txt
+        instance.read(openLogBuffer, OPEN_LOG_BUFSIZE, filename); // Load openLogBuffer with contents of fileNum.txt
 
         String counterString = "";
         for (int x = 0; x < OPEN_LOG_BUFSIZE; x++) {
@@ -42,16 +42,16 @@ int SparkFunOpenLog::getNumberOfPrevFlights() {
     fileCount++;
 
     //overwrite file with new file count
-    logger.remove(filename, false);
-    logger.append(filename);
-    logger.print(String(fileCount));
-    logger.syncFile(); // save data
+    instance.remove(filename, false);
+    instance.append(filename);
+    instance.print(String(fileCount));
+    instance.syncFile(); // save data
 
     return fileCount;
 }
 
 void SparkFunOpenLog::dumpSDRAMtoFile(float* SDRAM_base, int ringBufferIndex, int rows, int cols) {
-    logger.append(logfile); //open the file in openlog
+    instance.append(logfile); //open the file in openlog
     
     int writeToIndex;
     if (ringBufferIndex > rows) {
@@ -65,9 +65,9 @@ void SparkFunOpenLog::dumpSDRAMtoFile(float* SDRAM_base, int ringBufferIndex, in
 
     for (int i=0; i<writeToIndex; ++i) {
         for (int j=0; j<cols; ++j) {
-            logger.print((float)*(SDRAM_base + i*cols+j));
+            instance.print((float)*(SDRAM_base + i*cols+j));
         }
-        logger.println(); // newline at each row;
+        instance.println(); // newline at each row;
     }
-    logger.syncFile();  // save changes
+    instance.syncFile();  // save changes
 }

@@ -174,7 +174,7 @@ void setup() {
   }
 
   // Initialize OpenLog
-  if (!logger.begin()) {
+  if (!logger.init()) {
     ++aceInitFails;
   }
 
