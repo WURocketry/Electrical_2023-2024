@@ -66,6 +66,7 @@ void SparkFunOpenLog::dumpSDRAMtoFile(float* SDRAM_base, int ringBufferIndex, in
     for (int i=0; i<writeToIndex; ++i) {
         for (int j=0; j<cols; ++j) {
             instance.print((float)*(SDRAM_base + i*cols+j));
+            instance.print(",");    // comma-delimited
         }
         instance.println(); // newline at each row;
     }
