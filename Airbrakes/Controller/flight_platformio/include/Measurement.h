@@ -3,6 +3,7 @@
 // Forward declaring sensor components
 class AdafruitBNO085;
 class AdafruitBMP388;
+class AdafruitADXL345;
 
 namespace Sample
 {
@@ -30,5 +31,5 @@ namespace Sample
                 altitude(alt) {}
         };
 
-        bool readMeasurement(Measurement* measure, AdafruitBNO085 imu, AdafruitBMP388 alt);
+        bool readMeasurement(Measurement* measure, AdafruitBNO085 imu, AdafruitBMP388 alt, AdafruitADXL345 acc);
 }

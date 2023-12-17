@@ -16,11 +16,12 @@ namespace Sample
 
 class AdafruitBNO085 {  // : public BaseIMUComponent
 private:
-    Adafruit_BNO08x imu_instance;
+    Adafruit_BNO08x instance;
     sh2_SensorValue_t sensorValue;
     bool isCalibrated();
     bool isDataReady();
 public:
+    bool didInit = false;
 // Constructors
     AdafruitBNO085();   // default
 // Methods
