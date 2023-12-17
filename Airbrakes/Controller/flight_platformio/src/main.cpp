@@ -32,6 +32,7 @@
 #include <PID_Controller.h>
 #include <AdafruitBMP388.h>
 #include <AdafruitBNO085.h>
+#include <AdafruitADXL345.h>
 
 /**********************************************
  *** CHECK CONFIG CONSTANTS PRIOR TO LAUNCH ***
@@ -60,8 +61,9 @@ static const long computeLoopMicros = KALMAN_LOOP_FREQ_PER_SAMPLES * sampleLoopM
 static const long controlLoopMicros = ONE_SEC_MICROS/CONTROL_LOOP_FREQ;
 
 // Flight monitor and sensor objects/variables
-static AdafruitBMP388 alt;
-static AdafruitBNO085 imu;
+static AdafruitBMP388 alt_sensor;
+static AdafruitBNO085 imu_sensor;
+static AdafruitADXL345 acc_sensor;
 static FlightMonitor fm_ace;
 static FlightState currentState;
 static bool measurementDataValid;
@@ -161,7 +163,9 @@ int getNumberOfPrevFlights() {
 
 
 void setup() {
+  int aceInitFails = 0;
   Serial.begin(38400);
+
 #if IS_DEVELOPMENT_MODE
   while (!Serial) {
     ;  // wait for serial port to connect. Needed for native USB port only
@@ -174,14 +178,21 @@ void setup() {
   Serial.println("\n\n\n\n\n\n\n");
 #endif
 
+
 #ifdef PORTENTA_H7_M7_PLATFORM
   // Initialize SDRAM
   Serial.print("| Init SDRAM...");
-  ram.begin();
-  delay(100);
-  // ringBuffer = (float(*)[RING_BUFFER_LENGTH])ram.malloc(sizeof(float[RING_BUFFER_LENGTH][RING_BUFFER_COLS]));  // Malloc not currently used
-  Serial.println("OK!");
+  if (!ram.begin()) {
+    ++aceInitFails;
+    Serial.println("NOT OK!");
+  } else {
+    delay(100);
+    Serial.println("OK!");
+  }
+
 #endif
+
+
 
   // Initialize FSM state
   Serial.print("| Init program state...");
@@ -195,18 +206,33 @@ void setup() {
   Serial.println("TODO: NOT OK!");
 
   // Initialize sensor hardware
-  alt.init();
-  imu.init();
+  if (!imu_sensor.init()) {
+    ++aceInitFails;
+  }
+  if (!alt_sensor.init()) {
+    ++aceInitFails;
+  }
+  if (!acc_sensor.init()) {
+    ++aceInitFails;
+  }
   
   // Attach servo pin to D9 (PWM len min: 900 us, max: 2050us)  // this servo library is trolling us
   Serial.print("| Init servo PWM...");
-  srv.attach(9, SRV_MIN_PWM_LEN_MICROS, SRV_MAX_PWM_LEN_MICROS);
-  Serial.println("OK!");
+  if (!srv.attach(9, SRV_MIN_PWM_LEN_MICROS, SRV_MAX_PWM_LEN_MICROS)) {
+    ++aceInitFails;
+    Serial.println("NOT OK!");
+  } else {
+    Serial.println("OK!");
+  }
 
   // Initialize vectors/matrices
   Serial.print("| Init Kalman state...");
-  initializeKalmanFilter();
-  Serial.println("OK!");
+  if (!initializeKalmanFilter()) {
+    ++aceInitFails;
+    Serial.println("NOT OK!");
+  } else {
+    Serial.println("OK!");
+  }
 
   // Initialize OpenLog
   Serial.print("| Init OpenLog...");
@@ -215,10 +241,23 @@ void setup() {
   Serial.println("> Writing airbrake data to: " + logfile);
   Serial.println("OK!");
 
-  Serial.println("> Init ACE OK! Starting program...");
+  // ACE initialization summary status check
+  if (!aceInitFails) {
+    Serial.println("> Init ACE OK! Starting program...");
+  } else {
+    Serial.println("\n\n\n");
+    Serial.print("WARNING: ACE did not initialize successfully! There were ");
+    Serial.print(aceInitFails);
+    Serial.println(" fails!");
+    Serial.println("> Refer to above output to view failures...");
+#if CHECK_STRICT_INITIALIZATION
+    for ( ; ; ); // Spin infinitely on failed init
+#endif
+    Serial.println("\n\n\n!!! WARNING: ACE IS CONTINUING WITH FAILED INITIALIZATIONS !!!!\n");
+  }
+  delay(5000);
 
   // Update all delta timing timer variables with offset to REAL core loop start time
-  delay(1000);
   previousFilterReset = micros();
   previousSampleTime = micros();
   previousComputeWaits = 0;
@@ -245,29 +284,29 @@ void loop() {
     }
     counterSample++;
 
-    measurementDataValid = readMeasurement(&currentMeasurement, imu, alt);  // Reads all SAMPLE loop sensors
+    measurementDataValid = readMeasurement(&currentMeasurement, imu_sensor, alt_sensor, acc_sensor);  // Reads all SAMPLE loop sensors
   }
 
   /* COMPUTE LOOP (per 1 SAMPLEs : 100Hz) */
   if (currentState!=FlightState::landed && previousComputeWaits >= KALMAN_LOOP_FREQ_PER_SAMPLES) {
     previousComputeWaits = 0; // Reset compute counter
 
+    /* Acceleration transformation (to Earth frame) */
     quaternions = {currentMeasurement.qr,currentMeasurement.qi,currentMeasurement.qj,currentMeasurement.qk};
     measuredAccel = {currentMeasurement.xAccel,
                      currentMeasurement.yAccel,
                      currentMeasurement.zAccel};
-    getInertialAccel();
-    measurementVec = {currentMeasurement.altitude+simSample[0],
+    getInertialAccel(); // Transforms acceleration
+    measurementVec = {currentMeasurement.altitude,  //+simSample[0],
                       inertialAccel(0),
                       inertialAccel(1),
-                      inertialAccel(2)+simSample[1]};
-    //kalman filter steps
-    kalmanPredict();
+                      inertialAccel(2)};  //+simSample[1]};
 
+    /* Kalman filter */
+    kalmanPredict();
     if(measurementDataValid){
       kalmanUpdate();
     }
-
     if(stateVecPrintCounter%25==0){
       Serial.print("Statevec: ");
       {
@@ -277,7 +316,7 @@ void loop() {
     }
     stateVecPrintCounter++;
 
-    // Perform SDRAM data saving
+    /* SDRAM data logging */
 #ifdef PORTENTA_H7_M7_PLATFORM
     // Write timestamp data to SDRAM[0]
     *(SDRAM_base + ((ringBufferIndex%RING_BUFFER_LENGTH)*RING_BUFFER_COLS)) = (float)currentTime; // Last currentTime should be from sample loops
@@ -292,7 +331,7 @@ void loop() {
 #endif
     ++ringBufferIndex;
     
-    /* Switch statement for FSM of ACE system modes */
+    /* FSM transition */
     switch(currentState) {
       case FlightState::detectLaunch:
         
