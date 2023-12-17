@@ -45,7 +45,7 @@
 // Servo defines
 #define SRV_MIN_PWM_LEN_MICROS  900
 #define SRV_MAX_PWM_LEN_MICROS  2050
-#define SRV_MAX_EXTENSION_ANGLE 80
+#define SRV_MAX_EXTENSION_ANGLE 80    // Defines MAX from 0 -> MAX (is absolute, without offset)
 #define SRV_ANGLE_DEG_OFFSET    20
 
 /* STATIC VARIABLES */
@@ -157,6 +157,22 @@ void setup() {
     Serial.println("NOT OK!");
   } else {
     Serial.println("OK!");
+#if DO_SERVO_ACTUATE_INIT_CHECK
+    Serial.println("> Notice: Performing servo actuation status check in 5 seconds...");
+    delay(5000);
+
+    Serial.print("> Extending to SRV_MAX_EXTENSION_ANGLE + SRV_ANGLE_DEG_OFFSET: ");
+    Serial.print(SRV_MAX_EXTENSION_ANGLE);
+    Serial.print(" + ");
+    Serial.println(SRV_ANGLE_DEG_OFFSET);
+    delay(500);
+    srv.write(SRV_MAX_EXTENSION_ANGLE + SRV_ANGLE_DEG_OFFSET);
+    delay(1000);
+
+    Serial.println("> Retracting to SRV_ANGLE_DEG_OFFSET: ");
+    delay(500);
+    srv.write(SRV_ANGLE_DEG_OFFSET);
+#endif
   }
 
   // Initialize vectors/matrices
