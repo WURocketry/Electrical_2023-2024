@@ -229,10 +229,10 @@ void loop() {
                      currentMeasurement.yAccel,
                      currentMeasurement.zAccel};
     getInertialAccel(); // Transforms acceleration
-    measurementVec = {currentMeasurement.altitude,  //+simSample[0],
+    measurementVec = {currentMeasurement.altitude + simSample[0],
                       inertialAccel(0),
                       inertialAccel(1),
-                      inertialAccel(2)};  //+simSample[1]};
+                      inertialAccel(2) + simSample[1]};
 
     /* Kalman filter */
     kalmanPredict();
@@ -240,6 +240,8 @@ void loop() {
       kalmanUpdate();
     }
     if(stateVecPrintCounter%25==0){
+      Serial.print("FLIGHT STATE: ");
+      Serial.println((int)currentState);
       Serial.print("Statevec: ");
       {
         using namespace BLA;
@@ -266,7 +268,6 @@ void loop() {
     /* FSM transition */
     switch(currentState) {
       case FlightState::detectLaunch:
-        
         currentTime = micros();
         if (currentTime >= previousFilterReset + ONE_SEC_MICROS){
           // If one second has elapsed and not launched, reset kalman filter
@@ -288,32 +289,26 @@ void loop() {
           previousFilterReset = currentTime;
         }
         // Next transition: acceleration detected (motor burn) --> burn
-        currentState = Flight_FSM::detectLaunchTransition(fm_ace, currentState);
+        currentState = Flight_FSM::detectLaunchTransition(&fm_ace, currentState);
         break;
       case FlightState::burn:
         // Next transition: deceleration detected (motor burnout) --> control
-        currentState = Flight_FSM::burnTransition(fm_ace, currentState);
+        currentState = Flight_FSM::burnTransition(&fm_ace, currentState);
         break;
       case FlightState::control:
         // Next transition: reaching apogee --> stow --> separate --> coast
-        currentState = Flight_FSM::controlTransition(fm_ace, currentState);
+        currentState = Flight_FSM::controlTransition(&fm_ace, currentState);
         break;
       case FlightState::controlStandby:
         // Next transition: re-stabilized --> control
-        currentState = Flight_FSM::controlStandbyTransition(fm_ace, currentState);
+        currentState = Flight_FSM::controlStandbyTransition(&fm_ace, currentState);
         break;
       case FlightState::coast:
         // Next transition: z velocity apprx. 0 and altitude is low --> landed
-        currentState = Flight_FSM::coastTransition(fm_ace, currentState);
+        currentState = Flight_FSM::coastTransition(&fm_ace, currentState);
         break;
       case FlightState::landed:
         // Next transition: none, continuously write data to storage
-#ifdef PORTENTA_H7_M7_PLATFORM
-        if (!didWriteData && logger.didInit) {
-          logger.dumpSDRAMtoFile(SDRAM_base, ringBufferIndex, RING_BUFFER_LENGTH, RING_BUFFER_COLS);
-          didWriteData = true;
-        }
-#endif
         break;
       default:
         // Error state
@@ -335,5 +330,22 @@ void loop() {
       int angleExtension = SRV_MAX_EXTENSION_ANGLE * currentPIDControl + 0.5 + SRV_ANGLE_DEG_OFFSET;  // +0.5 to round to nearest whole int
       srv.write(SRV_MAX_EXTENSION_ANGLE + SRV_ANGLE_DEG_OFFSET - angleExtension);  // Invert angle control
     }
+  }
+
+  /* POST-FLIGHT PROCEDURE */
+  if (currentState == FlightState::landed) {
+  // Dump data upon landing
+#ifdef PORTENTA_H7_M7_PLATFORM
+        if (!didWriteData && logger.didInit) {
+          Serial.print("Dumping data to OpenLog...");
+          logger.dumpSDRAMtoFile(SDRAM_base, ringBufferIndex, RING_BUFFER_LENGTH, RING_BUFFER_COLS);
+          didWriteData = true;
+          Serial.println("OK!");
+        }
+#endif
+
+    // ACE completed
+    Serial.println("ACE completed! Sleeping...");
+    for ( ; ; );
   }
 }
