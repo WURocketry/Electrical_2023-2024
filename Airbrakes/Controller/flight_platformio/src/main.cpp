@@ -45,7 +45,7 @@
 // Servo defines
 #define SRV_MIN_PWM_LEN_MICROS  900
 #define SRV_MAX_PWM_LEN_MICROS  2050
-#define SRV_MAX_EXTENSION_ANGLE 80    // Defines MAX from 0 -> MAX (is absolute, without offset)
+#define SRV_MAX_EXTENSION_ANGLE 120    // Defines MAX from 0 -> MAX (is absolute, without offset)
 #define SRV_ANGLE_DEG_OFFSET    20
 
 /* STATIC VARIABLES */
@@ -132,7 +132,6 @@ void setup() {
     delay(100);
     Serial.println("OK!");
   }
-
 #endif
 
   // Initialize FSM state
@@ -153,28 +152,21 @@ void setup() {
   
   // Attach servo pin to D9 (PWM len min: 900 us, max: 2050us)  // this servo library is trolling us
   Serial.print("| Init servo PWM...");
-  if (!srv.attach(9, SRV_MIN_PWM_LEN_MICROS, SRV_MAX_PWM_LEN_MICROS)) {
-    ++aceInitFails;
-    Serial.println("NOT OK!");
-  } else {
-    Serial.println("OK!");
+  srv.attach(9, SRV_MIN_PWM_LEN_MICROS, SRV_MAX_PWM_LEN_MICROS);
 #if DO_SERVO_ACTUATE_INIT_CHECK
-    Serial.println("> Notice: Performing servo actuation status check in 5 seconds...");
-    delay(5000);
+  Serial.println("> Notice: Performing servo actuation status check in 5 seconds...");
+  delay(5000);
 
-    Serial.print("> Extending to SRV_MAX_EXTENSION_ANGLE + SRV_ANGLE_DEG_OFFSET: ");
-    Serial.print(SRV_MAX_EXTENSION_ANGLE);
-    Serial.print(" + ");
-    Serial.println(SRV_ANGLE_DEG_OFFSET);
-    delay(500);
-    srv.write(SRV_MAX_EXTENSION_ANGLE + SRV_ANGLE_DEG_OFFSET);
-    delay(1000);
+  Serial.print("> Extending to OPEN (SRV_ANGLE_DEG_OFFSET): ");
+  Serial.println(SRV_ANGLE_DEG_OFFSET);
+  delay(500);
+  srv.write(SRV_ANGLE_DEG_OFFSET);
+  delay(1000);
 
-    Serial.println("> Retracting to SRV_ANGLE_DEG_OFFSET: ");
-    delay(500);
-    srv.write(SRV_ANGLE_DEG_OFFSET);
+  Serial.println("> Retracting to CLOSE (SRV_MAX_EXTENSION_ANGLE): ");
+  delay(500);
+  srv.write(SRV_MAX_EXTENSION_ANGLE);
 #endif
-  }
 
   // Initialize vectors/matrices
   Serial.print("| Init Kalman state...");
@@ -371,7 +363,7 @@ void loop() {
       // Note: stateVec(2) --> curr_Z_Position, stateVec(5) --> curr_Z_Velocity
       currentPIDControl = pid.control(stateVec(2), stateVec(5));
       int angleExtension = SRV_MAX_EXTENSION_ANGLE * currentPIDControl + 0.5 + SRV_ANGLE_DEG_OFFSET;  // +0.5 to round to nearest whole int
-      srv.write(angleExtension);  // Invert angle control with (SRV_MAX_EXTENSION_ANGLE + SRV_ANGLE_DEG_OFFSET - angleExtension)
+      srv.write(SRV_MAX_EXTENSION_ANGLE + SRV_ANGLE_DEG_OFFSET - angleExtension);  // Invert angle control with (SRV_MAX_EXTENSION_ANGLE + SRV_ANGLE_DEG_OFFSET - angleExtension)
     }
   }
 
