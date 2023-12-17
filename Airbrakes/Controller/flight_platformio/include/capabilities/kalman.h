@@ -37,66 +37,67 @@ BLA::Matrix<4,4> innovationCov;
 BLA::Matrix<9,4> Kkalman;
 
 
-void initializeKalmanFilter(){
-    stateVec = {0,0,0,0,0,0,0,0,0};
+bool initializeKalmanFilter(){
+  stateVec = {0,0,0,0,0,0,0,0,0};
 
-    Fkalman = {1,0,0,kdt,0,0,1/2*kdt*kdt,0,0,
-             0,1,0,0,kdt,0,0,1/2*kdt*kdt,0,
-             0,0,1,0,0,kdt,0,0,1/2*kdt*kdt,
-             0,0,0,1,0,0,kdt,0,0,
-             0,0,0,0,1,0,0,kdt,0,
-             0,0,0,0,0,1,0,0,kdt,
-             0,0,0,0,0,0,1,0,0,
-             0,0,0,0,0,0,0,1,0,
-             0,0,0,0,0,0,0,0,1};
+  Fkalman = {1,0,0,kdt,0,0,1/2*kdt*kdt,0,0,
+            0,1,0,0,kdt,0,0,1/2*kdt*kdt,0,
+            0,0,1,0,0,kdt,0,0,1/2*kdt*kdt,
+            0,0,0,1,0,0,kdt,0,0,
+            0,0,0,0,1,0,0,kdt,0,
+            0,0,0,0,0,1,0,0,kdt,
+            0,0,0,0,0,0,1,0,0,
+            0,0,0,0,0,0,0,1,0,
+            0,0,0,0,0,0,0,0,1};
 
-    Hkalman = {0,0,1,0,0,0,0,0,0,
-             0,0,0,0,0,0,1,0,0,
-             0,0,0,0,0,0,0,1,0,
-             0,0,0,0,0,0,0,0,1};
+  Hkalman = {0,0,1,0,0,0,0,0,0,
+            0,0,0,0,0,0,1,0,0,
+            0,0,0,0,0,0,0,1,0,
+            0,0,0,0,0,0,0,0,1};
 
-    Qkalman = {processVar*pow(kdt,4)/4,0,0,processVar*pow(kdt,3)/2,0,0,processVar*pow(kdt,2)/2,0,0,
-             0,processVar*pow(kdt,4)/4,0,0,processVar*pow(kdt,3)/2,0,0,processVar*pow(kdt,2)/2,0,
-             0,0,processVar*pow(kdt,4)/4,0,0,processVar*pow(kdt,3)/2,0,0,processVar*pow(kdt,2)/2,
-             processVar*pow(kdt,3)/2,0,0,processVar*pow(kdt,2),0,0,processVar*kdt,0,0,
-             0,processVar*pow(kdt,3)/2,0,0,processVar*pow(kdt,2),0,0,processVar*kdt,0,
-             0,0,processVar*pow(kdt,3)/2,0,0,processVar*pow(kdt,2),0,0,processVar*kdt,
-             processVar*pow(kdt,2)/2,0,0,processVar*kdt,0,0,processVar,0,0,
-             0,processVar*pow(kdt,2)/2,0,0,processVar*kdt,0,0,processVar,0,
-             0,0,processVar*pow(kdt,2)/2,0,0,processVar*kdt,0,0,processVar};
+  Qkalman = {processVar*pow(kdt,4)/4,0,0,processVar*pow(kdt,3)/2,0,0,processVar*pow(kdt,2)/2,0,0,
+            0,processVar*pow(kdt,4)/4,0,0,processVar*pow(kdt,3)/2,0,0,processVar*pow(kdt,2)/2,0,
+            0,0,processVar*pow(kdt,4)/4,0,0,processVar*pow(kdt,3)/2,0,0,processVar*pow(kdt,2)/2,
+            processVar*pow(kdt,3)/2,0,0,processVar*pow(kdt,2),0,0,processVar*kdt,0,0,
+            0,processVar*pow(kdt,3)/2,0,0,processVar*pow(kdt,2),0,0,processVar*kdt,0,
+            0,0,processVar*pow(kdt,3)/2,0,0,processVar*pow(kdt,2),0,0,processVar*kdt,
+            processVar*pow(kdt,2)/2,0,0,processVar*kdt,0,0,processVar,0,0,
+            0,processVar*pow(kdt,2)/2,0,0,processVar*kdt,0,0,processVar,0,
+            0,0,processVar*pow(kdt,2)/2,0,0,processVar*kdt,0,0,processVar};
 
-    Rkalman = {altimeterVar,0,0,0,
-             0,accelXVar,0,0,
-             0,0,accelYVar,0,
-             0,0,0,accelZVar};
+  Rkalman = {altimeterVar,0,0,0,
+            0,accelXVar,0,0,
+            0,0,accelYVar,0,
+            0,0,0,accelZVar};
 
-    Pkalman = {10,0,0,0,0,0,0,0,0,
-             0,10,0,0,0,0,0,0,0,
-             0,0,10,0,0,0,0,0,0,
-             0,0,0,10,0,0,0,0,0,
-             0,0,0,0,10,0,0,0,0,
-             0,0,0,0,0,10,0,0,0,
-             0,0,0,0,0,0,10,0,0,
-             0,0,0,0,0,0,0,10,0,
-             0,0,0,0,0,0,0,0,10};
+  Pkalman = {10,0,0,0,0,0,0,0,0,
+            0,10,0,0,0,0,0,0,0,
+            0,0,10,0,0,0,0,0,0,
+            0,0,0,10,0,0,0,0,0,
+            0,0,0,0,10,0,0,0,0,
+            0,0,0,0,0,10,0,0,0,
+            0,0,0,0,0,0,10,0,0,
+            0,0,0,0,0,0,0,10,0,
+            0,0,0,0,0,0,0,0,10};
 
-    measurementVec = {0,0,0,0};
+  measurementVec = {0,0,0,0};
 
-    innovationCov = {0,0,0,0,
-                   0,0,0,0,
-                   0,0,0,0,
-                   0,0,0,0};
+  innovationCov = {0,0,0,0,
+                  0,0,0,0,
+                  0,0,0,0,
+                  0,0,0,0};
 
-    Kkalman = {0,0,0,0,
-             0,0,0,0,
-             0,0,0,0,
-             0,0,0,0,
-             0,0,0,0,
-             0,0,0,0,
-             0,0,0,0,
-             0,0,0,0,
-             0,0,0,0};
-
+  Kkalman = {0,0,0,0,
+            0,0,0,0,
+            0,0,0,0,
+            0,0,0,0,
+            0,0,0,0,
+            0,0,0,0,
+            0,0,0,0,
+            0,0,0,0,
+            0,0,0,0};
+            
+  return true;
 }
 
 void kalmanPredict(){
@@ -141,10 +142,10 @@ void getInertialAccel(){
 
   BLA::Matrix<4> inertialAccelQ = hamiltonProduct(hamiltonProduct(quaternions,measuredAccelQ),quaternionsInv);
 
+  // @note: Must subtract 9.8 m/s^2 from z-axis to remove acceleration due to gravity
   inertialAccel(0) = inertialAccelQ(1);
   inertialAccel(1) = inertialAccelQ(2);
-  inertialAccel(2) = inertialAccelQ(3);
-    
+  inertialAccel(2) = inertialAccelQ(3) - 9.8; // remove gravity vector
 
 }
 

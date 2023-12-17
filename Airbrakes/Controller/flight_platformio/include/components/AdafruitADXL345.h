@@ -21,6 +21,7 @@ public:
     AdafruitADXL345();
 // Methods
     bool init();
+    void getInfo();
 
     bool measureAcceleration(struct Sample::Measurement* measure);
 };
