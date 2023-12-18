@@ -45,7 +45,7 @@
 // Servo defines
 #define SRV_MIN_PWM_LEN_MICROS  900
 #define SRV_MAX_PWM_LEN_MICROS  2050
-#define SRV_MAX_EXTENSION_ANGLE 120    // Defines MAX from 0 -> MAX (is absolute, without offset)
+#define SRV_MAX_EXTENSION_ANGLE 100    // Defines MAX from 0 -> MAX (is absolute, without offset)
 #define SRV_ANGLE_DEG_OFFSET    20
 
 /* STATIC VARIABLES */
@@ -161,7 +161,7 @@ void setup() {
   Serial.println(SRV_ANGLE_DEG_OFFSET);
   delay(500);
   srv.write(SRV_ANGLE_DEG_OFFSET);
-  delay(1000);
+  delay(3000);
 
   Serial.println("> Retracting to CLOSE (SRV_MAX_EXTENSION_ANGLE): ");
   delay(500);
