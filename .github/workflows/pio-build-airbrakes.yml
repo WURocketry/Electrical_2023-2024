@@ -13,6 +13,9 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ~/Airbrakes/Controller/flight_platformio  # point to native PIO project root
 
     steps:
       - uses: actions/checkout@v3
@@ -30,4 +33,3 @@ jobs:
 
       - name: Build PlatformIO Project
         run: pio run
-        working-directory: ~/Airbrakes/Controller/flight_platformio  # point to native PIO project root
