@@ -23,8 +23,8 @@ jobs:
         repo-token: ${{ secrets.GITHUB_TOKEN }}
         stale-issue-message: 'This issue has been inactive for a month! Please address'
         stale-pr-message: 'This pull request has been inactive for a week! Please address this week'
-        stale-issue-label: 'no-issue-activity'
-        stale-pr-label: 'no-pr-activity'
+        stale-issue-label: 'stale'
+        stale-pr-label: 'stale'
         days-before-issue-stale: 31
         days-before-pr-stale: 7
         days-before-issue-close: -1
