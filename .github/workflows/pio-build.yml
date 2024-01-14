@@ -19,6 +19,15 @@ jobs:
       PROD_TARGET: '-e portenta_h7_m7'
       
     steps:
+      - name: Check for relevant changes
+        run: |
+          if git diff --name-only ${{ github.event.before }} ${{ github.sha }} | grep -E $PIO_DIRECTORY; then
+            echo "Changes detected in project. Proceeding to build."
+          else
+            echo "No changes detected in project. Not building."
+            gh run cancel ${{ github.run_id }}
+            gh run watch ${{ github.run_id }}
+          fi
       - uses: actions/checkout@v3
       - uses: actions/cache@v3
         with:
@@ -50,6 +59,15 @@ jobs:
       PIO_DIRECTORY: 'Payload/pio_project'
 
     steps:
+      - name: Check for relevant changes
+        run: |
+          if git diff --name-only ${{ github.event.before }} ${{ github.sha }} | grep -E $PIO_DIRECTORY; then
+            echo "Changes detected in project. Proceeding to build."
+          else
+            echo "No changes detected in project. Not building."
+            gh run cancel ${{ github.run_id }}
+            gh run watch ${{ github.run_id }}
+          fi
       - uses: actions/checkout@v3
       - uses: actions/cache@v3
         with:
