@@ -20,6 +20,7 @@ jobs:
       GH_TOKEN: ${{ github.token }}
       
     steps:
+      - uses: actions/checkout@v3
       - name: Check for relevant changes
         run: |
           if git diff --name-only ${{ github.event.before }} ${{ github.sha }} | grep -E $PIO_DIRECTORY; then
@@ -29,7 +30,6 @@ jobs:
             gh run cancel ${{ github.run_id }}
             gh run watch ${{ github.run_id }}
           fi
-      - uses: actions/checkout@v3
       - uses: actions/cache@v3
         with:
           path: |
@@ -61,6 +61,7 @@ jobs:
       GH_TOKEN: ${{ github.token }}
 
     steps:
+      - uses: actions/checkout@v3
       - name: Check for relevant changes
         run: |
           if git diff --name-only ${{ github.event.before }} ${{ github.sha }} | grep -E $PIO_DIRECTORY; then
@@ -70,7 +71,6 @@ jobs:
             gh run cancel ${{ github.run_id }}
             gh run watch ${{ github.run_id }}
           fi
-      - uses: actions/checkout@v3
       - uses: actions/cache@v3
         with:
           path: |
