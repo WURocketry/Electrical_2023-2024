@@ -17,6 +17,7 @@ jobs:
       PIO_DIRECTORY: 'Airbrakes/Controller/flight_platformio' # point to native PIO project root for Airbrakes
       DEV_TARGET: '-e rp2040 -e kb2040'
       PROD_TARGET: '-e portenta_h7_m7'
+      GH_TOKEN: ${{ github.token }}
       
     steps:
       - name: Check for relevant changes
@@ -57,6 +58,7 @@ jobs:
     if: ${{ github.base_ref == 'dev/payload' && false }} # disable for payload until they are configured for PIO
     env:
       PIO_DIRECTORY: 'Payload/pio_project'
+      GH_TOKEN: ${{ github.token }}
 
     steps:
       - name: Check for relevant changes
