@@ -18,18 +18,15 @@ jobs:
       DEV_TARGET: '-e rp2040 -e kb2040'
       PROD_TARGET: '-e portenta_h7_m7'
       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      
+    
     steps:
       - uses: actions/checkout@v3
-      - name: Check for relevant changes
-        run: |
-          if git diff --name-only HEAD~1 HEAD | grep -E $PIO_DIRECTORY; then
-            echo "Changes detected in project. Proceeding to build."
-          else
-            echo "No changes detected in project. Not building."
-            gh run cancel ${{ github.run_id }}
-            gh run watch ${{ github.run_id }}
-          fi
+      - uses: dorny/paths-filter@v2
+        id: changes
+        with:
+          filters: |
+            pio:
+              - '$PIO_DIRECTORY/**'
       - uses: actions/cache@v3
         with:
           path: |
@@ -40,14 +37,17 @@ jobs:
         with:
           python-version: '3.9'
       - name: Install PlatformIO Core
+        if: steps.filter.outputs.pio == 'true'
         run: pip install --upgrade platformio
 
       - name: Build ACE Development
+        if: steps.filter.outputs.pio == 'true'
         run: |
           cd $PIO_DIRECTORY
           pio run $DEV_TARGET
 
       - name: Build ACE Production
+        if: steps.filter.outputs.pio == 'true'
         run: |
           cd $PIO_DIRECTORY
           pio run $PROD_TARGET
@@ -62,15 +62,12 @@ jobs:
 
     steps:
       - uses: actions/checkout@v3
-      - name: Check for relevant changes
-        run: |
-          if git diff --name-only HEAD~1 HEAD | grep -E $PIO_DIRECTORY; then
-            echo "Changes detected in project. Proceeding to build."
-          else
-            echo "No changes detected in project. Not building."
-            gh run cancel ${{ github.run_id }}
-            gh run watch ${{ github.run_id }}
-          fi
+      - uses: dorny/paths-filter@v2
+        id: changes
+        with:
+          filters: |
+            pio:
+              - '$PIO_DIRECTORY/**'
       - uses: actions/cache@v3
         with:
           path: |
@@ -81,9 +78,11 @@ jobs:
         with:
           python-version: '3.9'
       - name: Install PlatformIO Core
+        if: steps.filter.outputs.pio == 'true'
         run: pip install --upgrade platformio
 
-      - name: Build PlatformIO Project Airbrakes
+      - name: Build Health Metrics
+        if: steps.filter.outputs.pio == 'true'
         run: |
           cd $PIO_DIRECTORY
           pio run
