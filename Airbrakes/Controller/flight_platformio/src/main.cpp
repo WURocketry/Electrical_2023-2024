@@ -6,6 +6,10 @@
 // 4. Local defines (used only in main.cpp)
 // 5. Static variables
 
+int x = 0/0
+
+complete bogus text that will fail this in gh action check!!!
+yay for ci
 
 /* LIBRARY INCLUDES */
 #include <Arduino.h>
