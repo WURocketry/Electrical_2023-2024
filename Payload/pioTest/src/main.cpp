@@ -476,18 +476,21 @@ void transmitCurrentComponentReadings() {
   char radiopacket[256] = {0};  
     
   // Iterate through the DATA_COMPONENT_READINGS array and build the message
+  char buffer[32];  // Temporary buffer for individual values
+
   for (int i = 0; i < ENUM_SIZE; i++) {
-    char buffer[32];  // Temporary buffer to hold each value
-    dtostrf(DATA_COMPONENT_READINGS[i], 6, 2, buffer);  // Convert double to string, adjust field width and decimal places as necessary
+      // Format each floating-point value and store it in buffer
+      snprintf(buffer, sizeof(buffer), "%.2f", DATA_COMPONENT_READINGS[i]);
 
-    // Append the value to radiopacket
-    strcat(radiopacket, buffer);
+      // Append the formatted value to radiopacket
+      strncat(radiopacket, buffer, sizeof(radiopacket) - strlen(radiopacket) - 1);
 
-    // If not the last element, append a comma
-    if (i < ENUM_SIZE - 1) {
-      strcat(radiopacket, ",");
+      // If not the last element, append a comma
+      if (i < ENUM_SIZE - 1) {
+          strncat(radiopacket, ",", sizeof(radiopacket) - strlen(radiopacket) - 1);
       }
-    }
+  }
+
 
     unsigned long currentMillis = millis();
     if (currentMillis >= rfTime + rfTimer) {

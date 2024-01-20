@@ -8,7 +8,6 @@
 #include "Adafruit_MAX1704X.h"
 #include <RadioLib.h>
 #include <Adafruit_NeoPixel.h>
-#include <SoftwareSerial.h>
 
 // Define sensor objects
 Adafruit_BNO08x bno08x;
