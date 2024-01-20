@@ -1,4 +1,4 @@
-//pIO implementation of payload electrical main sketch - does not compile 11/9/23
+#include <Arduino.h>
 #include <algorithm>
 #include <bitset>
 #include <Adafruit_Sensor.h>
@@ -9,7 +9,12 @@
 #include "Adafruit_MAX1704X.h"
 #include <RadioLib.h>
 #include <Adafruit_NeoPixel.h>
-#include <SoftwareSerial.h>
+// #include <SoftwareSerial.h>
+
+// Forward declare
+void ErrorLEDLoop(const char*);
+void logData(const char* componentName, float secondsSinceOn, float* data, int dataSize);
+int getNumberOfPrevFlights();
 
 // Define sensor objects
 Adafruit_BNO08x bno08x;
@@ -394,7 +399,7 @@ void logData(const char* componentName, float secondsSinceOn, float* data, int d
   logger.syncFile();
 }
 
-int getNumberOfPrevFlights(){
+int getNumberOfPrevFlights() {
   int fileCount = 0;
   
   // Check if the file exists
@@ -507,4 +512,5 @@ void loop() {
   collectDataFromBatteryMonitor();
   transmitCurrentComponentReadings();   
 }
+
 
