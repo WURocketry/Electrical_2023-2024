@@ -1,9 +1,22 @@
+#include <stdexcept>
+
+#include <bits/stdc++.h>
+#include <string.h>
 #include <BasicLinearAlgebra.h>
 
-BLA::Matrix<3> getAccel(BLA::Matrix<9> stateVec);
 
-BLA::Matrix<3> getVel(BLA::Matrix<9> stateVec);
+void readAcc();
+void readVel();
+void readPos();
 
-float* getVelArray(BLA::Matrix<9> stateVec);
+using namespace std;
 
-float* getAccelArray(BLA::Matrix<9> stateVec);
+class RingBuffer {
+    private:
+        static const int RING_BUFFER_LENGTH;
+        static const int RING_BUFFER_COLS;
+    public:
+        bool insertIntoSDRAM(float* stateVec, double controlVal, int timestep, int size); 
+        int& operator[](int ringBufferIndex);
+
+}

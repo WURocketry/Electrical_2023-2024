@@ -1,58 +1,63 @@
 #include "stateVecAPI.h"
 
-// returns a 3x1 acceleration vector
-BLA::Matrix<3> getAccel(BLA::Matrix<9> stateVec) {
-    float xAccel = stateVec(7);
-    float yAccel = stateVec(8);
-    float zAccel = stateVec(9);
+// ring buffer index, onlg global variable tracked in main.cpp
+int ringBufferIndex = 0;
 
-    //float accelArray[3] = {xAccel, yAccel, zAccel};
+// statevVec declerations
+float stateVec[9] = {0,0,0,0,0,0,0,0,0};
 
-    BLA::Matrix<3> accelVector;
-    accelVector(0) = xAccel;
-    accelVector(1) = yAccel;
-    accelVector(2) = zAccel;
+float pos[3];
+float vel[3];
+float acc[3];
 
-    return accelVector;
+// updates global acc array
+void readAcc() {
+    memcpy(acc, 6+stateVec, 3*sizeof(*stateVec));
 } 
 
-// returns a 3X1 velocity vector 
-BLA::Matrix<3> getVel(BLA::Matrix<9> stateVec) {
-    float xVel = stateVec(4);
-    float yVel = stateVec(5);
-    float zVel = stateVec(6);
-    
-    BLA::Matrix<3> velVector;
-    velVector(0) = xVel;
-    velVector(1) = yVel;
-    velVector(2) = zVel;
-
-    return velVector;
+// updates global vel array  
+void readVel() {
+    memcpy(vel, 3+stateVec, 3*sizeof(*stateVec));
 }
 
-float* getAccelArray(BLA::Matrix<9> stateVec) {
-    float xAccel = stateVec(7);
-    float yAccel = stateVec(8);
-    float zAccel = stateVec(9);
-
-    float* accelArray = new float[3];
-
-    accelArray[0] = xAccel;
-    accelArray[1] = yAccel;
-    accelArray[2] = zAccel;
-    
-    return accelArray;
+// updates global pos array
+void readPos() {
+    memcpy(pos, stateVec, 3*sizeof(*stateVec));
 }
 
-float* getVelArray(BLA::Matrix<9> stateVec) {
-    float xVel = stateVec(4);
-    float yVel = stateVec(5);
-    float zVel = stateVec(6);
+class RingBuffer {
+    private:
+        static const int RING_BUFFER_LENGTH = 4000;
+        static const int RING_BUFFER_LENGTH = 11;
+        static const float* SDRAM_base = (float*) 0x60000000;
+    public:
 
-    float* velArray = new float[3];
-    velArray[0] = xVel;
-    velArray[1] = yVel;
-    velArray[2] = zVel;
+        bool insertIntoSDRAM(float* stateVec, double controlVal, int timestep, int size, int ringBufferIndex) {
+            // calculate current address
+            float* currAddr = (float*)(SDRAM_base + ((ringBufferIndex%RING_BUFFER_LENGTH)*RING_BUFFER_COLS));
 
-    return velArray;
+            // build array + check for expected values
+            //find best method to check the size of the array is correct
+            int i = 0;
+            if (i > RING_BUFFER_COLS - 2) {
+                return false;
+            } else {
+                currAddr = stateVec[i];
+                i++;
+                ringBufferIndex++;
+            }
+            currAddr = (float) controlVal;
+            ringBufferIndex++;
+            currAddr = (float) timestep;
+            ringBufferIndex++;
+
+            
+
+            //insert into RAM + return
+        }
+        // broken for some reason, fix after normal method is done
+        int& opreator[](int ringBufferIndex) {
+            float* currAddr = (float*)(SDRAM_base + ((ringBufferIndex%RING_BUFFER_LENGTH)*RING_BUFFER_COLS));
+            return &currAddr;
+        }
 }
