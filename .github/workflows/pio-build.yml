@@ -1,0 +1,90 @@
+# This is a WIP file for automating `pio run` builds whenver a pull request is opened to a PIO enabled branch
+# Note: Must redirect to a directory initialized as a native pio project
+
+name: PIO Build
+
+on:
+  pull_request:
+    branches:
+      - 'dev/airbrakes'
+      - 'dev/payload'
+
+jobs:
+  build-airbrakes-ace:
+    runs-on: ubuntu-latest
+    if: ${{ github.base_ref == 'dev/airbrakes' }}
+    env:
+      PIO_DIRECTORY: 'Airbrakes/Controller/flight_platformio' # point to native PIO project root for Airbrakes
+      DEV_TARGET: '-e rp2040 -e kb2040'
+      PROD_TARGET: '-e portenta_h7_m7'
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    
+    steps:
+      - uses: actions/checkout@v3
+      - uses: dorny/paths-filter@v2
+        id: changes
+        with:
+          filters: |
+            pio:
+              - '${{ env.PIO_DIRECTORY }}/**'
+      - uses: actions/cache@v3
+        with:
+          path: |
+            ~/.cache/pip
+            ~/.platformio/.cache
+          key: ${{ runner.os }}-pio
+      - uses: actions/setup-python@v4
+        with:
+          python-version: '3.9'
+          
+      - name: Install PlatformIO Core
+        if: steps.changes.outputs.pio == 'true'
+        run: pip install --upgrade platformio
+
+      - name: Build ACE Development
+        if: steps.changes.outputs.pio == 'true'
+        run: |
+          cd $PIO_DIRECTORY
+          pio run $DEV_TARGET
+
+      - name: Build ACE Production
+        if: steps.changes.outputs.pio == 'true'
+        run: |
+          cd $PIO_DIRECTORY
+          pio run $PROD_TARGET
+          
+
+  build-payload-hm:
+    runs-on: ubuntu-latest
+    if: ${{ github.base_ref == 'dev/payload' && false }} # disable for payload until they are configured for PIO
+    env:
+      PIO_DIRECTORY: 'Payload/pio_project'
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+    steps:
+      - uses: actions/checkout@v3
+      - uses: dorny/paths-filter@v2
+        id: changes
+        with:
+          filters: |
+            pio:
+              - '${{ env.PIO_DIRECTORY }}/**'
+      - uses: actions/cache@v3
+        with:
+          path: |
+            ~/.cache/pip
+            ~/.platformio/.cache
+          key: ${{ runner.os }}-pio
+      - uses: actions/setup-python@v4
+        with:
+          python-version: '3.9'
+          
+      - name: Install PlatformIO Core
+        if: steps.changes.outputs.pio == 'true'
+        run: pip install --upgrade platformio
+
+      - name: Build Health Metrics
+        if: steps.changes.outputs.pio == 'true'
+        run: |
+          cd $PIO_DIRECTORY
+          pio run

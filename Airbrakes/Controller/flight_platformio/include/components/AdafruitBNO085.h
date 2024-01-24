@@ -4,21 +4,24 @@
 /* Note this will eventually become a derived class from BaseIMUComponent */
 // #include "BaseIMUComponent.h"
 
-#include <Measurement.h>
-
 #include <Adafruit_BNO08x.h>
-#include <Wire.h>
+
+namespace Sample
+{
+    struct Measurement;
+}
 
 //define IMU pins
 // #define imuINT 9 // INT not connected on portenta
 
 class AdafruitBNO085 {  // : public BaseIMUComponent
 private:
-    Adafruit_BNO08x imu_instance;
+    Adafruit_BNO08x instance;
     sh2_SensorValue_t sensorValue;
     bool isCalibrated();
     bool isDataReady();
 public:
+    bool didInit = false;
 // Constructors
     AdafruitBNO085();   // default
 // Methods
@@ -27,5 +30,5 @@ public:
     void readAcceleration();
     void printRawAcceleration(int iters, int sampleFreqMicros);
 
-    bool measureIMU(struct Measurement* measure);
+    bool measureIMU(struct Sample::Measurement* measure);
 };
