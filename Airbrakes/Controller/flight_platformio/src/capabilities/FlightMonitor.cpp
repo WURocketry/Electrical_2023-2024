@@ -4,6 +4,8 @@
 #include "FlightMonitor.h"
 
 extern BLA::Matrix<9> stateVec;
+extern BLA::Matrix<3> pointVec;
+float tiltAngle;
 
 FlightMonitor::FlightMonitor()
 {
@@ -11,6 +13,7 @@ FlightMonitor::FlightMonitor()
     burnoutCounts = 0;
     apogeeCounts = 0;
     landingCounts = 0;
+    tiltCounts=0;
 }
 
 bool FlightMonitor::detectedLaunch()
@@ -84,5 +87,24 @@ bool FlightMonitor::detectedLanding()
 
 bool FlightMonitor::detectedLean()
 {
-    return false;
+    tiltAngle = acos((stateVec(3)*pointVec(0) + stateVec(4)*pointVec(1) + stateVec(5)*pointVec(2))/(sqrt(pow(stateVec(3),2)+pow(stateVec(4),2)+pow(stateVec(5),2))));
+    Serial.print("Point vec: ");
+    Serial.print(pointVec(0));
+    Serial.print(",");
+    Serial.print(pointVec(1));
+    Serial.print(",");
+    Serial.println(pointVec(2));
+    Serial.println(tiltAngle*RAD_TO_DEG,5);
+    if(tiltAngle>TILT_THRESHOLD){
+        tiltCounts++;
+    }else{
+        tiltCounts=0;
+    }
+    
+    if(tiltCounts>=TILT_PERSISTENCE){
+        return true;
+    }
+    else{
+        return false;
+    }
 }

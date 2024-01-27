@@ -19,8 +19,8 @@ double PID_Controller::control(double currAltitude, double currVelocity){
     // Calculate proportional error
     double currError = input - setpoint;
 
-    Serial.print(currError,4);
-    Serial.println(" - current Velocity Error");
+    //Serial.print(currError,4);
+    //Serial.println(" - current Velocity Error");
 
     // Calculate integral error
     integral_error += getErrorDecay(currAltitude, currError);
@@ -36,8 +36,8 @@ double PID_Controller::control(double currAltitude, double currVelocity){
     // Calculate the control signal
     output = Kp * currError + Ki * integral_error + Kd * derivative;
 
-    Serial.print("Output of PID is: ");
-    Serial.println(output,4);
+    //Serial.print("Output of PID is: ");
+    //Serial.println(output,4);
 
     // Normalize output as a proportion of max error
     if (currAltitude >= maxErrorThresholds[2]) {
