@@ -14,12 +14,19 @@ jobs:
     runs-on: ubuntu-latest
     if: ${{ github.base_ref == 'dev/airbrakes' }}
     env:
-      PIO_DIRECTORY: 'Airbrakes/Controller/flight_platformio' # point to root PIO project folder in dev/airbrakes
+      PIO_DIRECTORY: 'Airbrakes/Controller/flight_platformio' # point to native PIO project root for Airbrakes
       DEV_TARGET: '-e rp2040 -e kb2040'
       PROD_TARGET: '-e portenta_h7_m7'
-      
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    
     steps:
       - uses: actions/checkout@v3
+      - uses: dorny/paths-filter@v2
+        id: changes
+        with:
+          filters: |
+            pio:
+              - '${{ env.PIO_DIRECTORY }}/**'
       - uses: actions/cache@v3
         with:
           path: |
@@ -29,15 +36,19 @@ jobs:
       - uses: actions/setup-python@v4
         with:
           python-version: '3.9'
+          
       - name: Install PlatformIO Core
+        if: steps.changes.outputs.pio == 'true'
         run: pip install --upgrade platformio
 
       - name: Build ACE Development
+        if: steps.changes.outputs.pio == 'true'
         run: |
           cd $PIO_DIRECTORY
           pio run $DEV_TARGET
 
       - name: Build ACE Production
+        if: steps.changes.outputs.pio == 'true'
         run: |
           cd $PIO_DIRECTORY
           pio run $PROD_TARGET
@@ -47,10 +58,17 @@ jobs:
     runs-on: ubuntu-latest
     if: ${{ github.base_ref == 'dev/payload' }}
     env:
-      PIO_DIRECTORY: 'Payload/pio_main'   # point to root PIO project folder in dev/payload
+      PIO_DIRECTORY: 'Payload/pio_main'
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
     steps:
       - uses: actions/checkout@v3
+      - uses: dorny/paths-filter@v2
+        id: changes
+        with:
+          filters: |
+            pio:
+              - '${{ env.PIO_DIRECTORY }}/**'
       - uses: actions/cache@v3
         with:
           path: |
@@ -60,10 +78,13 @@ jobs:
       - uses: actions/setup-python@v4
         with:
           python-version: '3.9'
+          
       - name: Install PlatformIO Core
+        if: steps.changes.outputs.pio == 'true'
         run: pip install --upgrade platformio
 
-      - name: Build PlatformIO Project Life Metrics
+      - name: Build Health Metrics
+        if: steps.changes.outputs.pio == 'true'
         run: |
           cd $PIO_DIRECTORY
           pio run
