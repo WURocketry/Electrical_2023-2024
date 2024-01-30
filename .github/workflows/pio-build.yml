@@ -8,6 +8,8 @@ on:
     branches:
       - 'dev/airbrakes'
       - 'dev/payload'
+      # - 'dev/avionics'  # UNCOMMENT WHEN AVIONICS IS CONFIGURED
+      - 'airbrakes/test-gh-action-2'  # test branch
 
 jobs:
   build-airbrakes-ace:
@@ -56,9 +58,9 @@ jobs:
 
   build-payload-hm:
     runs-on: ubuntu-latest
-    if: ${{ github.base_ref == 'dev/payload' && false }} # disable for payload until they are configured for PIO
+    if: ${{ github.base_ref == 'dev/payload' }}
     env:
-      PIO_DIRECTORY: 'Payload/pio_project'
+      PIO_DIRECTORY: 'Payload/pio_main'
       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
     steps:
@@ -84,6 +86,78 @@ jobs:
         run: pip install --upgrade platformio
 
       - name: Build Health Metrics
+        if: steps.changes.outputs.pio == 'true'
+        run: |
+          cd $PIO_DIRECTORY
+          pio run
+
+
+  build-payload-pce:
+    runs-on: ubuntu-latest
+    if: ${{ github.base_ref == 'dev/payload'  && false }} # ADD WHEN PCE PROJECT IS CONFIGURED
+    env:
+      PIO_DIRECTORY: 'Payload/REPLACEME'  # REPLACE WITH FUTURE PCE PIO PROJECT PATH
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+    steps:
+      - uses: actions/checkout@v3
+      - uses: dorny/paths-filter@v2
+        id: changes
+        with:
+          filters: |
+            pio:
+              - '${{ env.PIO_DIRECTORY }}/**'
+      - uses: actions/cache@v3
+        with:
+          path: |
+            ~/.cache/pip
+            ~/.platformio/.cache
+          key: ${{ runner.os }}-pio
+      - uses: actions/setup-python@v4
+        with:
+          python-version: '3.9'
+          
+      - name: Install PlatformIO Core
+        if: steps.changes.outputs.pio == 'true'
+        run: pip install --upgrade platformio
+
+      - name: Build PCE
+        if: steps.changes.outputs.pio == 'true'
+        run: |
+          cd $PIO_DIRECTORY
+          pio run
+
+
+  build-avionics-fsw:
+    runs-on: ubuntu-latest
+    if: ${{ github.base_ref == 'dev/payload'  && false }} # ADD WHEN GLOBAL AVIONICS PIO PROJECT IS CREATED
+    env:
+      PIO_DIRECTORY: 'Avionics/REPLACEME'  # REPLACE WITH FUTURE AVIONICS PROJECTS PATH
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+    steps:
+      - uses: actions/checkout@v3
+      - uses: dorny/paths-filter@v2
+        id: changes
+        with:
+          filters: |
+            pio:
+              - '${{ env.PIO_DIRECTORY }}/**'
+      - uses: actions/cache@v3
+        with:
+          path: |
+            ~/.cache/pip
+            ~/.platformio/.cache
+          key: ${{ runner.os }}-pio
+      - uses: actions/setup-python@v4
+        with:
+          python-version: '3.9'
+          
+      - name: Install PlatformIO Core
+        if: steps.changes.outputs.pio == 'true'
+        run: pip install --upgrade platformio
+
+      - name: Build Avionics FSW
         if: steps.changes.outputs.pio == 'true'
         run: |
           cd $PIO_DIRECTORY
