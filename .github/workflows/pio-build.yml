@@ -14,7 +14,7 @@ jobs:
     runs-on: ubuntu-latest
     if: ${{ github.base_ref == 'dev/airbrakes' }}
     env:
-      PIO_DIRECTORY: 'Airbrakes/Controller/flight_platformio' # point to native PIO project root for Airbrakes
+      PIO_DIRECTORY: 'Airbrakes/Controller/flight_platformio' # point to root PIO project folder in dev/airbrakes
       DEV_TARGET: '-e rp2040 -e kb2040'
       PROD_TARGET: '-e portenta_h7_m7'
       
@@ -45,9 +45,9 @@ jobs:
 
   build-payload-hm:
     runs-on: ubuntu-latest
-    if: ${{ github.base_ref == 'dev/payload' && false }} # disable for payload until they are configured for PIO
+    if: ${{ github.base_ref == 'dev/payload' }}
     env:
-      PIO_DIRECTORY: 'Payload/pio_project'
+      PIO_DIRECTORY: 'Payload/pio_main'   # point to root PIO project folder in dev/payload
 
     steps:
       - uses: actions/checkout@v3
@@ -63,7 +63,7 @@ jobs:
       - name: Install PlatformIO Core
         run: pip install --upgrade platformio
 
-      - name: Build PlatformIO Project Airbrakes
+      - name: Build PlatformIO Project Life Metrics
         run: |
           cd $PIO_DIRECTORY
           pio run
