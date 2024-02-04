@@ -17,6 +17,7 @@
 #include <PID_Controller.h>
 #include <AdafruitBMP388.h>
 #include <AdafruitBNO085.h>
+#include <ServoMovement.h>
 
 // Configure ringBuffer for saving airbrakes sensor data
 #define RING_BUFFER_COLS 11
@@ -43,14 +44,14 @@ int ringBufferIndex = 0;
 #define SRV_MAX_EXTENSION_ANGLE 80
 #define SRV_ANGLE_DEG_OFFSET    20
 
-float currAngle = 0; // current angle of the servo
-float distanceThreshold = 0.5; // Only move the servo if the angle change is above this threshold
-float targetAngle = 0; 
-unsigned long previousServoUpdate = 0; // last time the servo was updated (in microseconds)
-const long servoUpdateIntervalMicros = 10 * 1000; // update interval for servo (in microseconds) (100Hz)
-int numSteps = 10; // Number of steps that it writes to the servo to get to target angle
-int servoMaxAngle = 140;
-int servoMinAngle = 20;
+//float currAngle = 0; // current angle of the servo
+//float distanceThreshold = 0.5; // Only move the servo if the angle change is above this threshold
+//float targetAngle = 0; 
+//unsigned long previousServoUpdate = 0; // last time the servo was updated (in microseconds)
+//const long servoUpdateIntervalMicros = 10 * 1000; // update interval for servo (in microseconds) (100Hz)
+//int numSteps = 10; // Number of steps that it writes to the servo to get to target angle
+//int servoMaxAngle = 140;
+//int servoMinAngle = 20;
 
 
 // Target apogee
@@ -282,42 +283,23 @@ int getNumberOfPrevFlights() {
     return fileCount;
 }
 
-// Function to initialize servo movement parameters
-void initializeServoMovement(int newTargetAngle) {
-  targetAngle = newTargetAngle;
-  currAngle = srv.read(); // Read current angle of servo
-}
 
-void updateServoPosition() {
-  unsigned long currentMicros = micros();
-  
-  if (currentMicros >= previousServoUpdate + servoUpdateIntervalMicros) {
-    previousServoUpdate += servoUpdateIntervalMicros;
 
-    if (abs(currAngle - targetAngle) > distanceThreshold) { // Only move if there is a significant difference
-      float stepAngle = (float)(targetAngle - currAngle) / numSteps; // Determine step size
-      currAngle += stepAngle;
-      if (currAngle >= servoMinAngle && currAngle <= servoMaxAngle){
-      srv.write(round(currAngle));
-      }
-    }
-  }
-}
+ServoMovement srvMovement(srv);
 
 void setup() {
 
   Serial.begin(38400);
   while (!Serial) {
-    ;  // wait for serial port to connect. Needed for native USB port only
+    // wait for serial port to connect. Needed for native USB port only
     //TODO REMOVE BEFORE FLIGHT
   }
 
 
   Serial.println("> Initialized Serial comms!");
 
-  srv.attach(servoPin);  // attach the servo on pin 9
-  targetAngle = 0; // Initial target angle
-  initializeServoMovement(140);
+  srv.attach(servoPin);  // attach the sertargetAnglevo on pin 9
+  srvMovement.initializeServoMovement(140);
   
 #ifdef PORTENTA_H7_M7_PLATFORM
   // Initialize SDRAM
@@ -384,7 +366,7 @@ void loop() {
     previousSampleTime += sampleLoopMicros;
     ++previousComputeWaits;
 
-    updateServoPosition();
+    srvMovement.updateServoPosition();
 
     // Temporary test of simulated OR data
     getSimulatedData(currentTime/1000000.0+15.96, simSample);
@@ -541,7 +523,7 @@ void loop() {
       // Note: stateVec(2) --> curr_Z_Position, stateVec(5) --> curr_Z_Velocity
       currentPIDControl = pid.control(stateVec(2), stateVec(5));
       int angleExtension = SRV_MAX_EXTENSION_ANGLE * currentPIDControl + 0.5 + SRV_ANGLE_DEG_OFFSET;  // +0.5 to round to nearest whole int
-      initializeServoMovement(SRV_MAX_EXTENSION_ANGLE + SRV_ANGLE_DEG_OFFSET - angleExtension);  // Invert angle control
+      srvMovement.initializeServoMovement(SRV_MAX_EXTENSION_ANGLE + SRV_ANGLE_DEG_OFFSET - angleExtension);  // Invert angle control
       Serial.println("Writing angle to servo: " + (int)(SRV_MAX_EXTENSION_ANGLE + SRV_ANGLE_DEG_OFFSET - angleExtension));
     }
     
