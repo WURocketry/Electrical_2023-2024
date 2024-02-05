@@ -44,16 +44,6 @@ int ringBufferIndex = 0;
 #define SRV_MAX_EXTENSION_ANGLE 80
 #define SRV_ANGLE_DEG_OFFSET    20
 
-//float currAngle = 0; // current angle of the servo
-//float distanceThreshold = 0.5; // Only move the servo if the angle change is above this threshold
-//float targetAngle = 0; 
-//unsigned long previousServoUpdate = 0; // last time the servo was updated (in microseconds)
-//const long servoUpdateIntervalMicros = 10 * 1000; // update interval for servo (in microseconds) (100Hz)
-//int numSteps = 10; // Number of steps that it writes to the servo to get to target angle
-//int servoMaxAngle = 140;
-//int servoMinAngle = 20;
-
-
 // Target apogee
 #define ACE_TARGET_APOGEE 1463.04
 
@@ -79,6 +69,9 @@ bool dataValid = true;
 
 // Servo object
 Servo srv;
+
+// ServoMovement object
+ServoMovement srvMovement(srv);
 
 // PID controller object and global control
 PID_Controller pid(ACE_TARGET_APOGEE);
@@ -282,10 +275,6 @@ int getNumberOfPrevFlights() {
 
     return fileCount;
 }
-
-
-
-ServoMovement srvMovement(srv);
 
 void setup() {
 

@@ -1,7 +1,8 @@
 #include <ServoMovement.h>
 #include <Servo.h>
 
-ServoMovement::ServoMovement(Servo &currSrv): targetAngle(0), currAngle(0), distanceThreshold(0.5), previousServoUpdate(0), servoUpdateIntervalMicros(10 * 1000), numSteps(10), servoMaxAngle(140), servoMinAngle(20), srv(currSrv)
+ServoMovement::ServoMovement(Servo &currSrv): targetAngle(0), currAngle(0), distanceThreshold(0.5), 
+previousServoUpdate(0), servoUpdateIntervalMicros(10 * 1000), numSteps(10), servoMaxAngle(140), servoMinAngle(20), srv(currSrv)
 {
 }
 
