@@ -33,6 +33,7 @@
 #include <AdafruitBNO085.h>
 #include <AdafruitADXL345.h>
 #include <SparkFunOpenLog.h>
+#include <ServoMovement.h>
 
 /**********************************************
  *** CHECK CONFIG CONSTANTS PRIOR TO LAUNCH ***
@@ -72,6 +73,9 @@ static Sample::Measurement currentMeasurement;  // Struct for holding current me
 
 // Servo object
 static Servo srv;
+
+// ServoMovement object
+ServoMovement srvMovement(srv);
 
 // PID controller object and global control
 static PID_Controller pid(ACE_TARGET_APOGEE);
@@ -114,7 +118,8 @@ void setup() {
   while (!Serial) {
     ;  // wait for serial port to connect. Needed for native USB port only
   }
-  delay(1000);
+
+
   Serial.println("> Initialized Serial comms!");
   Serial.println("\n\n\n\n\n\n\n");
   Serial.println("==== NOTE ====");
@@ -122,6 +127,9 @@ void setup() {
   Serial.println("\n\n\n\n\n\n\n");
 #endif
 
+  srv.attach(servoPin);  // attach the sertargetAnglevo on pin 9
+  srvMovement.initializeServoMovement(140);
+  
 #ifdef PORTENTA_H7_M7_PLATFORM
   // Initialize SDRAM
   Serial.print("| Init SDRAM...");
@@ -363,11 +371,9 @@ void loop() {
       // Perform PID servo actuation
       // Note: stateVec(2) --> curr_Z_Position, stateVec(5) --> curr_Z_Velocity
       currentPIDControl = pid.control(stateVec(2), stateVec(5));
-      int angleExtension = SRV_MAX_EXTENSION_ANGLE * currentPIDControl + 0.5;  // +0.5 to round to nearest whole int
-      srv.write(SRV_MAX_EXTENSION_ANGLE - angleExtension);  // Invert angle control with (SRV_MAX_EXTENSION_ANGLE + SRV_ANGLE_DEG_OFFSET - angleExtension)
-    }
-    else if(currentState==FlightState::controlStandby){
-      srv.write(SRV_MAX_EXTENSION_ANGLE);
+      int angleExtension = SRV_MAX_EXTENSION_ANGLE * currentPIDControl + 0.5 + SRV_ANGLE_DEG_OFFSET;  // +0.5 to round to nearest whole int
+      srvMovement.initializeServoMovement(SRV_MAX_EXTENSION_ANGLE + SRV_ANGLE_DEG_OFFSET - angleExtension);  // Invert angle control
+      Serial.println("Writing angle to servo: " + (int)(SRV_MAX_EXTENSION_ANGLE + SRV_ANGLE_DEG_OFFSET - angleExtension));
     }
   }
 
