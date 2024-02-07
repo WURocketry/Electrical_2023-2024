@@ -43,11 +43,6 @@
  **********************************************/
 
 /* LOCAL DEFINES */
-// Servo defines
-#define SRV_MIN_PWM_LEN_MICROS  900
-#define SRV_MAX_PWM_LEN_MICROS  2050
-#define SRV_MAX_EXTENSION_ANGLE 100    // Defines MAX from 0 -> MAX (is absolute, without offset)
-#define SRV_ANGLE_DEG_OFFSET    20
 
 /* STATIC VARIABLES */
 // Delta timing variables
@@ -371,9 +366,9 @@ void loop() {
       // Perform PID servo actuation
       // Note: stateVec(2) --> curr_Z_Position, stateVec(5) --> curr_Z_Velocity
       currentPIDControl = pid.control(stateVec(2), stateVec(5));
-      int angleExtension = SRV_MAX_EXTENSION_ANGLE * currentPIDControl + 0.5 + SRV_ANGLE_DEG_OFFSET;  // +0.5 to round to nearest whole int
-      srvMovement.initializeServoMovement(SRV_MAX_EXTENSION_ANGLE + SRV_ANGLE_DEG_OFFSET - angleExtension);  // Invert angle control
-      Serial.println("Writing angle to servo: " + (int)(SRV_MAX_EXTENSION_ANGLE + SRV_ANGLE_DEG_OFFSET - angleExtension));
+      int angleExtension = SRV_MAX_EXTENSION_ANGLE * currentPIDControl + 0.5;  // +0.5 to round to nearest whole int
+      srvMovement.initializeServoMovement(SRV_MAX_EXTENSION_ANGLE - angleExtension);  // Invert angle control
+      Serial.println("Writing angle to servo: " + (int)(SRV_MAX_EXTENSION_ANGLE - angleExtension));
     }
   }
 

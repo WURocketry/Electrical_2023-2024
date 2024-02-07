@@ -6,7 +6,7 @@
 // Magic number definitions
 #define LAUNCH_VELOCITY_THRESHOLD 5.0       // unit: m/s
 #define LAUNCH_HEIGHT_THRESHOLD 2.0         // unit: m
-#define APOGEE_ALTITUDE_THRESHOLD 1200.0    // unit: m
+// #define APOGEE_ALTITUDE_THRESHOLD 1200.0    // unit: m  DEPRECATED
 #define APOGEE_VELOCITY_THRESHOLD 10.0      // unit: m/s
 #define LANDING_ALTITUDE_THRESHOLD 10       // unit: m
 #define LANDING_VELOCITY_THRESHOLD -40      // unit: m/s (negative because rocket is falling down) - problem with kalman filter (doesn't like landings)

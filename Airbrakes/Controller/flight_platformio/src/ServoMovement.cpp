@@ -17,6 +17,11 @@ void ServoMovement::initializeServoMovement(int newTargetAngle) {
   currAngle = srv.read(); // Read current angle of servo
 }
 
+void ServoMovement::stowAirbrakes(){
+  targetAngle = SRV_MAX_EXTENSION_ANGLE;
+  currAngle = srv.read();
+}
+
 void ServoMovement::updateServoPosition() {
   unsigned long currentMicros = micros();
   

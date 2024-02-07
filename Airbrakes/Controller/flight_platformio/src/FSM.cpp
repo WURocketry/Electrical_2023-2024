@@ -2,6 +2,9 @@
 #include <Arduino.h>
 
 #include <FSM.h>
+#include <ServoMovement.h>
+
+extern ServoMovement srvMovement;
 
 FlightState Flight_FSM::detectLaunchTransition(FlightMonitor* fm, FlightState currentState) {
   /* Transitions: 
@@ -40,9 +43,12 @@ FlightState Flight_FSM::controlTransition(FlightMonitor* fm, FlightState current
   // remain until apogee
   if (fm->detectedApogee()) {
     Serial.println(" **** APOGEE REACHED. TRANSITION TO COAST ****\n");
+    srvMovement.stowAirbrakes();
     return FlightState::coast;
   }
   if (fm->detectedLean()) {
+    Serial.println("**** CRITICAL TILT DETECTED. TRANSITION TO STANDBY ****\n");
+    srvMovement.stowAirbrakes();
     return FlightState::controlStandby;
   }
 
