@@ -10,6 +10,7 @@
 #define BNO08X_INT 9
 #define REPORT_FREQ_US 5000 
 
+
 struct Measurement {
     /** 
      * UFS NOTE: This struct defines format for data used by
@@ -37,6 +38,8 @@ BLA::Matrix<3> measuredAccel;
 BLA::Matrix<3> inertialAccel;
 
 BLA::Matrix<4> quaternions;
+
+BLA::Matrix<4> vertTiltQ;
 
 BLA::Matrix<3,3> rotMat;
 
@@ -120,12 +123,17 @@ void loop() {
      Serial.print("   ");
      Serial.print(speed,5);
      Serial.println();
+
+     Serial.print("Point vec: ");
+    Serial.print(vertTiltQ(1));
+    Serial.print(",");
+    Serial.print(vertTiltQ(2));
+    Serial.print(",");
+    Serial.println(vertTiltQ(3));
   
     Serial.print("Vertical tilt: ");
     Serial.print(vertTilt*RAD_TO_DEG,5);
     Serial.print("    ");
-    Serial.print(relTilt*RAD_TO_DEG,5);
-    Serial.println("");
     }
   
     //    currentTime = micros();
@@ -198,13 +206,12 @@ void getInertialAccel(){
 
 void getTilt(){
 
-  BLA::Matrix<4> verticalQ = {0.0,0.0,0.0,1.0};
+  BLA::Matrix<4> verticalQ = {0.0,-1.0,0.0,0.0};
 
   BLA::Matrix<4> quaternionsInv = {quaternions(0),-quaternions(1),-quaternions(2),-quaternions(3)};
 
-  BLA::Matrix<4> vertTiltQ = hamiltonProduct(hamiltonProduct(quaternions,verticalQ),quaternionsInv);
+  vertTiltQ = hamiltonProduct(hamiltonProduct(quaternions,verticalQ),quaternionsInv);
 
   vertTilt = acos(vertTiltQ(3));
 
-  relTilt = acos(velocity(0)*vertTiltQ(1) + velocity(1)*vertTiltQ(2) + velocity(2)*vertTiltQ(3));
 }
