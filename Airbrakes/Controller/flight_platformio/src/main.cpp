@@ -337,7 +337,7 @@ void loop() {
         break;
       case FlightState::controlStandby:
         // Next transition: re-stabilized --> control
-        currentState = Flight_FSM::controlStandbyTransition(&fm_ace, currentState);
+        currentState = Flight_FSM::controlStandbyTransition(&fm_ace, currentState, srvMovement);
         break;
       case FlightState::coast:
         // Next transition: z velocity apprx. 0 and altitude is low --> landed

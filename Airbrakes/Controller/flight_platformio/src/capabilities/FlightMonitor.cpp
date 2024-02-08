@@ -88,7 +88,10 @@ bool FlightMonitor::detectedLanding()
 
 bool FlightMonitor::detectedLean()
 {
-    tiltAngle = acos((stateVec(3)*pointVec(0) + stateVec(4)*pointVec(1) + stateVec(5)*pointVec(2))/(sqrt(pow(stateVec(3),2)+pow(stateVec(4),2)+pow(stateVec(5),2))));
+    float dotProduct = stateVec(3)*pointVec(0) + stateVec(4)*pointVec(1) + stateVec(5)*pointVec(2);
+    float magnitude = sqrt(pow(stateVec(3),2)+pow(stateVec(4),2)+pow(stateVec(5),2));
+    tiltAngle = acos(dotProduct/magnitude);
+
     if(tiltAngle>TILT_THRESHOLD){
         tiltCounts++;
     }else{
