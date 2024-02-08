@@ -4,8 +4,6 @@
 #include <FSM.h>
 #include <ServoMovement.h>
 
-extern ServoMovement srvMovement;
-
 FlightState Flight_FSM::detectLaunchTransition(FlightMonitor* fm, FlightState currentState) {
   /* Transitions: 
    * this -> burn
@@ -34,7 +32,7 @@ FlightState Flight_FSM::burnTransition(FlightMonitor* fm, FlightState currentSta
   return currentState;
 }
 
-FlightState Flight_FSM::controlTransition(FlightMonitor* fm, FlightState currentState) {
+FlightState Flight_FSM::controlTransition(FlightMonitor* fm, FlightState currentState, ServoMovement srv) {
   /* Transitions
    * this -> coast
    * this -> burn
@@ -43,12 +41,12 @@ FlightState Flight_FSM::controlTransition(FlightMonitor* fm, FlightState current
   // remain until apogee
   if (fm->detectedApogee()) {
     Serial.println(" **** APOGEE REACHED. TRANSITION TO COAST ****\n");
-    srvMovement.stowAirbrakes();
+    srv.stowAirbrakes();
     return FlightState::coast;
   }
   if (fm->detectedLean()) {
     Serial.println("**** CRITICAL TILT DETECTED. TRANSITION TO STANDBY ****\n");
-    srvMovement.stowAirbrakes();
+    srv.stowAirbrakes();
     return FlightState::controlStandby;
   }
 

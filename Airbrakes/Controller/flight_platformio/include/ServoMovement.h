@@ -24,7 +24,7 @@ public:
   ServoMovement(Servo &currSrv);
   ~ServoMovement();
 
-  void initializeServoMovement(int newTargetAngle);
+  void setServoPosition(int newTargetAngle);
   void stowAirbrakes();
   void updateServoPosition();
 };

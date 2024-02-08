@@ -10,7 +10,6 @@
 /* LIBRARY INCLUDES */
 #include <Arduino.h>
 #include <BasicLinearAlgebra.h>
-#include <Servo.h>
 #include <Wire.h>
 
 /* GLOBAL DEFINES */
@@ -123,7 +122,7 @@ void setup() {
 #endif
 
   srv.attach(servoPin);  // attach the sertargetAnglevo on pin 9
-  srvMovement.initializeServoMovement(140);
+  srvMovement.setServoPosition(140);
   
 #ifdef PORTENTA_H7_M7_PLATFORM
   // Initialize SDRAM
@@ -334,7 +333,7 @@ void loop() {
         break;
       case FlightState::control:
         // Next transition: reaching apogee --> stow --> separate --> coast
-        currentState = Flight_FSM::controlTransition(&fm_ace, currentState);
+        currentState = Flight_FSM::controlTransition(&fm_ace, currentState, srvMovement);
         break;
       case FlightState::controlStandby:
         // Next transition: re-stabilized --> control
@@ -367,7 +366,7 @@ void loop() {
       // Note: stateVec(2) --> curr_Z_Position, stateVec(5) --> curr_Z_Velocity
       currentPIDControl = pid.control(stateVec(2), stateVec(5));
       int angleExtension = SRV_MAX_EXTENSION_ANGLE * currentPIDControl + 0.5;  // +0.5 to round to nearest whole int
-      srvMovement.initializeServoMovement(SRV_MAX_EXTENSION_ANGLE - angleExtension);  // Invert angle control
+      srvMovement.setServoPosition(angleExtension);  // Invert angle control
       Serial.println("Writing angle to servo: " + (int)(SRV_MAX_EXTENSION_ANGLE - angleExtension));
     }
   }
