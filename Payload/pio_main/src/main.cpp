@@ -115,7 +115,7 @@ unsigned long lastBatteryCheck = 0;
 #define RFM95_RST   17  // Reset pin
 #define RFM95_IRQ   21  // Interrupt pin, connected to DIO0
 #define RFM95_GPIO  22  // Additional GPIO, connected to DIO1
-SX1276 radio = new Module(RFM95_CS, RFM95_IRQ, RFM95_RST, RFM95_GPIO);
+RFM95 radio = new Module(RFM95_CS, RFM95_IRQ, RFM95_RST, RFM95_GPIO);
 int16_t packetnum = 0;  
 
 //Define timing separations for devices
@@ -152,7 +152,11 @@ void setup() {
     // no error
     Serial.println(F("Initialization successful!"));
   } else {
-    ErrorLEDLoop("Failed to Init LoRa - Halting");
+    while(true){
+      Serial.print(F("Error: "));
+      Serial.println(state);
+      delay(1000);
+    }
   }
 
   //Set Radio Transmit Power
@@ -330,50 +334,52 @@ void collectDataFromBME() {
 }
 
 void collectDataFromGPS() {
-  // read data from the GPS in the 'main loop'
+  // Read data from the GPS
   char c = GPS.read();
 
-  // if a sentence is received, we can check the checksum, parse it...
+  // Check if a sentence is received
   if (GPS.newNMEAreceived()) {
-    // a tricky thing here is if we print the NMEA sentence, or data
-    // we end up not listening and catching other sentences!
-    // so be very wary if using OUTPUT_ALLDATA and trying to print out data
-    Serial.println(GPS.lastNMEA()); // this also sets the newNMEAreceived() flag to false
-    if (!GPS.parse(GPS.lastNMEA())) // this also sets the newNMEAreceived() flag to false
-      return; // we can fail to parse a sentence in which case we should just wait for another
+    if (!GPS.parse(GPS.lastNMEA()))
+      return; // Fail to parse a sentence
   }
 
-  // approximately every 2 seconds or so, print out the current stats
-
+  // Update GPS data every 2 seconds
   unsigned long currentMillis = millis();
-  if (currentMillis >= gpsTime + gpsTimer) {
-    gpsTimer += gpsTime;
+  if (currentMillis - gpsTimer >= 2000) { // Corrected timing logic
+    gpsTimer = currentMillis; // Reset timer for the next interval
 
     if (GPS.fix) {
-      DATA_COMPONENT_READINGS[GPS_LATITUDE] = GPS.lat;
-      DATA_COMPONENT_READINGS[GPS_LONGITUDE] = GPS.lon;
+      // Convert N/S, E/W degrees to decimal format for Google Maps
+      float lat = GPS.latitude / 100;
+      int latDegrees = (int)lat;
+      float latMinutes = (lat - latDegrees) * 100;
+      float decimalLat = latDegrees + (latMinutes / 60);
+      if (GPS.lat == 'S') decimalLat *= -1;
+
+      float lon = GPS.longitude / 100;
+      int lonDegrees = (int)lon;
+      float lonMinutes = (lon - lonDegrees) * 100;
+      float decimalLon = lonDegrees + (lonMinutes / 60);
+      if (GPS.lon == 'W') decimalLon *= -1;
+
+      // Store the converted values
+      DATA_COMPONENT_READINGS[GPS_LATITUDE] = decimalLat;
+      DATA_COMPONENT_READINGS[GPS_LONGITUDE] = decimalLon;
       DATA_COMPONENT_READINGS[GPS_HOUR] = GPS.hour;
       DATA_COMPONENT_READINGS[GPS_SPEED] = GPS.speed;
       DATA_COMPONENT_READINGS[GPS_ALTITUDE] = GPS.altitude;
 
       const char* componentName = "GPS";
-      float data[5];
-      data[0] = DATA_COMPONENT_READINGS[GPS_LATITUDE];
-      data[1] = DATA_COMPONENT_READINGS[GPS_LONGITUDE];
-      data[2] = DATA_COMPONENT_READINGS[GPS_HOUR];
-      data[3] = DATA_COMPONENT_READINGS[GPS_SPEED];
-      data[4] = DATA_COMPONENT_READINGS[GPS_ALTITUDE];
-
-      logData(componentName, secondsSinceOn(), data, 5); 
-
+      float data[5] = {decimalLat, decimalLon, GPS.hour, GPS.speed, GPS.altitude};
+      logData(componentName, secondsSinceOn(), data, 5);
     }
     else {
+      // Indicate no fix with -1
       DATA_COMPONENT_READINGS[GPS_LATITUDE] = -1;
       DATA_COMPONENT_READINGS[GPS_LONGITUDE] = -1;
       DATA_COMPONENT_READINGS[GPS_HOUR] = -1;
       DATA_COMPONENT_READINGS[GPS_SPEED] = -1;
       DATA_COMPONENT_READINGS[GPS_ALTITUDE] = -1;
-
     }
   }
 }
