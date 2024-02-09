@@ -53,7 +53,7 @@ FlightState Flight_FSM::controlTransition(FlightMonitor* fm, FlightState current
   return currentState;
 }
 
-FlightState Flight_FSM::controlStandbyTransition(FlightMonitor* fm, FlightState currentState) {
+FlightState Flight_FSM::controlStandbyTransition(FlightMonitor* fm, FlightState currentState, ServoMovement* srv) {
   /* Transitions
    * this -> coast
    * this -> control
@@ -62,6 +62,11 @@ FlightState Flight_FSM::controlStandbyTransition(FlightMonitor* fm, FlightState 
   // if (minimalLean) {
   //   return FlightState::control;
   // }
+  if (fm->detectedApogee()) {
+    Serial.println(" **** APOGEE REACHED. TRANSITION TO COAST ****\n");
+    srv->stowAirbrakes();
+    return FlightState::coast;
+  }
   Serial.println("**** IN STANBY. WILL TRANSITION WHEN IN NOMINAL STATE ****\n");
   return currentState;
 }
