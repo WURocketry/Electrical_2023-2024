@@ -60,16 +60,12 @@ static const long controlLoopMicros = ONE_SEC_MICROS/CONTROL_LOOP_FREQ;
 static AdafruitBMP388 alt_sensor;
 static AdafruitBNO085 imu_sensor;
 static AdafruitADXL345 acc_sensor;
+static ServoMovement srvMovement;
 static FlightMonitor fm_ace;
 static FlightState currentState;
 static bool measurementDataValid;
 static Sample::Measurement currentMeasurement;  // Struct for holding current measurement
 
-// Servo object
-static Servo srv;
-
-// ServoMovement object
-ServoMovement srvMovement(srv);
 
 // PID controller object and global control
 static PID_Controller pid(ACE_TARGET_APOGEE);
@@ -120,9 +116,6 @@ void setup() {
   Serial.println("THE ACE IS IN DEVELOPMENT MODE - PLEASE CONFIGURE FOR FLIGHT IN IMPORTANT_CONFIG.h");
   Serial.println("\n\n\n\n\n\n\n");
 #endif
-
-  srv.attach(servoPin);  // attach the sertargetAnglevo on pin 9
-  srvMovement.setServoPosition(140);
   
 #ifdef PORTENTA_H7_M7_PLATFORM
   // Initialize SDRAM
@@ -152,22 +145,34 @@ void setup() {
     ++aceInitFails;
   }
   
-  // Attach servo pin to D9 (PWM len min: 900 us, max: 2050us)  // this servo library is trolling us
-  Serial.print("| Init servo PWM...");
-  srv.attach(9, SRV_MIN_PWM_LEN_MICROS, SRV_MAX_PWM_LEN_MICROS);
+
 #if DO_SERVO_ACTUATE_INIT_CHECK
-  Serial.println("> Notice: Performing servo actuation status check in 5 seconds...");
-  delay(5000);
+  Serial.println("> Notice: Performing servo actuation status check in 3 seconds...");
 
-  Serial.print("> Extending to OPEN (SRV_ANGLE_DEG_OFFSET): ");
-  Serial.println(SRV_ANGLE_DEG_OFFSET);
-  delay(500);
-  srv.write(SRV_ANGLE_DEG_OFFSET);
-  delay(3000);
+  int testState = 0;
+  unsigned long servoInitCheckTime = micros();
+  while (testState < 3) {
 
-  Serial.println("> Retracting to CLOSE (SRV_MAX_EXTENSION_ANGLE): ");
-  delay(500);
-  srv.write(SRV_MAX_EXTENSION_ANGLE);
+    currentTime = micros();
+    if (currentTime >= servoInitCheckTime + 3000000) {
+      servoInitCheckTime += 3000000;
+
+      if (testState == 0) {
+        Serial.print("> Extending to OPEN (SRV_MAX_EXTENSION_ANGLE): ");
+        Serial.println(SRV_MAX_EXTENSION_ANGLE);
+        srvMovement.setServoPosition(SRV_MAX_EXTENSION_ANGLE);
+      }
+      else if (testState == 1){
+        Serial.println("> Retracting to CLOSE (stowAirbrakes)");
+        srvMovement.stowAirbrakes();
+      }
+      testState++;
+    }
+
+    // Update srv as fast as possible for actuation test
+    srvMovement.updateServoPosition();
+    
+  }
 #endif
 
   // Initialize vectors/matrices
@@ -333,7 +338,7 @@ void loop() {
         break;
       case FlightState::control:
         // Next transition: reaching apogee --> stow --> separate --> coast
-        currentState = Flight_FSM::controlTransition(&fm_ace, currentState, srvMovement);
+        currentState = Flight_FSM::controlTransition(&fm_ace, currentState, &srvMovement);
         break;
       case FlightState::controlStandby:
         // Next transition: re-stabilized --> control
@@ -366,8 +371,10 @@ void loop() {
       // Note: stateVec(2) --> curr_Z_Position, stateVec(5) --> curr_Z_Velocity
       currentPIDControl = pid.control(stateVec(2), stateVec(5));
       int angleExtension = SRV_MAX_EXTENSION_ANGLE * currentPIDControl + 0.5;  // +0.5 to round to nearest whole int
-      srvMovement.setServoPosition(angleExtension);  // Invert angle control
-      Serial.println("Writing angle to servo: " + (int)(SRV_MAX_EXTENSION_ANGLE - angleExtension));
+      srvMovement.setServoPosition(angleExtension);
+      srvMovement.updateServoPosition();  // the design is a bit strange, but allows for decentralized servo position updates while centralizing actual writes
+      Serial.print("Updated angle to servo: ");
+      Serial.println((int)(angleExtension));
     }
   }
 

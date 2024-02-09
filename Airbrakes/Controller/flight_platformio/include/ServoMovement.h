@@ -5,23 +5,21 @@
 // Servo defines
 #define SRV_MIN_PWM_LEN_MICROS  900
 #define SRV_MAX_PWM_LEN_MICROS  2050
-#define SRV_MAX_EXTENSION_ANGLE 100    // Defines MAX from 0 -> MAX (is absolute, without offset)
+#define SRV_MAX_EXTENSION_ANGLE 180 // DEBUG: using larger angle for visual debug purposes 100    // Defines MAX from 0 -> MAX (is without offset e.g. MAX=120 --> REAL=140 with 20 offset)
 #define SRV_ANGLE_DEG_OFFSET    20
 
 class ServoMovement
 {
 private:
-  float targetAngle;
-  float currAngle;
-  float distanceThreshold;
+  int targetAngle;
+  int lastAngle;
+  int distanceThreshold;
   unsigned long previousServoUpdate;
   const long servoUpdateIntervalMicros;
   int numSteps;
-  int servoMaxAngle;
-  int servoMinAngle;
   Servo srv;
 public:
-  ServoMovement(Servo &currSrv);
+  ServoMovement();
   ~ServoMovement();
 
   void setServoPosition(int newTargetAngle);

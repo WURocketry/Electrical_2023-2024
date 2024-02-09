@@ -2,6 +2,9 @@
 
 #include <FlightMonitor.h>
 
+// Forward declare ServoMovement class
+class ServoMovement;
+
 /* File containing Finite State Machine Variables and State Transition Functions */
 
 enum class FlightState {
@@ -20,7 +23,7 @@ namespace Flight_FSM
 
     FlightState burnTransition(FlightMonitor* fm, FlightState currentState);
 
-    FlightState controlTransition(FlightMonitor* fm, FlightState currentState);
+    FlightState controlTransition(FlightMonitor* fm, FlightState currentState, ServoMovement*);
 
     FlightState controlStandbyTransition(FlightMonitor* fm, FlightState currentState);
 
