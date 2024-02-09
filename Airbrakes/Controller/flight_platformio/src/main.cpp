@@ -376,6 +376,10 @@ void loop() {
       Serial.print("Updated angle to servo: ");
       Serial.println((int)(angleExtension));
     }
+
+    if (currentState==FlightState::controlStandby) {
+      srvMovement.updateServoPosition();
+    }
   }
 
   /* POST-FLIGHT PROCEDURE */
