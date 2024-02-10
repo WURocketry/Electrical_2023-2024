@@ -5,8 +5,8 @@
 // Servo defines
 #define SRV_MIN_PWM_LEN_MICROS  900
 #define SRV_MAX_PWM_LEN_MICROS  2050
-#define SRV_MAX_EXTENSION_ANGLE 180 // DEBUG: using larger angle for visual debug purposes 100    // Defines MAX from 0 -> MAX (is without offset e.g. MAX=120 --> REAL=140 with 20 offset)
-#define SRV_ANGLE_DEG_OFFSET    20
+#define SRV_MAX_EXTENSION_ANGLE 165 // Defines MAX from 0 -> MAX (is without offset e.g. MAX=120 --> REAL=140 with +20 offset)
+#define SRV_ANGLE_DEG_OFFSET    5
 
 class ServoMovement
 {
