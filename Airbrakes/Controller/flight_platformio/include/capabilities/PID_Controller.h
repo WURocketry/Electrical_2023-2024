@@ -2,7 +2,7 @@
 
 // Magic number definitions
 #define VLT_LENGTH 732
-#define servoPin 8  // D8 PWM digital
+#define servoPin 9  // D9 PWM digital
 
 #define NUM_DECAY_THRESHOLDS 4
 #define NUM_MAX_ERROR_THRESHOLDS 3

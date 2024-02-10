@@ -2,6 +2,7 @@
 #include <Arduino.h>
 
 #include <FSM.h>
+#include <ServoMovement.h>
 
 FlightState Flight_FSM::detectLaunchTransition(FlightMonitor* fm, FlightState currentState) {
   /* Transitions: 
@@ -31,7 +32,7 @@ FlightState Flight_FSM::burnTransition(FlightMonitor* fm, FlightState currentSta
   return currentState;
 }
 
-FlightState Flight_FSM::controlTransition(FlightMonitor* fm, FlightState currentState) {
+FlightState Flight_FSM::controlTransition(FlightMonitor* fm, FlightState currentState, ServoMovement* srv) {
   /* Transitions
    * this -> coast
    * this -> burn
@@ -40,16 +41,19 @@ FlightState Flight_FSM::controlTransition(FlightMonitor* fm, FlightState current
   // remain until apogee
   if (fm->detectedApogee()) {
     Serial.println(" **** APOGEE REACHED. TRANSITION TO COAST ****\n");
+    srv->stowAirbrakes();
     return FlightState::coast;
   }
   if (fm->detectedLean()) {
+    Serial.println("**** CRITICAL TILT DETECTED. TRANSITION TO STANDBY ****\n");
+    srv->stowAirbrakes();
     return FlightState::controlStandby;
   }
 
   return currentState;
 }
 
-FlightState Flight_FSM::controlStandbyTransition(FlightMonitor* fm, FlightState currentState) {
+FlightState Flight_FSM::controlStandbyTransition(FlightMonitor* fm, FlightState currentState, ServoMovement* srv) {
   /* Transitions
    * this -> coast
    * this -> control
@@ -58,6 +62,11 @@ FlightState Flight_FSM::controlStandbyTransition(FlightMonitor* fm, FlightState 
   // if (minimalLean) {
   //   return FlightState::control;
   // }
+  if (fm->detectedApogee()) {
+    Serial.println(" **** APOGEE REACHED. TRANSITION TO COAST ****\n");
+    srv->stowAirbrakes();
+    return FlightState::coast;
+  }
   Serial.println("**** IN STANBY. WILL TRANSITION WHEN IN NOMINAL STATE ****\n");
   return currentState;
 }

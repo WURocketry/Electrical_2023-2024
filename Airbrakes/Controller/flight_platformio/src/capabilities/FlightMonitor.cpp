@@ -2,8 +2,11 @@
 
 // include class header
 #include "FlightMonitor.h"
+#include <IMPORTANT_CONFIG.h>
 
 extern BLA::Matrix<9> stateVec;
+extern BLA::Matrix<3> pointVec;
+float tiltAngle;
 
 FlightMonitor::FlightMonitor()
 {
@@ -11,6 +14,7 @@ FlightMonitor::FlightMonitor()
     burnoutCounts = 0;
     apogeeCounts = 0;
     landingCounts = 0;
+    tiltCounts=0;
 }
 
 bool FlightMonitor::detectedLaunch()
@@ -52,7 +56,7 @@ bool FlightMonitor::detectedUnpoweredAscent()
 bool FlightMonitor::detectedApogee()
 {
 
-    if((stateVec(2)>APOGEE_ALTITUDE_THRESHOLD)&&(stateVec(5)<APOGEE_VELOCITY_THRESHOLD)){
+    if((stateVec(2)>ACE_SHUTOFF_THRESHOLD)&&(stateVec(5)<APOGEE_VELOCITY_THRESHOLD)){
         apogeeCounts++;
     }else{
         apogeeCounts = 0;
@@ -84,5 +88,20 @@ bool FlightMonitor::detectedLanding()
 
 bool FlightMonitor::detectedLean()
 {
-    return false;
+    float dotProduct = stateVec(3)*pointVec(0) + stateVec(4)*pointVec(1) + stateVec(5)*pointVec(2);
+    float magnitude = sqrt(pow(stateVec(3),2)+pow(stateVec(4),2)+pow(stateVec(5),2));
+    tiltAngle = acos(dotProduct/magnitude);
+
+    if(tiltAngle>TILT_THRESHOLD){
+        tiltCounts++;
+    }else{
+        tiltCounts=0;
+    }
+    
+    if(tiltCounts>=TILT_PERSISTENCE && DISABLE_FAULT_PROTECTION==0){
+        return true;
+    }
+    else{
+        return false;
+    }
 }

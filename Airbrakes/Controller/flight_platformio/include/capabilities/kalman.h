@@ -24,6 +24,8 @@ BLA::Matrix<4> measurementVec;
 
 BLA::Matrix<3,3> rotMat;
 
+BLA::Matrix<3> pointVec;
+
 BLA::Matrix<3> measuredAccel;
 
 BLA::Matrix<3> inertialAccel;
@@ -149,3 +151,14 @@ void getInertialAccel(){
 
 }
 
+void getOrientation(){
+  BLA::Matrix<4> verticalQ = {0.0,-1.0,0.0,0.0}; // NOTE: Depends on initial orientation of the sensor in the rocket.
+
+  BLA::Matrix<4> quaternionsInv = {quaternions(0),-quaternions(1),-quaternions(2),-quaternions(3)};
+  BLA::Matrix<4> vertTiltQ = hamiltonProduct(hamiltonProduct(quaternions,verticalQ),quaternionsInv);
+
+  pointVec(0) = vertTiltQ(1);
+  pointVec(1) = vertTiltQ(2);
+  pointVec(2) = vertTiltQ(3);
+
+}
