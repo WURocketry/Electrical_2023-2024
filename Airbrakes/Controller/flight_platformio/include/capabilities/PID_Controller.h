@@ -1,7 +1,7 @@
 #pragma once
 
 // Magic number definitions
-#define VLT_LENGTH 732
+#define VLT_LENGTH 648
 #define servoPin 9  // D9 PWM digital
 
 #define NUM_DECAY_THRESHOLDS 4
