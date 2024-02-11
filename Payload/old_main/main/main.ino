@@ -73,6 +73,29 @@ const char* ENUM_NAMES[] = {
   "BATTERY_DISCHARGE_RATE_%_PER_HOUR",
 };
 
+int full_to_radio[] = {3, 4, 5, 7, 11, 15, 16, 18};
+
+enum LiveUpdateFields {
+  XACCEL_BNO,
+  YACCEL_BNO,
+  ZACCEL_BNO,
+  TEMPERATURE_BME,
+  ALTITUDE_BME,
+  LATITUDE_GPS,
+  LONGITUDE_GPS,
+  PERCENT_BATERRY,
+  LIVE_RADIO_SIZE,
+};
+
+float LIVE_DATA[LIVE_RADIO_SIZE];
+
+union FloatNum  // declare a union
+{
+  float num;
+  byte bytes[4];
+};
+
+
 //Global Sensor Data Array
 double DATA_COMPONENT_READINGS[ENUM_SIZE];
 
@@ -446,17 +469,24 @@ void transmitCurrentComponentReadings() {
 
   // Prepare a buffer to hold the transmitted message
   char radiopacket[256] = {0};  
+  for (int i = 0; i < sizeof(full_to_radio) / sizeof(full_to_radio[0]); i++) {
+    FloatNum data;
+    data.num = DATA_COMPONENT_READINGS[i];
+    LIVE_DATA[i] = data.num;
+  }
     
-  // Iterate through the DATA_COMPONENT_READINGS array and build the message
-  for (int i = 0; i < ENUM_SIZE; i++) {
+  // Iterate through the DATA_COMPONENT_READINGS=> LIVE_DATA array and build the message
+  for (int i = 0; i < LIVE_RADIO_SIZE; i++) {
     char buffer[32];  // Temporary buffer to hold each value
-    dtostrf(DATA_COMPONENT_READINGS[i], 6, 2, buffer);  // Convert double to string, adjust field width and decimal places as necessary
+
+    // dtostrf(DATA_COMPONENT_READINGS[i], 6, 2, buffer);  // Convert double to string, adjust field width and decimal places as necessary
+    dtostrf(LIVE_DATA[i], 9, 6, buffer);  // Convert float to string, adjust field width and decimal places as necessary
 
     // Append the value to radiopacket
     strcat(radiopacket, buffer);
 
     // If not the last element, append a comma
-    if (i < ENUM_SIZE - 1) {
+    if (i < LIVE_RADIO_SIZE - 1) {
       strcat(radiopacket, ",");
       }
     }
