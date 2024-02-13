@@ -1,3 +1,4 @@
+
 #include <Wire.h>
 #include <Adafruit_Sensor.h>
 #include <Adafruit_BNO08x.h>
@@ -26,28 +27,25 @@ struct euler_t {
 
 //enum for global array indices
 enum{
-  BNO_YAW,
-  BNO_PITCH,
-  BNO_ROLL,
-  BNO_XACCEL,
-  BNO_YACCEL,
-  BNO_ZACCEL,
-  BME_TEMPERATURE,
-  BME_PRESSURE,
-  BME_HUMIDITY,
-  BME_GAS,
-  BME_ALTITUDE,
-  GPS_HOUR,
-  GPS_MINUTE,
-  GPS_SECONDS,
-  GPS_SPEED,
-  GPS_LATITUDE,
-  GPS_LONGITUDE,
-  GPS_ALTITUDE,
-  BATTERY_PERCENT,
-  BATTERY_VOLTAGE,
-  BATTERY_DISCHARGE_RATE,
-  ENUM_SIZE, 
+  BNO_YAW = 0,
+  BNO_PITCH = 1,
+  BNO_ROLL = 2,
+  BME_TEMPERATURE = 3,
+  BME_PRESSURE = 4,
+  BME_HUMIDITY = 5,
+  BME_GAS = 6,
+  BME_ALTITUDE = 7,
+  GPS_HOUR = 8,
+  GPS_MINUTE = 9,
+  GPS_SECONDS = 10,
+  GPS_SPEED = 11,
+  GPS_LATITUDE = 12,
+  GPS_LONGITUDE = 13,
+  GPS_ALTITUDE = 14,
+  BATTERY_PERCENT = 15,
+  BATTERY_VOLTAGE = 16,
+  BATTERY_DISCHARGE_RATE = 17,
+  ENUM_SIZE = 18, 
 };
 
 const char* ENUM_NAMES[] = {
@@ -118,6 +116,31 @@ void setup() {
   Serial.begin(115200);
   pinMode(LED_BUILTIN, OUTPUT);
 
+  //LoRa Setup
+  pinMode(RFM95_RST, OUTPUT);
+  digitalWrite(RFM95_RST, HIGH);
+  //Radio Reset
+  digitalWrite(RFM95_RST, LOW);
+  delay(10);
+  digitalWrite(RFM95_RST, HIGH);
+  delay(10);
+
+  //LoRa Init & Frequency Test
+  while (!rf95.init()) {
+    ErrorLEDLoop("LoRa radio init failed, Halting");
+  }
+  Serial.println("LoRa radio init OK!");
+
+  delay(30);
+  
+  // Defaults after init are 434.0MHz, modulation GFSK_Rb250Fd250, +13dbM
+  if (!rf95.setFrequency(RF95_FREQ)) {
+    ErrorLEDLoop("setFrequency failed, Halting");
+  }
+  Serial.print("Set Freq to: "); Serial.println(RF95_FREQ);
+  rf95.setTxPower(23, false); //5-23 power level, 23 is max
+
+  /*
   // Initialize BNO08x
   if (!bno08x.begin_I2C()) {
     ErrorLEDLoop("Failed to find BNO08x IMU, Halting");
@@ -153,30 +176,10 @@ void setup() {
   filename = "flight_" + String(fileCount) +".csv";
   Serial.println("Writing this flights data to: " + filename);
   writeColumnHeaders();
-
-  //LoRa Setup
-  pinMode(RFM95_RST, OUTPUT);
-  digitalWrite(RFM95_RST, HIGH);
-  //Radio Reset
-  digitalWrite(RFM95_RST, LOW);
-  delay(10);
-  digitalWrite(RFM95_RST, HIGH);
-  delay(10);
-  //LoRa Init & Frequency Test
-  while (!rf95.init()) {
-    ErrorLEDLoop("LoRa radio init failed, Halting");
-  }
-  Serial.println("LoRa radio init OK!");
-
-  // Defaults after init are 434.0MHz, modulation GFSK_Rb250Fd250, +13dbM
-  if (!rf95.setFrequency(RF95_FREQ)) {
-    ErrorLEDLoop("setFrequency failed, Halting");
-  }
-  Serial.print("Set Freq to: "); Serial.println(RF95_FREQ);
-  rf95.setTxPower(23, false); //5-23 power level, 23 is max
+  */
 
 
-  initBatteryMonitor();
+  // initBatteryMonitor();
 
 }
 
@@ -213,20 +216,10 @@ void collectDataFromBNO() {
 
         DATA_COMPONENT_READINGS[BNO_YAW] = ypr.yaw;
 
+        DATA_COMPONENT_READINGS[BNO_PITCH] = ypr.pitch;
 
-      DATA_COMPONENT_READINGS[BNO_PITCH] = ypr.pitch;
-
-      DATA_COMPONENT_READINGS[BNO_ROLL] = ypr.roll;
-
-      DATA_COMPONENT_READINGS[BNO_XACCEL] = sensorValue.un.accelerometer.x;
-      DATA_COMPONENT_READINGS[BNO_YACCEL] = sensorValue.un.accelerometer.y;
-      DATA_COMPONENT_READINGS[BNO_ZACCEL] = sensorValue.un.accelerometer.z;
-
-      // syntax for linear acceleration
-      // DATA_COMPONENT_READINGS[BNO_ZACCEL] = sensorValue.un.linearAcceleration.z;
-
-      // syntax for raw accelerometer
-      // DATA_COMPONENT_READINGS[BNO_ZACCEL] = sensorValue.un.rawAccelerometer.z;
+        DATA_COMPONENT_READINGS[BNO_ROLL] = ypr.roll;
+      }
     }
   }
 }
@@ -268,21 +261,34 @@ void collectDataFromGPS()
   // approximately every 2 seconds or so, print out the current stats
   if (millis() - timer > gpsTime) {
     timer = millis(); // reset the timer
+    Serial.print("\nTime: ");
+    if (GPS.hour < 10) { Serial.print('0'); }
+    Serial.print(GPS.hour, DEC); Serial.print(':');
+    if (GPS.minute < 10) { Serial.print('0'); }
+    Serial.print(GPS.minute, DEC); Serial.print(':');
+    if (GPS.seconds < 10) { Serial.print('0'); }
+    Serial.print(GPS.seconds, DEC); Serial.print('.');
+    if (GPS.milliseconds < 10) {
+      Serial.print("00");
+    } else if (GPS.milliseconds > 9 && GPS.milliseconds < 100) {
+      Serial.print("0");
     }
+    Serial.println(GPS.milliseconds);
+    Serial.print("Date: ");
+    Serial.print(GPS.day, DEC); Serial.print('/');
+    Serial.print(GPS.month, DEC); Serial.print("/20");
+    Serial.println(GPS.year, DEC);
+    Serial.print("Fix: "); Serial.print((int)GPS.fix);
+    Serial.print(" quality: "); Serial.println((int)GPS.fixquality);
     if (GPS.fix) {
-      DATA_COMPONENT_READINGS[GPS_LATITUDE] = GPS.lat;
-      DATA_COMPONENT_READINGS[GPS_LONGITUDE] = GPS.lon;
-      DATA_COMPONENT_READINGS[GPS_HOUR] = GPS.hour;
-      DATA_COMPONENT_READINGS[GPS_SPEED] = GPS.speed;
-      DATA_COMPONENT_READINGS[GPS_ALTITUDE] = GPS.altitude;
-    }
-    else {
-      DATA_COMPONENT_READINGS[GPS_LATITUDE] = -1;
-      DATA_COMPONENT_READINGS[GPS_LONGITUDE] = -1;
-      DATA_COMPONENT_READINGS[GPS_HOUR] = -1;
-      DATA_COMPONENT_READINGS[GPS_SPEED] = -1;
-      DATA_COMPONENT_READINGS[GPS_ALTITUDE] = -1;
-
+      Serial.print("Location: ");
+      Serial.print(GPS.latitude, 4); Serial.print(GPS.lat);
+      Serial.print(", ");
+      Serial.print(GPS.longitude, 4); Serial.println(GPS.lon);
+      Serial.print("Speed (knots): "); Serial.println(GPS.speed);
+      Serial.print("Angle: "); Serial.println(GPS.angle);
+      Serial.print("Altitude: "); Serial.println(GPS.altitude);
+      Serial.print("Satellites: "); Serial.println((int)GPS.satellites);
     }
   }
 }
@@ -423,14 +429,81 @@ void ErrorLEDLoop(const char* error_msg){
 
 void loop() {
 
-         
+  /*
   collectDataFromBNO();  
   collectDataFromBME();  
   collectDataFromGPS();
   collectDataFromBatteryMonitor();
   writeToFile();
-  printAllData();
-  transmitCurrentComponentReadings();
+  */
+  Serial.print("is it null?");
+  Serial.println(rf95.available());
+  //Serial.println(rf95.maxMessageLength());
+  Serial.print("freqeuncy error? ");
+  Serial.println(rf95.frequencyError());
+  uint8_t buf[RH_RF95_MAX_MESSAGE_LEN];
+  uint8_t len = sizeof(buf);
+ /* 
+  Serial.println("Sending to rf95_server");
+  // Send a message to rf95_server
+  uint8_t data[] = "Hello World!";
+  rf95.send(data, sizeof(data));
+  
+  rf95.waitPacketSent();
+  // Now wait for a reply
+  
+
+
+  if (rf95.waitAvailableTimeout(3000)){ 
+    // Should be a reply message for us now   
+    if (rf95.recv(buf, &len)){
+      Serial.print("got reply: ");
+      Serial.println((char*)buf);
+      Serial.print("RSSI: ");
+      Serial.println(rf95.lastRssi(), DEC);    
+    }else{
+      Serial.println("recv failed");
+    }
+  }
+  else{
+    Serial.println("No reply, is rf95_server running?");
+  }
+  delay(400);
+  */
+  // server message (receiving end)
+ // if (rf95.available()){
+    // Should be a message for us now   
+   // uint8_t buf[RH_RF95_MAX_MESSAGE_LEN];
+   // uint8_t len = sizeof(buf);
+  int led = 9;
+
+  if (rf95.recv(buf, &len)){
+    digitalWrite(led, HIGH);
+    RH_RF95::printBuffer("request: ", buf, len);
+    Serial.print("got request: ");
+    // Serial.println((char*)buf);
+    Serial.write(buf, len);
+    Serial.println();
+    Serial.print("RSSI: ");
+    Serial.println(rf95.lastRssi(), DEC);
+      
+    // Send a reply
+    uint8_t data[] = "And hello back to you";
+    rf95.send(data, sizeof(data));
+    rf95.waitPacketSent();
+    Serial.println("Sent a reply");
+      digitalWrite(led, LOW);
+  }else{
+    Serial.println("recv failed");
+  }
+  //}
+  delay(400);
+  Serial.print("device version? ");
+  Serial.println(rf95.getDeviceVersion());
+  
+  //printAllData();
+  // transmitCurrentComponentReadings();
         
 }
 
+ 
