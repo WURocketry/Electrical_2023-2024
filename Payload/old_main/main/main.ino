@@ -511,7 +511,8 @@ void loop() {
   collectDataFromBNO();  
   collectDataFromBME();  
   collectDataFromGPS();
-  transmitCurrentComponentReadings();   
+  transmitCurrentComponentReadings();  
+  printAllData(); 
 }
 
 
