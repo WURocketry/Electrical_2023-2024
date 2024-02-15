@@ -2147,15 +2147,15 @@ design rules under a new name.</description>
 <param name="rvViaInner" value="0.25"/>
 <param name="rvMicroViaOuter" value="0.25"/>
 <param name="rvMicroViaInner" value="0.25"/>
-<param name="rlMinPadTop" value="10mil"/>
+<param name="rlMinPadTop" value="5mil"/>
 <param name="rlMaxPadTop" value="20mil"/>
 <param name="rlMinPadInner" value="10mil"/>
 <param name="rlMaxPadInner" value="20mil"/>
-<param name="rlMinPadBottom" value="10mil"/>
-<param name="rlMaxPadBottom" value="20mil"/>
-<param name="rlMinViaOuter" value="8mil"/>
+<param name="rlMinPadBottom" value="5mil"/>
+<param name="rlMaxPadBottom" value="50mil"/>
+<param name="rlMinViaOuter" value="7mil"/>
 <param name="rlMaxViaOuter" value="20mil"/>
-<param name="rlMinViaInner" value="8mil"/>
+<param name="rlMinViaInner" value="7mil"/>
 <param name="rlMaxViaInner" value="20mil"/>
 <param name="rlMinMicroViaOuter" value="4mil"/>
 <param name="rlMaxMicroViaOuter" value="20mil"/>
@@ -2768,20 +2768,37 @@ design rules under a new name.</description>
 <wire x1="114.5" y1="50" x2="114.5" y2="42" width="1.27" layer="1"/>
 <wire x1="114.5" y1="42" x2="116.5066" y2="39.9934" width="1.27" layer="1"/>
 <wire x1="116.5066" y1="39.9934" x2="118.5" y2="39.9934" width="1.27" layer="1"/>
-<wire x1="110.838" y1="51.1058" x2="111.0539" y2="51.3217" width="0.508" layer="1"/>
+<wire x1="111.0539" y1="51.3217" x2="110.838" y2="51.1058" width="0.508" layer="1"/>
 <wire x1="111.0539" y1="51.3217" x2="111.0539" y2="52.245" width="0.508" layer="1"/>
-<wire x1="111.0539" y1="52.245" x2="113.245" y2="52.245" width="0.6096" layer="1"/>
+<wire x1="111.0539" y1="52.245" x2="111.5" y2="52.245" width="0.508" layer="1"/>
+<wire x1="111.5" y1="52.245" x2="112" y2="52.245" width="0.508" layer="1"/>
+<wire x1="112" y1="52.245" x2="112.5" y2="52.245" width="0.508" layer="1"/>
+<wire x1="112.5" y1="52.245" x2="113" y2="52.245" width="0.508" layer="1"/>
+<wire x1="113" y1="52.245" x2="113.245" y2="52.245" width="0.508" layer="1"/>
 <wire x1="113.3942" y1="51.1058" x2="114.3942" y2="51.1058" width="0.6096" layer="1"/>
 <wire x1="114.3942" y1="51.1058" x2="114.5" y2="51" width="0.6096" layer="1"/>
-<wire x1="113.245" y1="52.245" x2="114.5" y2="53.5" width="0.6096" layer="1"/>
+<wire x1="114.5" y1="53.5" x2="113.245" y2="52.245" width="0.6096" layer="1"/>
 <wire x1="113.3942" y1="51.1058" x2="114.5" y2="50" width="0.6096" layer="1"/>
 <wire x1="110.838" y1="51.1058" x2="113.3942" y2="51.1058" width="0.6096" layer="1"/>
 <wire x1="110.838" y1="51.1058" x2="111.2322" y2="51.5" width="0.6096" layer="1"/>
 <wire x1="114" y1="51.5" x2="114.5" y2="52" width="0.6096" layer="1"/>
-<wire x1="111.2322" y1="51.5" x2="114" y2="51.5" width="0.6096" layer="1"/>
-<wire x1="114.5" y1="52" x2="114.255" y2="52.245" width="0.6096" layer="1"/>
-<wire x1="114.255" y1="52.245" x2="113.245" y2="52.245" width="0.6096" layer="1"/>
-<wire x1="114.5" y1="52" x2="111.0666" y2="52" width="0.6096" layer="1"/>
+<wire x1="111.2322" y1="51.5" x2="112" y2="51.5" width="0.6096" layer="1"/>
+<wire x1="112" y1="51.5" x2="112.5" y2="51.5" width="0.6096" layer="1"/>
+<wire x1="112.5" y1="51.5" x2="113" y2="51.5" width="0.6096" layer="1"/>
+<wire x1="114" y1="51.5" x2="113.5" y2="51.5" width="0.6096" layer="1"/>
+<wire x1="113.5" y1="51.5" x2="113" y2="51.5" width="0.6096" layer="1"/>
+<wire x1="114" y1="52.245" x2="113.5" y2="52.245" width="0.6096" layer="1"/>
+<wire x1="113.245" y1="52.245" x2="113.5" y2="52.245" width="0.6096" layer="1"/>
+<wire x1="110.838" y1="51.1058" x2="111.5" y2="51.7678" width="0.508" layer="1"/>
+<wire x1="111.5" y1="51.7678" x2="111.5" y2="52.245" width="0.508" layer="1"/>
+<wire x1="112" y1="52.245" x2="112" y2="51.5" width="0.508" layer="1"/>
+<wire x1="112.5" y1="51.5" x2="112.5" y2="52.245" width="0.508" layer="1"/>
+<wire x1="113" y1="51.5" x2="113" y2="52" width="0.508" layer="1"/>
+<wire x1="113" y1="52" x2="113" y2="52.245" width="0.508" layer="1"/>
+<wire x1="113.5" y1="52.245" x2="113.5" y2="51.5" width="0.508" layer="1"/>
+<wire x1="114.5" y1="52" x2="114.255" y2="52.245" width="0.508" layer="1"/>
+<wire x1="114.255" y1="52.245" x2="114" y2="52.245" width="0.508" layer="1"/>
+<wire x1="114.5" y1="52" x2="113" y2="52" width="0.508" layer="1"/>
 </signal>
 <signal name="SRV_PWM">
 <contactref element="U$10" pad="J25"/>
@@ -2862,6 +2879,30 @@ design rules under a new name.</description>
 <mfgpreviewcolor name="coppercolor" color="0xFFFFBF00"/>
 <mfgpreviewcolor name="substratecolor" color="0xFF786E46"/>
 </mfgpreviewcolors>
+<errors>
+<approved hash="5,1,5af3f77ad690e231"/>
+<approved hash="5,1,b22769a5f2957396"/>
+<approved hash="5,1,114f691d0450fa34"/>
+<approved hash="5,1,2fabbf46cda8c7c9"/>
+<approved hash="5,1,9144bd247f960977"/>
+<approved hash="5,1,fb75b6d6f955228b"/>
+<approved hash="1,20,7cf4080009837d77"/>
+<approved hash="1,20,7cec0818087b7c8f"/>
+<approved hash="1,20,0121fcddff9d0261"/>
+<approved hash="1,20,df20635c601fdc63"/>
+<approved hash="1,20,dc00607c601fdc63"/>
+<approved hash="1,20,fe00c07cc01ffe63"/>
+<approved hash="1,20,fd02c37ec3befdc2"/>
+<approved hash="1,20,fd20c35cc01ffe63"/>
+<approved hash="1,20,1d0261fe603c1cc0"/>
+<approved hash="1,20,1c60609c609c1c60"/>
+<approved hash="1,20,1f0e63f2633c1fc0"/>
+<approved hash="1,20,0201fffdff9d0261"/>
+<approved hash="1,20,0103fcfffc3c01c0"/>
+<approved hash="1,20,df02637e63bedfc2"/>
+<approved hash="1,20,7bfe0f0a0f0a7bfe"/>
+<approved hash="1,20,7cf4080009827d76"/>
+</errors>
 </board>
 </drawing>
 <compatibility>
