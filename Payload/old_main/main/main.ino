@@ -86,6 +86,17 @@ enum LiveUpdateFields {
   PERCENT_BATERRY,
   LIVE_RADIO_SIZE,
 };
+const char* LIVE_DATA_NAMES[] = {
+  "XACCEL_BNO",
+  "YACCEL_BNO",
+  "ZACCEL_BNO",
+  "TEMPERATURE_BME",
+  "ALTITUDE_BME",
+  "LATITUDE_GPS",
+  "LONGITUDE_GPS",
+  "PERCENT_BATERRY",
+  "LIVE_RADIO_SIZE",
+};
 
 float LIVE_DATA[LIVE_RADIO_SIZE];
 
@@ -385,7 +396,10 @@ void collectDataFromGPS() {
       DATA_COMPONENT_READINGS[GPS_HOUR] = GPS.hour;
       DATA_COMPONENT_READINGS[GPS_SPEED] = GPS.speed;
       DATA_COMPONENT_READINGS[GPS_ALTITUDE] = GPS.altitude;
-
+      Serial.println("....................");
+      Serial.println(DATA_COMPONENT_READINGS[GPS_LONGITUDE]);
+      Serial.println(DATA_COMPONENT_READINGS[GPS_LONGITUDE]);
+      Serial.println("....................");
       const char* componentName = "GPS";
       float data[5] = {decimalLat, decimalLon, GPS.hour, GPS.speed, GPS.altitude};
       logData(componentName, secondsSinceOn(), data, 5);
@@ -446,10 +460,17 @@ void collectDataFromBatteryMonitor() {
 
 void printAllData() {
   Serial.println("--------------------------------------------------------");
+  /*
   for (int i = 0; i < ENUM_SIZE; i++) {
     Serial.print(ENUM_NAMES[i]);
     Serial.print(": ");
     Serial.println(DATA_COMPONENT_READINGS[i]);
+  }
+  */
+  for (int i = 0; i < LIVE_RADIO_SIZE; i++) {
+    Serial.print(LIVE_DATA_NAMES[i]);
+    Serial.print(": ");
+    Serial.println(LIVE_DATA[i]);
   }
 }
 
@@ -471,8 +492,9 @@ void transmitCurrentComponentReadings() {
   char radiopacket[256] = {0};  
   for (int i = 0; i < sizeof(full_to_radio) / sizeof(full_to_radio[0]); i++) {
     FloatNum data;
-    data.num = DATA_COMPONENT_READINGS[i];
+    data.num = DATA_COMPONENT_READINGS[full_to_radio[i]];
     LIVE_DATA[i] = data.num;
+
   }
     
   // Iterate through the DATA_COMPONENT_READINGS=> LIVE_DATA array and build the message
@@ -512,7 +534,7 @@ void loop() {
   collectDataFromBME();  
   collectDataFromGPS();
   transmitCurrentComponentReadings();  
-  printAllData(); 
+  //printAllData(); 
 }
 
 
