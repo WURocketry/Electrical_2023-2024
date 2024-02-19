@@ -1,0 +1,75 @@
+//
+// !!! WARNING !!! AUTO-GENERATED FILE!
+// PLEASE DO NOT MODIFY IT AND USE "platformio.ini":
+// https://docs.platformio.org/page/projectconf/section_env_build.html#build-flags
+//
+{
+    "configurations": [
+        {
+            "name": "PlatformIO",
+            "includePath": [
+                "/Users/breadan/Desktop/WU Rocketry/2023-2024/Github/Electrical/Airbrakes/Controller/flight_platformio/include",
+                "/Users/breadan/Desktop/WU Rocketry/2023-2024/Github/Electrical/Airbrakes/Controller/flight_platformio/src",
+                "/Users/breadan/Desktop/WU Rocketry/2023-2024/Github/Electrical/Airbrakes/Controller/flight_platformio/lib/Servo-1.2.1/src",
+                "/Users/breadan/Desktop/WU Rocketry/2023-2024/Github/Electrical/Airbrakes/Controller/flight_platformio/lib/BasicLinearAlgebra-4.0",
+                "/Users/breadan/Desktop/WU Rocketry/2023-2024/Github/Electrical/Airbrakes/Controller/flight_platformio/.pio/libdeps/uno/Adafruit ADXL345",
+                "/Users/breadan/Desktop/WU Rocketry/2023-2024/Github/Electrical/Airbrakes/Controller/flight_platformio/.pio/libdeps/uno/Adafruit Unified Sensor",
+                "/Users/breadan/Desktop/WU Rocketry/2023-2024/Github/Electrical/Airbrakes/Controller/flight_platformio/.pio/libdeps/uno/Adafruit BusIO",
+                "/Users/breadan/.platformio/packages/framework-arduino-avr/libraries/SPI/src",
+                "/Users/breadan/Desktop/WU Rocketry/2023-2024/Github/Electrical/Airbrakes/Controller/flight_platformio/.pio/libdeps/uno/SparkFun Qwiic OpenLog/src",
+                "/Users/breadan/.platformio/packages/framework-arduino-avr/libraries/Wire/src",
+                "/Users/breadan/Desktop/WU Rocketry/2023-2024/Github/Electrical/Airbrakes/Controller/flight_platformio/include/capabilities",
+                "/Users/breadan/Desktop/WU Rocketry/2023-2024/Github/Electrical/Airbrakes/Controller/flight_platformio/include/components",
+                "/Users/breadan/Desktop/WU Rocketry/2023-2024/Github/Electrical/Airbrakes/Controller/flight_platformio/include/simulation",
+                "/Users/breadan/.platformio/packages/framework-arduino-avr/cores/arduino",
+                "/Users/breadan/.platformio/packages/framework-arduino-avr/variants/standard",
+                "/Users/breadan/.platformio/packages/framework-arduino-avr/libraries/EEPROM/src",
+                "/Users/breadan/.platformio/packages/framework-arduino-avr/libraries/HID/src",
+                "/Users/breadan/.platformio/packages/framework-arduino-avr/libraries/SoftwareSerial/src",
+                ""
+            ],
+            "browse": {
+                "limitSymbolsToIncludedHeaders": true,
+                "path": [
+                    "/Users/breadan/Desktop/WU Rocketry/2023-2024/Github/Electrical/Airbrakes/Controller/flight_platformio/include",
+                    "/Users/breadan/Desktop/WU Rocketry/2023-2024/Github/Electrical/Airbrakes/Controller/flight_platformio/src",
+                    "/Users/breadan/Desktop/WU Rocketry/2023-2024/Github/Electrical/Airbrakes/Controller/flight_platformio/lib/Servo-1.2.1/src",
+                    "/Users/breadan/Desktop/WU Rocketry/2023-2024/Github/Electrical/Airbrakes/Controller/flight_platformio/lib/BasicLinearAlgebra-4.0",
+                    "/Users/breadan/Desktop/WU Rocketry/2023-2024/Github/Electrical/Airbrakes/Controller/flight_platformio/.pio/libdeps/uno/Adafruit ADXL345",
+                    "/Users/breadan/Desktop/WU Rocketry/2023-2024/Github/Electrical/Airbrakes/Controller/flight_platformio/.pio/libdeps/uno/Adafruit Unified Sensor",
+                    "/Users/breadan/Desktop/WU Rocketry/2023-2024/Github/Electrical/Airbrakes/Controller/flight_platformio/.pio/libdeps/uno/Adafruit BusIO",
+                    "/Users/breadan/.platformio/packages/framework-arduino-avr/libraries/SPI/src",
+                    "/Users/breadan/Desktop/WU Rocketry/2023-2024/Github/Electrical/Airbrakes/Controller/flight_platformio/.pio/libdeps/uno/SparkFun Qwiic OpenLog/src",
+                    "/Users/breadan/.platformio/packages/framework-arduino-avr/libraries/Wire/src",
+                    "/Users/breadan/Desktop/WU Rocketry/2023-2024/Github/Electrical/Airbrakes/Controller/flight_platformio/include/capabilities",
+                    "/Users/breadan/Desktop/WU Rocketry/2023-2024/Github/Electrical/Airbrakes/Controller/flight_platformio/include/components",
+                    "/Users/breadan/Desktop/WU Rocketry/2023-2024/Github/Electrical/Airbrakes/Controller/flight_platformio/include/simulation",
+                    "/Users/breadan/.platformio/packages/framework-arduino-avr/cores/arduino",
+                    "/Users/breadan/.platformio/packages/framework-arduino-avr/variants/standard",
+                    "/Users/breadan/.platformio/packages/framework-arduino-avr/libraries/EEPROM/src",
+                    "/Users/breadan/.platformio/packages/framework-arduino-avr/libraries/HID/src",
+                    "/Users/breadan/.platformio/packages/framework-arduino-avr/libraries/SoftwareSerial/src",
+                    ""
+                ]
+            },
+            "defines": [
+                "PLATFORMIO=60113",
+                "ARDUINO_AVR_UNO",
+                "UNO_PLATFORM",
+                "F_CPU=16000000L",
+                "ARDUINO_ARCH_AVR",
+                "ARDUINO=10808",
+                "__AVR_ATmega328P__",
+                ""
+            ],
+            "cStandard": "gnu11",
+            "cppStandard": "gnu++11",
+            "compilerPath": "/Users/breadan/.platformio/packages/toolchain-atmelavr/bin/avr-gcc",
+            "compilerArgs": [
+                "-mmcu=atmega328p",
+                ""
+            ]
+        }
+    ],
+    "version": 4
+}
