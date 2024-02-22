@@ -298,6 +298,10 @@ void collectDataFromBNO() {
         DATA_COMPONENT_READINGS[BNO_XACCEL] = sensorValue.un.accelerometer.x;
         DATA_COMPONENT_READINGS[BNO_YACCEL] = sensorValue.un.accelerometer.y;
         DATA_COMPONENT_READINGS[BNO_ZACCEL] = sensorValue.un.accelerometer.z;
+        
+        LIVE_DATA[XACCEL_BNO] = DATA_COMPONENT_READINGS[BNO_XACCEL];
+        LIVE_DATA[YACCEL_BNO] = DATA_COMPONENT_READINGS[BNO_YACCEL];
+        LIVE_DATA[ZACCEL_BNO] = DATA_COMPONENT_READINGS[BNO_ZACCEL];
 
         DATA_COMPONENT_READINGS[SECONDS_SINCE_ON] = secondsSinceOn();
 
@@ -335,6 +339,9 @@ void collectDataFromBME() {
       DATA_COMPONENT_READINGS[BME_HUMIDITY] = bme.humidity;
       DATA_COMPONENT_READINGS[BME_GAS] = bme.gas_resistance / 1000.0;
       DATA_COMPONENT_READINGS[BME_ALTITUDE] = bme.readAltitude(SEALEVELPRESSURE_HPA);
+
+      LIVE_DATA[TEMPERATURE_BME] = DATA_COMPONENT_READINGS[BME_TEMPERATURE];
+      LIVE_DATA[ALTITUDE_BME] = DATA_COMPONENT_READINGS[BME_ALTITUDE];
 
       const char* componentName = "BME";
       float data[5];
@@ -396,6 +403,10 @@ void collectDataFromGPS() {
       DATA_COMPONENT_READINGS[GPS_HOUR] = GPS.hour;
       DATA_COMPONENT_READINGS[GPS_SPEED] = GPS.speed;
       DATA_COMPONENT_READINGS[GPS_ALTITUDE] = GPS.altitude;
+
+      LIVE_DATA[LONGITUDE_GPS] = DATA_COMPONENT_READINGS[GPS_LONGITUDE];
+      LIVE_DATA[LATITUDE_GPS] = DATA_COMPONENT_READINGS[GPS_LATITUDE];
+
       Serial.println("....................");
       Serial.println(DATA_COMPONENT_READINGS[GPS_LONGITUDE]);
       Serial.println(DATA_COMPONENT_READINGS[GPS_LONGITUDE]);
@@ -411,6 +422,9 @@ void collectDataFromGPS() {
       DATA_COMPONENT_READINGS[GPS_HOUR] = -1;
       DATA_COMPONENT_READINGS[GPS_SPEED] = -1;
       DATA_COMPONENT_READINGS[GPS_ALTITUDE] = -1;
+
+      LIVE_DATA[LONGITUDE_GPS] = -1;
+      LIVE_DATA[LATITUDE_GPS] = -1;
     }
   }
 }
@@ -448,6 +462,7 @@ void collectDataFromBatteryMonitor() {
     DATA_COMPONENT_READINGS[BATTERY_VOLTAGE] = maxlipo.cellVoltage();
     DATA_COMPONENT_READINGS[BATTERY_DISCHARGE_RATE] = maxlipo.chargeRate();
 
+    LIVE_DATA[PERCENT_BATERRY] =  DATA_COMPONENT_READINGS[BATTERY_PERCENT];
     const char* componentName = "BAT";
     float data[3];
     data[0] = DATA_COMPONENT_READINGS[BATTERY_PERCENT];
@@ -490,12 +505,14 @@ void transmitCurrentComponentReadings() {
 
   // Prepare a buffer to hold the transmitted message
   char radiopacket[256] = {0};  
+  /*
   for (int i = 0; i < sizeof(full_to_radio) / sizeof(full_to_radio[0]); i++) {
     FloatNum data;
     data.num = DATA_COMPONENT_READINGS[full_to_radio[i]];
     LIVE_DATA[i] = data.num;
 
   }
+  */
     
   // Iterate through the DATA_COMPONENT_READINGS=> LIVE_DATA array and build the message
   for (int i = 0; i < LIVE_RADIO_SIZE; i++) {
@@ -534,7 +551,7 @@ void loop() {
   collectDataFromBME();  
   collectDataFromGPS();
   transmitCurrentComponentReadings();  
-  //printAllData(); 
+  printAllData(); 
 }
 
 
