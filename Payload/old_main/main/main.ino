@@ -73,6 +73,40 @@ const char* ENUM_NAMES[] = {
   "BATTERY_DISCHARGE_RATE_%_PER_HOUR",
 };
 
+int full_to_radio[] = {3, 4, 5, 7, 11, 15, 16, 18};
+
+enum LiveUpdateFields {
+  XACCEL_BNO,
+  YACCEL_BNO,
+  ZACCEL_BNO,
+  TEMPERATURE_BME,
+  ALTITUDE_BME,
+  LATITUDE_GPS,
+  LONGITUDE_GPS,
+  PERCENT_BATERRY,
+  LIVE_RADIO_SIZE,
+};
+const char* LIVE_DATA_NAMES[] = {
+  "XACCEL_BNO",
+  "YACCEL_BNO",
+  "ZACCEL_BNO",
+  "TEMPERATURE_BME",
+  "ALTITUDE_BME",
+  "LATITUDE_GPS",
+  "LONGITUDE_GPS",
+  "PERCENT_BATERRY",
+  "LIVE_RADIO_SIZE",
+};
+
+float LIVE_DATA[LIVE_RADIO_SIZE];
+
+union FloatNum  // declare a union
+{
+  float num;
+  byte bytes[4];
+};
+
+
 //Global Sensor Data Array
 double DATA_COMPONENT_READINGS[ENUM_SIZE];
 
@@ -200,9 +234,6 @@ void setup() {
   //Initialize Openlog
   Wire.begin();
   logger.begin();
-  int fileCount = getNumberOfPrevFlights();
-  filename = "flight_" + String(fileCount) + ".txt";
-  Serial.println("Writing this flights data to: " + filename);
 
   bmeTimer = millis();
   bnoTimer = millis();
@@ -267,6 +298,10 @@ void collectDataFromBNO() {
         DATA_COMPONENT_READINGS[BNO_XACCEL] = sensorValue.un.accelerometer.x;
         DATA_COMPONENT_READINGS[BNO_YACCEL] = sensorValue.un.accelerometer.y;
         DATA_COMPONENT_READINGS[BNO_ZACCEL] = sensorValue.un.accelerometer.z;
+        
+        LIVE_DATA[XACCEL_BNO] = DATA_COMPONENT_READINGS[BNO_XACCEL];
+        LIVE_DATA[YACCEL_BNO] = DATA_COMPONENT_READINGS[BNO_YACCEL];
+        LIVE_DATA[ZACCEL_BNO] = DATA_COMPONENT_READINGS[BNO_ZACCEL];
 
         DATA_COMPONENT_READINGS[SECONDS_SINCE_ON] = secondsSinceOn();
 
@@ -305,6 +340,9 @@ void collectDataFromBME() {
       DATA_COMPONENT_READINGS[BME_GAS] = bme.gas_resistance / 1000.0;
       DATA_COMPONENT_READINGS[BME_ALTITUDE] = bme.readAltitude(SEALEVELPRESSURE_HPA);
 
+      LIVE_DATA[TEMPERATURE_BME] = DATA_COMPONENT_READINGS[BME_TEMPERATURE];
+      LIVE_DATA[ALTITUDE_BME] = DATA_COMPONENT_READINGS[BME_ALTITUDE];
+
       const char* componentName = "BME";
       float data[5];
       data[0] = DATA_COMPONENT_READINGS[BME_TEMPERATURE];
@@ -323,60 +361,83 @@ void collectDataFromBME() {
 }
 
 void collectDataFromGPS() {
-  // read data from the GPS in the 'main loop'
+  // Read data from the GPS
   char c = GPS.read();
 
-  // if a sentence is received, we can check the checksum, parse it...
+  // Check if a sentence is received
   if (GPS.newNMEAreceived()) {
-    // a tricky thing here is if we print the NMEA sentence, or data
-    // we end up not listening and catching other sentences!
-    // so be very wary if using OUTPUT_ALLDATA and trying to print out data
-    Serial.println(GPS.lastNMEA()); // this also sets the newNMEAreceived() flag to false
-    if (!GPS.parse(GPS.lastNMEA())) // this also sets the newNMEAreceived() flag to false
-      return; // we can fail to parse a sentence in which case we should just wait for another
+    Serial.println("New NMEA sentence received");
+    if (!GPS.parse(GPS.lastNMEA())) {
+      Serial.println("Failed to parse NMEA sentence");
+      return; // Exit if fail to parse a sentence
+    }
   }
 
-  // approximately every 2 seconds or so, print out the current stats
-
+  // Update GPS data every 2 seconds
   unsigned long currentMillis = millis();
-  if (currentMillis >= gpsTime + gpsTimer) {
-    gpsTimer += gpsTime;
+  if (currentMillis - gpsTimer >= 2000) { // Corrected timing logic
+    gpsTimer = currentMillis; // Reset timer for the next interval
+    Serial.println("Updating GPS data");
 
     if (GPS.fix) {
-      DATA_COMPONENT_READINGS[GPS_LATITUDE] = GPS.lat;
-      DATA_COMPONENT_READINGS[GPS_LONGITUDE] = GPS.lon;
+      // Convert N/S, E/W degrees to decimal format for Google Maps
+      float lat = GPS.latitude / 100;
+      Serial.print(lat);
+      int latDegrees = (int)lat;
+      Serial.print(latDegrees);
+      float latMinutes = (lat - latDegrees) * 100;
+      Serial.print(latMinutes);
+      float decimalLat = latDegrees + (latMinutes / 60);
+      Serial.print(decimalLat);
+      if (GPS.lat == 'S') decimalLat *= -1;
+
+      float lon = GPS.longitude / 100;
+      int lonDegrees = (int)lon;
+      float lonMinutes = (lon - lonDegrees) * 100;
+      float decimalLon = lonDegrees + (lonMinutes / 60);
+      if (GPS.lon == 'W') decimalLon *= -1;
+
+      // Store the converted values
+      DATA_COMPONENT_READINGS[GPS_LATITUDE] = decimalLat;
+      DATA_COMPONENT_READINGS[GPS_LONGITUDE] = decimalLon;
       DATA_COMPONENT_READINGS[GPS_HOUR] = GPS.hour;
       DATA_COMPONENT_READINGS[GPS_SPEED] = GPS.speed;
       DATA_COMPONENT_READINGS[GPS_ALTITUDE] = GPS.altitude;
 
+      LIVE_DATA[LONGITUDE_GPS] = DATA_COMPONENT_READINGS[GPS_LONGITUDE];
+      LIVE_DATA[LATITUDE_GPS] = DATA_COMPONENT_READINGS[GPS_LATITUDE];
+
+      Serial.println("....................");
+      Serial.println(DATA_COMPONENT_READINGS[GPS_LONGITUDE]);
+      Serial.println(DATA_COMPONENT_READINGS[GPS_LONGITUDE]);
+      Serial.println("....................");
       const char* componentName = "GPS";
-      float data[5];
-      data[0] = DATA_COMPONENT_READINGS[GPS_LATITUDE];
-      data[1] = DATA_COMPONENT_READINGS[GPS_LONGITUDE];
-      data[2] = DATA_COMPONENT_READINGS[GPS_HOUR];
-      data[3] = DATA_COMPONENT_READINGS[GPS_SPEED];
-      data[4] = DATA_COMPONENT_READINGS[GPS_ALTITUDE];
-
-      logData(componentName, secondsSinceOn(), data, 5); 
-
+      float data[5] = {decimalLat, decimalLon, GPS.hour, GPS.speed, GPS.altitude};
+      logData(componentName, secondsSinceOn(), data, 5);
     }
     else {
+      Serial.println("No GPS fix");
       DATA_COMPONENT_READINGS[GPS_LATITUDE] = -1;
       DATA_COMPONENT_READINGS[GPS_LONGITUDE] = -1;
       DATA_COMPONENT_READINGS[GPS_HOUR] = -1;
       DATA_COMPONENT_READINGS[GPS_SPEED] = -1;
       DATA_COMPONENT_READINGS[GPS_ALTITUDE] = -1;
 
+      LIVE_DATA[LONGITUDE_GPS] = -1;
+      LIVE_DATA[LATITUDE_GPS] = -1;
     }
   }
 }
 
 
+
 void logData(const char* componentName, float secondsSinceOn, float* data, int dataSize) {
+
+  Serial.print("Logging data for: ");
+  Serial.println(componentName);
   // Construct the initial part of the string to write
   String writeto = String(componentName) + "," + String(secondsSinceOn) + ",";
-  // Open the file for appending
-  logger.append(filename);
+
   // Write the initial part
   logger.print(writeto);
   // Iterate over the data array and append each value
@@ -392,37 +453,6 @@ void logData(const char* componentName, float secondsSinceOn, float* data, int d
   logger.syncFile();
 }
 
-int getNumberOfPrevFlights(){
-  int fileCount = 0;
-  
-  // Check if the file exists
-  long sizeOfFile = logger.size("fileNum.txt");
-  if (sizeOfFile > -1) {
-    byte myBufferSize = 200; // Increase this buffer size to hold larger numbers
-    byte myBuffer[myBufferSize];
-    logger.read(myBuffer, myBufferSize, "fileNum.txt"); // Load myBuffer with contents of fileNum.txt
-    
-    String counterString = "";
-    for (int x = 0 ; x < myBufferSize ; x++) {
-      if (myBuffer[x] >= '0' && myBuffer[x] <= '9') {
-        counterString += (char)myBuffer[x];
-      }
-    }
-    fileCount = counterString.toInt();
-    
-  }
-  // Increment the file count
-  fileCount++;
-  // Overwrite the file with the new file count
-  logger.remove("fileNum.txt", false);
-  logger.append("fileNum.txt"); 
-  logger.print(String(fileCount));
-  logger.syncFile(); // Ensure data is written to SD card
-
-  return fileCount;
-}
-
-
 void collectDataFromBatteryMonitor() {
   unsigned long currentMillis = millis();
   if (currentMillis >= batteryTime + batteryTimer) {
@@ -432,6 +462,7 @@ void collectDataFromBatteryMonitor() {
     DATA_COMPONENT_READINGS[BATTERY_VOLTAGE] = maxlipo.cellVoltage();
     DATA_COMPONENT_READINGS[BATTERY_DISCHARGE_RATE] = maxlipo.chargeRate();
 
+    LIVE_DATA[PERCENT_BATERRY] =  DATA_COMPONENT_READINGS[BATTERY_PERCENT];
     const char* componentName = "BAT";
     float data[3];
     data[0] = DATA_COMPONENT_READINGS[BATTERY_PERCENT];
@@ -444,10 +475,17 @@ void collectDataFromBatteryMonitor() {
 
 void printAllData() {
   Serial.println("--------------------------------------------------------");
+  /*
   for (int i = 0; i < ENUM_SIZE; i++) {
     Serial.print(ENUM_NAMES[i]);
     Serial.print(": ");
     Serial.println(DATA_COMPONENT_READINGS[i]);
+  }
+  */
+  for (int i = 0; i < LIVE_RADIO_SIZE; i++) {
+    Serial.print(LIVE_DATA_NAMES[i]);
+    Serial.print(": ");
+    Serial.println(LIVE_DATA[i]);
   }
 }
 
@@ -467,17 +505,27 @@ void transmitCurrentComponentReadings() {
 
   // Prepare a buffer to hold the transmitted message
   char radiopacket[256] = {0};  
+  /*
+  for (int i = 0; i < sizeof(full_to_radio) / sizeof(full_to_radio[0]); i++) {
+    FloatNum data;
+    data.num = DATA_COMPONENT_READINGS[full_to_radio[i]];
+    LIVE_DATA[i] = data.num;
+
+  }
+  */
     
-  // Iterate through the DATA_COMPONENT_READINGS array and build the message
-  for (int i = 0; i < ENUM_SIZE; i++) {
+  // Iterate through the DATA_COMPONENT_READINGS=> LIVE_DATA array and build the message
+  for (int i = 0; i < LIVE_RADIO_SIZE; i++) {
     char buffer[32];  // Temporary buffer to hold each value
-    dtostrf(DATA_COMPONENT_READINGS[i], 6, 2, buffer);  // Convert double to string, adjust field width and decimal places as necessary
+
+    // dtostrf(DATA_COMPONENT_READINGS[i], 6, 2, buffer);  // Convert double to string, adjust field width and decimal places as necessary
+    dtostrf(LIVE_DATA[i], 9, 6, buffer);  // Convert float to string, adjust field width and decimal places as necessary
 
     // Append the value to radiopacket
     strcat(radiopacket, buffer);
 
     // If not the last element, append a comma
-    if (i < ENUM_SIZE - 1) {
+    if (i < LIVE_RADIO_SIZE - 1) {
       strcat(radiopacket, ",");
       }
     }
@@ -502,8 +550,8 @@ void loop() {
   collectDataFromBNO();  
   collectDataFromBME();  
   collectDataFromGPS();
-  collectDataFromBatteryMonitor();
-  transmitCurrentComponentReadings();   
+  transmitCurrentComponentReadings();  
+  printAllData(); 
 }
 
 
