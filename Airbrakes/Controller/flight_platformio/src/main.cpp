@@ -66,6 +66,10 @@ static FlightState currentState;
 static bool measurementDataValid;
 static Sample::Measurement currentMeasurement;  // Struct for holding current measurement
 
+#if ENABLE_STATUS_LED
+// Status LED pin
+static int STATUS_LED_PIN = 9;
+#endif
 
 // PID controller object and global control
 static PID_Controller pid(ACE_TARGET_APOGEE);
@@ -93,12 +97,19 @@ static bool didWriteData = false;
 #endif
 static int ringBufferIndex = 0;
 
+// IMPORTANT CONFIG: Development debug variables
 #if IS_DEVELOPMENT_MODE
 // Debug variables
 static int stateVecPrintCounter = 0;
 static int counterSample = 0;
 static float simSample[2] {0.0, 0.0};
 #endif
+
+// IMPORTANT CONFIG: Forced airbrakes actuation flight demonstration
+#if FORCED_EXTENSION_CONTROL_CYCLES
+static int numForcedExtensionControlCycles = FORCED_EXTENSION_CONTROL_CYCLES;
+#endif
+
 
 void setup() {
   int aceInitFails = 0;
@@ -188,6 +199,11 @@ void setup() {
   if (!logger.init()) {
     ++aceInitFails;
   }
+
+#if ENABLE_STATUS_LED
+  // Initialize Status LED
+  pinMode(STATUS_LED_PIN, OUTPUT);
+#endif
 
   // ACE initialization summary status check
   if (!aceInitFails) {
@@ -365,12 +381,36 @@ void loop() {
   currentTime = micros();
   if (currentTime >= previousControlTime + controlLoopMicros) {
     previousControlTime += controlLoopMicros;
+
+#if ENABLE_STATUS_LED
+    // Status LED control
+    if (currentState == FlightState::detectLaunch) {
+      digitalWrite(STATUS_LED_PIN, HIGH);
+    }
+    else {
+      digitalWrite(STATUS_LED_PIN, LOW);
+    }
+#endif
     
     if (currentState==FlightState::control) {
       // Perform PID servo actuation
       // Note: stateVec(2) --> curr_Z_Position, stateVec(5) --> curr_Z_Velocity
       currentPIDControl = pid.control(stateVec(2), stateVec(5));
       int angleExtension = SRV_MAX_EXTENSION_ANGLE * currentPIDControl + 0.5;  // +0.5 to round to nearest whole int
+
+#if FORCED_EXTENSION_CONTROL_CYCLES
+    // Force max extension for flight demonstration purposes
+    if (numForcedExtensionControlCycles > 0) {
+#if IS_DEVELOPMENT_MODE
+      Serial.print("CONTROL: FORCED EXTENSION CYCLE ");
+      Serial.println(numForcedExtensionControlCycles);
+#endif
+      --numForcedExtensionControlCycles;
+      angleExtension = SRV_MAX_EXTENSION_ANGLE;
+    }
+#endif
+
+
       srvMovement.setServoPosition(angleExtension);
       srvMovement.updateServoPosition();  // the design is a bit strange, but allows for decentralized servo position updates while centralizing actual writes
       Serial.print("Updated angle to servo: ");
@@ -395,6 +435,9 @@ void loop() {
 #endif
 
     // ACE completed
+#if ENABLE_STATUS_LED
+    digitalWrite(STATUS_LED_PIN, HIGH);
+#endif
     for ( ; ; ) {
       Serial.println("ACE completed! Sleeping...");
       delay(3000);
