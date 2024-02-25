@@ -395,7 +395,9 @@ void loop() {
 #endif
 
     // ACE completed
-    Serial.println("ACE completed! Sleeping...");
-    for ( ; ; );
+    for ( ; ; ) {
+      Serial.println("ACE completed! Sleeping...");
+      delay(3000);
+    }
   }
 }
