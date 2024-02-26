@@ -6,7 +6,7 @@
 <setting alwaysvectorfont="no"/>
 <setting verticaltext="up"/>
 </settings>
-<grid distance="10" unitdist="mil" unit="mil" style="lines" multiple="1" display="yes" altdistance="5" altunitdist="mil" altunit="mil"/>
+<grid distance="0.5" unitdist="mm" unit="mm" style="lines" multiple="1" display="yes" altdistance="5" altunitdist="mil" altunit="mil"/>
 <layers>
 <layer number="1" name="Top" color="4" fill="1" visible="yes" active="yes"/>
 <layer number="2" name="Route2" color="1" fill="3" visible="no" active="no"/>
@@ -237,9 +237,9 @@ Openlog</text>
 <dimension x1="38.735" y1="18.923" x2="37.846" y2="36.703" x3="57.658" y3="27.813" textsize="1.778" layer="47" dtype="vertical" unit="inch"/>
 <text x="23.885" y="35.321" size="1.778" layer="21">ADXL375</text>
 <dimension x1="22.5" y1="67.5" x2="22.5" y2="4.5" x3="-9" y3="36" textsize="1.778" layer="20"/>
-<wire x1="8" y1="67.5" x2="122.5" y2="67.5" width="0.15" layer="20"/>
-<wire x1="122.5" y1="67.5" x2="122.5" y2="4.5" width="0.15" layer="20"/>
-<wire x1="122.5" y1="4.5" x2="8" y2="4.5" width="0.15" layer="20"/>
+<wire x1="8" y1="67.5" x2="122" y2="67.5" width="0.15" layer="20"/>
+<wire x1="122" y1="67.5" x2="122" y2="4.5" width="0.15" layer="20"/>
+<wire x1="122" y1="4.5" x2="8" y2="4.5" width="0.15" layer="20"/>
 <wire x1="8" y1="4.5" x2="8" y2="67.5" width="0.15" layer="20"/>
 <text x="102.936" y="27.033" size="5.08" layer="22" font="vector" ratio="22" rot="MR45" align="center">P A C E</text>
 <text x="107.341" y="17.778" size="1.6764" layer="22" font="vector" rot="MR45" align="top-left">POWER &amp;
@@ -247,14 +247,13 @@ AIRBRAKES
 COMPUTE
 ELEMENT</text>
 <text x="99.991" y="7.293" size="1.27" layer="22" font="vector" rot="MR45">v1.0 (now with more ports!)</text>
-<dimension x1="8" y1="67.5" x2="122.5" y2="67.5" x3="65.25" y3="74" textsize="1.778" layer="20"/>
 <text x="99.5" y="62" size="1.016" layer="21" font="vector">+7.4v</text>
-<text x="117" y="31.5" size="0.8128" layer="21" font="vector">SRV_PWM</text>
-<text x="117" y="33" size="0.8128" layer="21" font="vector">SRV+</text>
-<text x="117" y="34.5" size="0.8128" layer="21" font="vector">SRV-</text>
-<text x="116" y="34.5" size="5.08" layer="21" font="vector">.</text>
-<text x="116" y="33" size="5.08" layer="21" font="vector">.</text>
-<text x="116" y="31.5" size="5.08" layer="21" font="vector">.</text>
+<text x="116.5" y="31.5" size="0.8128" layer="21" font="vector">SRV_PWM</text>
+<text x="116.5" y="33" size="0.8128" layer="21" font="vector">SRV+</text>
+<text x="116.5" y="34.5" size="0.8128" layer="21" font="vector">SRV-</text>
+<text x="115.5" y="34.5" size="5.08" layer="21" font="vector">.</text>
+<text x="115.5" y="33" size="5.08" layer="21" font="vector">.</text>
+<text x="115.5" y="31.5" size="5.08" layer="21" font="vector">.</text>
 <text x="85.5" y="60.3" size="1.27" layer="21" font="vector" rot="R90">LED+</text>
 <text x="99.2" y="50.2" size="0.6096" layer="21" font="vector" align="center">the mitochondria
 of the PACE...</text>
@@ -289,6 +288,7 @@ of the PACE...</text>
 <wire x1="98.1" y1="47.8" x2="98.3" y2="47.6" width="0.1524" layer="21"/>
 <wire x1="99.2" y1="47.1" x2="99" y2="47.1" width="0.1524" layer="21"/>
 <wire x1="99" y1="47.1" x2="98.7" y2="47.6" width="0.1524" layer="21"/>
+<dimension x1="8" y1="67.5" x2="122" y2="67.5" x3="65" y3="75.5" textsize="1.778" layer="20"/>
 </plain>
 <libraries>
 <library name="ABX00042">
@@ -2209,7 +2209,7 @@ design rules under a new name.</description>
 <element name="U$5" library="ADAFRUIT_BNO08x" package="ADAFRUIT_BNO08X_FOOTPRINT" value="ADAFRUIT_BNO08X" x="15.31" y="42.034" smashed="yes"/>
 <element name="U$10" library="ABX00042" package="MODULE_ABX00042_HEADERS" value="ABX00042_HEADERS_IO" x="78.603" y="24.984" smashed="yes" rot="R270"/>
 <element name="U$13" library="holes" library_urn="urn:adsk.eagle:library:237" package="2,8" package3d_urn="urn:adsk.eagle:package:14271/1" value="" x="11.996" y="63.476" smashed="yes"/>
-<element name="U$14" library="holes" library_urn="urn:adsk.eagle:library:237" package="2,8" package3d_urn="urn:adsk.eagle:package:14271/1" value="" x="118.489" y="62.984" smashed="yes"/>
+<element name="U$14" library="holes" library_urn="urn:adsk.eagle:library:237" package="2,8" package3d_urn="urn:adsk.eagle:package:14271/1" value="" x="118" y="63" smashed="yes"/>
 <element name="U$15" library="holes" library_urn="urn:adsk.eagle:library:237" package="2,8" package3d_urn="urn:adsk.eagle:package:14271/1" value="" x="11.586" y="8.026" smashed="yes"/>
 <element name="U$1" library="microbuilder" package="MOUNTINGHOLE_2.0_PLATED" value="MOUNTINGHOLE2.0" x="20.003" y="19.8" smashed="yes">
 <attribute name="BOM" value="EXCLUDE" x="20.003" y="19.8" size="1.778" layer="27" display="off"/>
@@ -2230,13 +2230,13 @@ design rules under a new name.</description>
 </element>
 <element name="JP4" library="SparkFun" package="STAND-OFF" value="STAND-OFF" x="48.19" y="63.992" smashed="yes"/>
 <element name="JP5" library="SparkFun" package="STAND-OFF" value="STAND-OFF" x="68.51" y="63.992" smashed="yes"/>
-<element name="SERVOCON" library="3_Pin_JST_XA_Surface_Connector" package="CONN_B03B-PASK-1_(LF)_(SN)_JST" value="B03B-PASK-1_(LF)_(SN)" x="118.5" y="42" smashed="yes" rot="R270">
-<attribute name="COPYRIGHT" value="Copyright (C) 2024 Ultra Librarian. All rights reserved." x="118.5" y="42" size="1.778" layer="27" rot="R270" display="off"/>
-<attribute name="DIGIKEY_PART_NUMBER_1" value="455-1833-ND" x="118.5" y="42" size="1.778" layer="27" rot="R270" display="off"/>
-<attribute name="MANUFACTURER_PART_NUMBER" value="B03B-PASK-1 (LF) (SN)" x="118.5" y="42" size="1.778" layer="27" rot="R270" display="off"/>
-<attribute name="MFR_NAME" value="JST" x="118.5" y="42" size="1.778" layer="27" rot="R270" display="off"/>
-<attribute name="NAME" x="117.865" y="43.27" size="1.27" layer="27" ratio="6" rot="SR270"/>
-<attribute name="VALUE" x="117.865" y="41.7206" size="1.27" layer="27" ratio="6" rot="SR270"/>
+<element name="SERVOCON" library="3_Pin_JST_XA_Surface_Connector" package="CONN_B03B-PASK-1_(LF)_(SN)_JST" value="B03B-PASK-1_(LF)_(SN)" x="118" y="42" smashed="yes" rot="R270">
+<attribute name="COPYRIGHT" value="Copyright (C) 2024 Ultra Librarian. All rights reserved." x="118" y="42" size="1.778" layer="27" rot="R270" display="off"/>
+<attribute name="DIGIKEY_PART_NUMBER_1" value="455-1833-ND" x="118" y="42" size="1.778" layer="27" rot="R270" display="off"/>
+<attribute name="MANUFACTURER_PART_NUMBER" value="B03B-PASK-1 (LF) (SN)" x="118" y="42" size="1.778" layer="27" rot="R270" display="off"/>
+<attribute name="MFR_NAME" value="JST" x="118" y="42" size="1.778" layer="27" rot="R270" display="off"/>
+<attribute name="NAME" x="117.365" y="43.27" size="1.27" layer="27" ratio="6" rot="SR270"/>
+<attribute name="VALUE" x="117.365" y="41.7206" size="1.27" layer="27" ratio="6" rot="SR270"/>
 </element>
 <element name="BATT_TERM" library="XT30PW-F" package="AMASS_XT30PW-F" value="XT30PW-F" x="93.5" y="63.5" smashed="yes">
 <attribute name="AVAILABILITY" value="Not in stock" x="93.5" y="63.5" size="1.778" layer="27" display="off"/>
@@ -2375,6 +2375,7 @@ design rules under a new name.</description>
 <attribute name="PRICE" value="None" x="76.962" y="7.612" size="1.778" layer="27" display="off"/>
 <attribute name="SNAPEDA_LINK" value="https://www.snapeda.com/parts/USB-C/Adam+Tech/view-part/?ref=snap" x="76.962" y="7.612" size="1.778" layer="27" display="off"/>
 </element>
+<element name="U$29" library="holes" library_urn="urn:adsk.eagle:library:237" package="2,8" package3d_urn="urn:adsk.eagle:package:14271/1" value="" x="118" y="9" smashed="yes"/>
 </elements>
 <signals>
 <signal name="GND" class="2">
@@ -2386,8 +2387,8 @@ design rules under a new name.</description>
 <contactref element="JP3" pad="1"/>
 <polygon width="0.15" layer="16" rank="3">
 <vertex x="8" y="67.5"/>
-<vertex x="122.5" y="67.5"/>
-<vertex x="122.5" y="4.5"/>
+<vertex x="122" y="67.5"/>
+<vertex x="122" y="4.5"/>
 <vertex x="8" y="4.5"/>
 </polygon>
 <contactref element="BATT_TERM" pad="N"/>
@@ -2443,10 +2444,10 @@ design rules under a new name.</description>
 <contactref element="U$5" pad="VIN"/>
 <contactref element="JP2" pad="1"/>
 <polygon width="0.15" layer="1" rank="2">
-<vertex x="8.5" y="67.5"/>
-<vertex x="122.5" y="67.5"/>
-<vertex x="122.5" y="4.5"/>
-<vertex x="8.5" y="4.5"/>
+<vertex x="8" y="67.5"/>
+<vertex x="122" y="67.5"/>
+<vertex x="122" y="4.5"/>
+<vertex x="8" y="4.5"/>
 </polygon>
 <contactref element="JP1" pad="1"/>
 <contactref element="U$10" pad="J17"/>
@@ -2675,14 +2676,15 @@ design rules under a new name.</description>
 <wire x1="109.73385" y1="51.6608" x2="109.53465" y2="51.86" width="0.3048" layer="1"/>
 <contactref element="ACE_ROT3" pad="1"/>
 <contactref element="SERVOCON" pad="2"/>
-<wire x1="111.54" y1="63.5" x2="114.5" y2="60.54" width="1.27" layer="1"/>
-<wire x1="114.5" y1="60.54" x2="114.5" y2="53.5" width="1.27" layer="1"/>
+<wire x1="114.5" y1="59.04" x2="111.54" y2="62" width="1.27" layer="1"/>
+<wire x1="111.54" y1="63.5" x2="111.54" y2="62" width="1.27" layer="1"/>
+<wire x1="114.5" y1="59.04" x2="114.5" y2="53.5" width="1.27" layer="1"/>
 <wire x1="114.5" y1="53.5" x2="114.5" y2="52" width="1.27" layer="1"/>
 <wire x1="114.5" y1="51" x2="114.5" y2="52" width="1.27" layer="1"/>
 <wire x1="114.5" y1="51" x2="114.5" y2="50" width="1.27" layer="1"/>
 <wire x1="114.5" y1="50" x2="114.5" y2="42" width="1.27" layer="1"/>
 <wire x1="114.5" y1="42" x2="116.5066" y2="39.9934" width="1.27" layer="1"/>
-<wire x1="116.5066" y1="39.9934" x2="118.5" y2="39.9934" width="1.27" layer="1"/>
+<wire x1="116.5066" y1="39.9934" x2="118" y2="39.9934" width="1.27" layer="1"/>
 <wire x1="111.0539" y1="51.3217" x2="110.838" y2="51.1058" width="0.508" layer="1"/>
 <wire x1="111.0539" y1="51.3217" x2="111.0539" y2="52.245" width="0.508" layer="1"/>
 <wire x1="111.0539" y1="52.245" x2="111.5" y2="52.245" width="0.508" layer="1"/>
@@ -2718,8 +2720,8 @@ design rules under a new name.</description>
 <signal name="SRV_PWM">
 <contactref element="U$10" pad="J25"/>
 <contactref element="SERVOCON" pad="3"/>
-<wire x1="118.5" y1="37.0122" x2="118.5" y2="38.0122" width="0.8128" layer="1"/>
-<wire x1="118.5" y1="37.0122" x2="106.4878" y2="25" width="0.8128" layer="1"/>
+<wire x1="118" y1="36.5122" x2="118" y2="38.0122" width="0.8128" layer="1"/>
+<wire x1="118" y1="36.5122" x2="106.4878" y2="25" width="0.8128" layer="1"/>
 <wire x1="64.1504" y1="16.6504" x2="64.1504" y2="14.8494" width="0.8128" layer="1"/>
 <wire x1="106.4878" y1="25" x2="72.5" y2="25" width="0.8128" layer="1"/>
 <wire x1="72.5" y1="25" x2="64.1504" y2="16.6504" width="0.8128" layer="1"/>
