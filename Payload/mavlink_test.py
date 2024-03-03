@@ -1,8 +1,13 @@
+'''
+For testing purposes right now, we're going to connect, arm, takeoff, move, and land. We land by switching
+into the land mode. When we eject from the rocket, we could use the stabilize mode and then switch to landing mode.
+- Chase
+'''
 
 from pymavlink import mavutil
 
 #start a connection listening to a UDP port
-the_connection = mavutil.mavlink_connection('udpin:localhost:14551')
+the_connection = mavutil.mavlink_connection('/dev/ttyACM0')
 
 ''' 
 wait for hearbeat - the quadcopter is essentially always sending out heartbeats letting GCS 
@@ -47,13 +52,28 @@ the_connection.mav.command_long_send(the_connection.target_system, the_connectio
 armAck = the_connection.recv_match(type='COMMAND_ACK', blocking=True)
 print("The Copter Acknowledgment Value for arming is: ", armAck, " .")
 
+#Set the mode to the stabilize mode. Fairly certain its just the basic mode. 
+#ALREADY STARTS IS STABILIZE MODE SO NO NEED TO INCLUDE FOR NOW
+'''
+the_connection.mav.command_long_send(the_connection.target_system,the_connection.target_component, mavutil.mavlink.MAV_CMD_DO_SET_MODE,
+                                                                                    0, 1, 0, 0, 0, 0, 0, 0)
+print("The Copter Acknowledgment Value for setting to stabilize mode is: ", armAck, " .")
+'''
+
+the_connection.mav.command_long_send(the_connection.target_system, the_connection.target_component, 
+                                    mavutil.mavlink.MAV_CMD_DO_MOTOR_TEST, 4, 0, 5, 5, 4, 0, 0)
+
+testMotorsAck = the_connection.recv_match(type='COMMAND_ACK', blocking=True)
+print("The Copter Acknowledgment Value for testing the motors is: ", testMotorsAck, " .")
+
+
 '''
 Programming the takeoff command. Parameters pitch, empty, empty, yaw, lat, lon, alt.
-alt is most imporat, Measured in meters.
+alt is most imporat, Measured in meters. Gonna go 3 meters up
 Make sure we're in "Guided" mode on Mission Planner before trying to arm or else we may see errors. 
 '''
 the_connection.mav.command_long_send(the_connection.target_system, the_connection.target_component, 
-                                    mavutil.mavlink.MAV_CMD_NAV_TAKEOFF, 0, 0, 0, 0, 0, 0, 0, 10)
+                                    mavutil.mavlink.MAV_CMD_NAV_TAKEOFF, 0, 0, 0, 0, 0, 0, 0, 3)
 
 takeOffAck = the_connection.recv_match(type='COMMAND_ACK', blocking=True)
 print("The Copter Acknowledgment Value for takeoff is: ", takeOffAck, " .")
@@ -66,6 +86,25 @@ The 15,7,-8 parameters mean North 15 meters, East 7 meters, and up 8 meters. In 
 movement parameters are for x,y,z velocity which we can set to 0's because our type mask does that for us. A
 type mask pretty much tells the copter which fields should be ignored: 1 is meant to ignore velo and a 0 factors it in.
 '''
+
 the_connection.mav.send(mavutil.mavlink.MAVLink_set_position_target_local_ned_message(10, the_connection.target_system, the_connection.target_component,
-                                                                                    mavutil.mavlink.MAV_FRAME_LOCAL_NED, int(0b110111111000), 15, 7, -8, 
+                                                                                    mavutil.mavlink.MAV_FRAME_LOCAL_NED, int(0b110111111000), 5, 3, -3, 
                                                                                     0, 0, 0, 0, 0, 0, 0, 0))
+
+movementAck = the_connection.recv_match(type='COMMAND_ACK', blocking = True)
+print("The Copter Acknowledgement Value for movement is:   ", movementAck, "   .")
+
+'''
+Now, we're gonna test landing using. Look into switching the flight mode to 'land' and it does the work for us.
+https://ardupilot.org/copter/docs/flight-modes.html
+https://ardupilot.org/dev/docs/mavlink-get-set-flightmode.html 
+https://ardupilot.org/copter/docs/parameters.html#fltmode1
+
+'''
+the_connection.mav.command_long_send(the_connection.target_system,the_connection.target_component, mavutil.mavlink.MAV_CMD_DO_SET_MODE,
+                                                                                    0, 1, 9, 0, 0, 0, 0, 0)
+
+landModeAck = the_connection.recv_match(type='COMMAND_ACK', blocking = True)
+print("The  Copter acknowledgment value for land mode is:   ", landModeAck, "    .")
+
+
