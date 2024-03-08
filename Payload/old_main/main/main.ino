@@ -234,12 +234,18 @@ void setup() {
   //Initialize Openlog
   Wire.begin();
   logger.begin();
+  int fileCount = getNumberOfPrevFlights();
+  filename = "flight_" + String(fileCount) + ".txt";
+  Serial.println("Writing this flights data to: " + filename);
+
 
   bmeTimer = millis();
   bnoTimer = millis();
   gpsTimer = millis();
   batteryTimer = millis();
   rfTimer = millis();
+
+
 }
 
 double secondsSinceOn(){
@@ -320,6 +326,36 @@ void collectDataFromBNO() {
     } 
   }
 }
+
+int getNumberOfPrevFlights(){
+   int fileCount = 0;
+
+   // Check if the file exists
+   long sizeOfFile = logger.size("fileNum.txt");
+   if (sizeOfFile > -1) {
+     byte myBufferSize = 200; // Increase this buffer size to hold larger numbers
+     byte myBuffer[myBufferSize];
+     logger.read(myBuffer, myBufferSize, "fileNum.txt"); // Load myBuffer with contents of fileNum.txt
+
+     String counterString = "";
+     for (int x = 0 ; x < myBufferSize ; x++) {
+       if (myBuffer[x] >= '0' && myBuffer[x] <= '9') {
+         counterString += (char)myBuffer[x];
+       }
+     }
+     fileCount = counterString.toInt();
+
+   }
+   // Increment the file count
+   fileCount++;
+   // Overwrite the file with the new file count
+   logger.remove("fileNum.txt", false);
+   logger.append("fileNum.txt"); 
+   logger.print(String(fileCount));
+   logger.syncFile(); // Ensure data is written to SD card
+
+   return fileCount;
+ }
 
 // Function to collect data from BME680
 /*
