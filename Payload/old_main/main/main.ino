@@ -237,8 +237,8 @@ void setup() {
   int fileCount = getNumberOfPrevFlights();
   filename = "flight_" + String(fileCount) + ".txt";
   Serial.println("Writing this flights data to: " + filename);
-
-
+  logger.append(filename);
+  
   bmeTimer = millis();
   bnoTimer = millis();
   gpsTimer = millis();
