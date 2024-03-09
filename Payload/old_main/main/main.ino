@@ -483,10 +483,13 @@ void logData(const char* componentName, float secondsSinceOn, float* data, int d
         logger.print(",");  // Add comma if it's not the last element
       }
   }
+  // per chuan's suggestion
+  logger.append(filename);
   // End line after all data values are written
   logger.println();
   // Save changes
   logger.syncFile();
+
 }
 
 void collectDataFromBatteryMonitor() {
