@@ -27,21 +27,33 @@ elif Q1:
     ASSEMBLE_PIN = Pin.ASSERT_Q1
 
 GPIO.setmode(GPIO.BCM)              # Board numbering mode
-GPIO.setup(ASSEMBLE_PIN, GPIO.OUT)  
+
+if Q1 or Q2:
+    GPIO.setup(ASSEMBLE_PIN, GPIO.OUT)  
 
 def main():
     # error handling
+    STOP = False
     if S1 and ASSEMBLE_PIN == Pin.ASSERT_Q1:
         print("CLOSE S2 TO ASSERT Q1")
-        return
-    elif S2 and ASSEMBLE_PIN == Pin.ASSERT_Q2:
+        STOP = True
+    if S2 and ASSEMBLE_PIN == Pin.ASSERT_Q2:
         print("CLOSE S1 TO ASSERT Q2")
-        return
-    elif S1 and S2:
+        STOP = True
+    if S1 and S2:
         print("BOTH MECHANICAL SWITCHES CLOSED")
-        return
-    elif Q1 and Q2:
+        STOP = True
+    if Q1 and Q2:
         print("BOTH TRANSISTORS BEING ASSERTED")
+        STOP = True
+    if not S1 and not S2:
+        print("BOTH MECHANICAL SWITCHES OPEN")
+        STOP = True
+    if not Q1 and not Q2:
+        print("NO TRANSISTORS ASSERTED")
+        STOP = True
+
+    if STOP:
         return
 
     GPIO.output(ASSEMBLE_PIN, GPIO.HIGH)    # Spin motor
