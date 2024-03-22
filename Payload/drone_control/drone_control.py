@@ -21,8 +21,8 @@ class PacketStatus(Enum):
 pause_script = False
 # Define radio parameters.
 
-RADIO_FREQ_MHZ = 434.4  # Frequency of the radio in Mhz. Must match your module! Can be a value like 915.0, 433.0, etc.
-'''
+RADIO_FREQ_MHZ = 915  # Frequency of the radio in Mhz. Must match your module! Can be a value like 915.0, 433.0, etc.
+
 # Define pins connected to the chip, use these if wiring up the breakout according to the guide:
 CS = digitalio.DigitalInOut(board.CE1)
 RESET = digitalio.DigitalInOut(board.D6)
@@ -36,7 +36,7 @@ rfm9x = adafruit_rfm9x.RFM9x(spi, CS, RESET, RADIO_FREQ_MHZ)
 # You can however adjust the transmit power (in dB).  The default is 13 dB but
 # high power radios like the RFM95 can go up to 23 dB:
 rfm9x.tx_power = 23
-'''
+
 rsoPermission = False
 detachCompleted = False
 connection_port = '/dev/ttyACM0' # ttyAMA0 on old github not sure if this port works
@@ -61,6 +61,7 @@ def establish_connection():
         vehicle = connect(connection_port, wait_ready=True, heartbeat_timeout=30)
         print("Vehicle connected!")
         # Register the heartbeat listener
+        '''
         @vehicle.on_attribute('last_heartbeat')
         def listener(self, attr_name, value):
             global pause_script
@@ -71,9 +72,11 @@ def establish_connection():
             elif value < 1 and pause_script:
                 pause_script = False
                 print("Un-pausing script. Connection re-established.")
+        '''
     except APIException as e:
         print(f"Connection failed: {e}")
         vehicle = None
+
 def arm_drone_and_land():
     """
     Arms the vehicle and changes its flight mode to LAND.
@@ -162,9 +165,10 @@ def main(status):
         print("Battery: %s" % vehicle.mode.name)
         print("Mode: %s" % vehicle.mode.name)
         print("Altitude: %s" % vehicle.location.global_relative_frame.alt)
-        print("Status: %s" % status)
+        print("Payload defined Status: %s" % status)
+        print("Last heartbeat: %s" % vehicle.last_heartbeat)
         #this will check if we have RSO permission.
-        #status = process_packets(status)
+        status = process_packets(status)
         '''
         if packet == "rso":
             rsoPermission = True
