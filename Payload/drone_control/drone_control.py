@@ -6,6 +6,7 @@ import board
 import busio
 import digitalio
 import adafruit_rfm9x
+from datetime import datetime
 # Enum for GPIO pin setup
 class Pin(Enum):
     SEPARATION_PIN = 18  # Example pin for H-bridge control
@@ -39,11 +40,11 @@ rfm9x.tx_power = 23
 
 rsoPermission = False
 detachCompleted = False
-connection_port = '/dev/ttyACM0' # ttyAMA0 on old github not sure if this port works
+connection_port = '/dev/ttyAMA0' # ttyAMA0 on old github not sure if this port works -- ttyACM0
 DETACH_HEIGHT = 122
 HEARTBEAT_SECONDS_RECONNECTION = 5
 DETACH_SECONDS = 30
-
+last_write_time = 0
 
 # Setup GPIO
 GPIO.setmode(GPIO.BCM)  # BCM numbering double check that
@@ -144,6 +145,16 @@ def transmit_packets(status):
     info_bytes = info_string.encode("utf-8")
     rfm9x.send(info_bytes)
 
+def write_to_file(status):
+    with open('status_log.txt', 'a') as f:
+        current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        f.write("Time: %s\n" % current_time)
+        f.write("Status: %s\n" % vehicle.system_status.state)
+        f.write("Battery: %s\n" % vehicle.battery)
+        f.write("Mode: %s\n" % vehicle.mode.name)
+        f.write("Altitude: %s\n" % vehicle.location.global_relative_frame.alt)
+        f.write("Payload defined Status: %s\n" % status)
+        f.write("Last heartbeat: %s\n" % vehicle.last_heartbeat)
 
 def main(status):
 
@@ -162,8 +173,15 @@ def main(status):
                 print("Connection Failed Again, Proceeding to retry every 5 seconds")
                 time.sleep(5)
                 establish_connection()
+         # Check if it's time to write to the file
+        current_time = time.time()
+        # Check if 100 milliseconds have elapsed since the last write operation
+        if current_time - last_write_time >= 0.1:
+            # Call write_to_file() function
+            write_to_file(status)
+            # Update the last write time
+            last_write_time = current_time
 
-        time.sleep(2)
         print("Status: %s" % vehicle.system_status.state)
         print("Battery: %s" % vehicle.battery)
         print("Mode: %s" % vehicle.mode.name)
@@ -192,6 +210,8 @@ def main(status):
 
 if __name__ == "__main__":
     try:
+        with open('status_log.txt', 'a') as f:
+            f.write("NEW FLIGHT\n")
         status = PacketStatus.INITIAL
         main(status)
     except KeyboardInterrupt:
