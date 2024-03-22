@@ -1,6 +1,6 @@
 import time
 import RPi.GPIO as GPIO
-from dronekit import connect, VehicleMode
+from dronekit import connect, VehicleMode, APIException
 from enum import Enum
 import board
 import busio
@@ -36,17 +36,43 @@ rfm9x = adafruit_rfm9x.RFM9x(spi, CS, RESET, RADIO_FREQ_MHZ)
 # high power radios like the RFM95 can go up to 23 dB:
 rfm9x.tx_power = 23
 
+rsoPermission = False
+detachCompleted = False
+connection_port = '/dev/ttyACM0'
+DETACH_HEIGHT = 122
+
 
 # Setup GPIO
 GPIO.setmode(GPIO.BCM)  # BCM numbering double check that
 GPIO.setup(Pin.SEPARATION_PIN.value, GPIO.OUT)
+'''
 # Connect to the Vehicle still need code to make sure connection
 print("Connecting to vehicle on: 'serial port here'")
 vehicle = connect('/dev/ttyAMA0', wait_ready=True)  # Adjust serial port & baud rate
 pause_script=False
+'''
 # fail safe
 separationCompleted = False
 
+def establish_connection():
+    global vehicle
+    try:
+        vehicle = connect(connection_port, wait_ready=True, heartbeat_timeout=30)
+        print("Vehicle connected!")
+        # Register the heartbeat listener
+        @vehicle.on_attribute('last_heartbeat')
+        def listener(self, attr_name, value):
+            global pause_script
+            if value > 5 and not pause_script:
+                print("Pausing script due to bad link")
+                pause_script = True
+                establish_connection()  # Attempt to re-establish connection
+            elif value < 1 and pause_script:
+                pause_script = False
+                print("Un-pausing script. Connection re-established.")
+    except APIException as e:
+        print(f"Connection failed: {e}")
+        vehicle = None
 def arm_drone_and_land():
     """
     Arms the vehicle and changes its flight mode to LAND.
@@ -117,7 +143,13 @@ def listener(self, attr_name, value):
         print("Un-pausing script")
 
 def main(status):
-    while True:
+    establish_connection() #Open a connection
+    while(vehicle is None):
+        print("Unable to connect to the vehicle. Trying Again!!!!!!!!!!!!!!")
+        time.sleep(5)
+        establish_connection()
+
+    while not pause_script:
         #check if we are connected, and if not we are going to reconnect
         #transmit the vehicle status do a delta time 2 seconds
         print("Status: %s" % vehicle.system_status.state)
