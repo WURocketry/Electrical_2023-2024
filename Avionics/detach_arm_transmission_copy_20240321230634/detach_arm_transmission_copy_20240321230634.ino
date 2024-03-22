@@ -1,4 +1,3 @@
-
 #include <Arduino.h>
 #include <SPI.h>
 #include <RH_RF95.h>
@@ -55,7 +54,7 @@ boolean detach = false;
 boolean arm = false;
 boolean rso = false;
 //for stuff being printed to serial monitor
-unsigned long messageDelayTime = 1000;
+unsigned long messageDelayTime = 100;
 unsigned long lastMessage = 0;
 
 char RSOPermission[] = "RSO";
@@ -105,13 +104,22 @@ void setup() {
 int16_t packetnum = 0;
 
 char input = 'a';
+char listen = 'b';
 
 void loop() {
   // put your main code here, to run repeatedly:
+  
+     listen = Serial.read();
+     if(listen == '?'){
+       input = listen;
+     } else if(listen == '$'){
+       input = listen;
+     } else if(listen == ')'){
+       input = listen;
+     }
 
   while (standby){
     if (Serial.available() > 0){
-      input = Serial.read();
       Serial.print("input: ");
       Serial.println(input);
       standby = false;
@@ -145,10 +153,10 @@ void loop() {
 }
 
   void transmit(char message[], int length){
-    delay(1000);
-    Serial.print("Sending "); 
-    Serial.println(message);
-    Serial.println("Sending...");
+    delay(100);
+    Serial.print("----------Sending "); 
+    Serial.print(message);
+    Serial.println("-----------");
     delay(10);
     rf95.send((uint8_t*)message, length);
 
@@ -160,7 +168,7 @@ void loop() {
     uint8_t len = sizeof(buf);
 
     Serial.println("Waiting for reply...");
-    if (rf95.waitAvailableTimeout(1000)) {
+    if (rf95.waitAvailableTimeout(100)) {
       // Should be a reply message for us now
       if (rf95.recv(buf, &len)) {
         Serial.print("Got reply: ");
@@ -174,6 +182,3 @@ void loop() {
       Serial.println("No reply, is there a listener around?");
     }
   }
-
-
-
