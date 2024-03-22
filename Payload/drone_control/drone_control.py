@@ -41,6 +41,8 @@ rsoPermission = False
 detachCompleted = False
 connection_port = '/dev/ttyACM0' # ttyAMA0 on old github not sure if this port works
 DETACH_HEIGHT = 122
+HEARTBEAT_SECONDS_RECONNECTION = 5
+DETACH_SECONDS = 30
 
 
 # Setup GPIO
@@ -60,19 +62,6 @@ def establish_connection():
     try:
         vehicle = connect(connection_port, wait_ready=True, heartbeat_timeout=30)
         print("Vehicle connected!")
-        # Register the heartbeat listener
-        '''
-        @vehicle.on_attribute('last_heartbeat')
-        def listener(self, attr_name, value):
-            global pause_script
-            if value > 5 and not pause_script:
-                print("Pausing script due to bad link")
-                pause_script = True
-                establish_connection()  # Attempt to re-establish connection
-            elif value < 1 and pause_script:
-                pause_script = False
-                print("Un-pausing script. Connection re-established.")
-        '''
     except APIException as e:
         print(f"Connection failed: {e}")
         vehicle = None
@@ -89,13 +78,13 @@ def arm_drone_and_land():
     vehicle.mode = VehicleMode("LAND")
     print("Drone is armed and in LAND mode")
 
-def detach_drone(seconds):
+def detach_drone():
     """
     Activates the GPIO pin to control the H bridge for drone detach.
     """
     print("Separating the drone")
     GPIO.output(Pin.DETACH_PIN.value, GPIO.HIGH)
-    time.sleep(seconds)  # Simulate the separation process
+    time.sleep(DETACH_SECONDS)  # Simulate the separation process
     GPIO.output(Pin.DETACH_PIN.value, GPIO.LOW)
     print("Drone separated")
     
@@ -151,16 +140,27 @@ def transmit_packets(status):
     pass
 
 def main(status):
-    establish_connection() #Open a connection
+
+    establish_connection()
     while(vehicle is None):
-        print("Unable to connect to the vehicle. Trying Again!!!!!!!!!!!!!!")
+        print("The first connection attempt failed, entering 5 second reconnection loop")
         time.sleep(5)
         establish_connection()
 
-    while not pause_script:
+    while(True):
+
+        if(vehicle.last_heartbeat > HEARTBEAT_SECONDS_RECONNECTION):
+            print("The connection has been detected as lost, entering the reconnection loop")
+            establish_connection()
+            while(vehicle is None):
+                print("Connection Failed Again, Proceeding to retry every 5 seconds")
+                time.sleep(5)
+                establish_connection()
+
+
+
+
         time.sleep(2)
-        #check if we are connected, and if not we are going to reconnect
-        #transmit the vehicle status do a delta time 2 seconds
         print("Status: %s" % vehicle.system_status.state)
         print("Battery: %s" % vehicle.mode.name)
         print("Mode: %s" % vehicle.mode.name)
