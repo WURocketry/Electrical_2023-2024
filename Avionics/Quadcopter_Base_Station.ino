@@ -1,3 +1,4 @@
+
 #include <Arduino.h>
 #include <SPI.h>
 #include <RH_RF95.h>
@@ -109,6 +110,7 @@ char listen = 'b';
 void loop() {
   // put your main code here, to run repeatedly:
   
+  // if(Serial.available()>0){
      listen = Serial.read();
      if(listen == '?'){
        input = listen;
@@ -117,9 +119,11 @@ void loop() {
      } else if(listen == ')'){
        input = listen;
      }
+  // }
 
   while (standby){
     if (Serial.available() > 0){
+      //input = Serial.read();
       Serial.print("input: ");
       Serial.println(input);
       standby = false;
@@ -172,7 +176,12 @@ void loop() {
       // Should be a reply message for us now
       if (rf95.recv(buf, &len)) {
         Serial.print("Got reply: ");
-        Serial.println((char*)buf);
+
+        for (int i=0; i<len; ++i) {
+          Serial.print((char)buf[i]);
+        }
+        Serial.println();
+
         Serial.print("RSSI: ");
         Serial.println(rf95.lastRssi(), DEC);
       } else {
