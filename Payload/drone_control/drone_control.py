@@ -18,10 +18,11 @@ class PacketStatus(Enum):
     DETACHED = "DETACHED"
     ARMED = "ARMED"
 
-status = PacketStatus.INITIAL
+pause_script = False
 # Define radio parameters.
-RADIO_FREQ_MHZ = 434.4  # Frequency of the radio in Mhz. Must match your module! Can be a value like 915.0, 433.0, etc.
 
+RADIO_FREQ_MHZ = 434.4  # Frequency of the radio in Mhz. Must match your module! Can be a value like 915.0, 433.0, etc.
+'''
 # Define pins connected to the chip, use these if wiring up the breakout according to the guide:
 CS = digitalio.DigitalInOut(board.CE1)
 RESET = digitalio.DigitalInOut(board.D6)
@@ -35,10 +36,10 @@ rfm9x = adafruit_rfm9x.RFM9x(spi, CS, RESET, RADIO_FREQ_MHZ)
 # You can however adjust the transmit power (in dB).  The default is 13 dB but
 # high power radios like the RFM95 can go up to 23 dB:
 rfm9x.tx_power = 23
-
+'''
 rsoPermission = False
 detachCompleted = False
-connection_port = '/dev/ttyACM0'
+connection_port = '/dev/ttyACM0' # ttyAMA0 on old github not sure if this port works
 DETACH_HEIGHT = 122
 
 
@@ -129,7 +130,7 @@ def process_packets(status):
         rssi = rfm9x.last_rssi
         print("Received signal strength: {0} dB".format(rssi))
     return status
-
+'''
 # test this function later, let's make sure the radio stuffs works 
 @vehicle.on_attribute('last_heartbeat')
 def listener(self, attr_name, value):
@@ -141,6 +142,10 @@ def listener(self, attr_name, value):
     if value < 1 and pause_script:
         pause_script=False
         print("Un-pausing script")
+'''
+# TODO 
+def transmit_packets(status):
+    pass
 
 def main(status):
     establish_connection() #Open a connection
@@ -150,6 +155,7 @@ def main(status):
         establish_connection()
 
     while not pause_script:
+        time.sleep(2)
         #check if we are connected, and if not we are going to reconnect
         #transmit the vehicle status do a delta time 2 seconds
         print("Status: %s" % vehicle.system_status.state)
@@ -158,13 +164,13 @@ def main(status):
         print("Altitude: %s" % vehicle.location.global_relative_frame.alt)
         print("Status: %s" % status)
         #this will check if we have RSO permission.
-        status = process_packets(status)
+        #status = process_packets(status)
         '''
         if packet == "rso":
             rsoPermission = True
         '''
         #if we have rso, and have not  separated yet, do the process.
-        if status == PacketStatus.RSO_RECEIVED and vehicle.location.global_relative_frame.alt < 122 and not separationCompleted:
+        if status == PacketStatus.RSO_RECEIVED and vehicle.location.global_relative_frame.alt < DETACH_HEIGHT and not separationCompleted:
             detach_drone()
             status = PacketStatus.DETACHED
             arm_drone_and_land()
