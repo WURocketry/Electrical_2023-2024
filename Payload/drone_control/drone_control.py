@@ -122,22 +122,28 @@ def process_packets(status):
         rssi = rfm9x.last_rssi
         print("Received signal strength: {0} dB".format(rssi))
     return status
-'''
-# test this function later, let's make sure the radio stuffs works 
-@vehicle.on_attribute('last_heartbeat')
-def listener(self, attr_name, value):
-    global pause_script
-    # 1 sec 
-    if value > 1 and not pause_script:
-        print("Pausing script due to bad link")
-        pause_script=True
-    if value < 1 and pause_script:
-        pause_script=False
-        print("Un-pausing script")
-'''
-# TODO 
+
+# TODO: test 
 def transmit_packets(status):
-    pass
+    info_string = (
+        "Status: {0}\n"
+        "Battery: {1}\n"
+        "Mode: {2}\n"
+        "Altitude: {3}\n"
+        "Payload defined Status: {4}\n"
+        "Last heartbeat: {5}"
+    ).format(
+        vehicle.system_status.state,
+        vehicle.battery,
+        vehicle.mode.name,
+        vehicle.location.global_relative_frame.alt,
+        status,
+        vehicle.last_heartbeat
+    )
+    
+    info_bytes = info_string.encode("utf-8")
+    rfm9x.send(info_bytes)
+
 
 def main(status):
 
@@ -157,22 +163,16 @@ def main(status):
                 time.sleep(5)
                 establish_connection()
 
-
-
-
         time.sleep(2)
         print("Status: %s" % vehicle.system_status.state)
-        print("Battery: %s" % vehicle.mode.name)
+        print("Battery: %s" % vehicle.battery)
         print("Mode: %s" % vehicle.mode.name)
         print("Altitude: %s" % vehicle.location.global_relative_frame.alt)
         print("Payload defined Status: %s" % status)
         print("Last heartbeat: %s" % vehicle.last_heartbeat)
         #this will check if we have RSO permission.
         status = process_packets(status)
-        '''
-        if packet == "rso":
-            rsoPermission = True
-        '''
+
         #if we have rso, and have not  separated yet, do the process.
         if status == PacketStatus.RSO_RECEIVED and vehicle.location.global_relative_frame.alt < DETACH_HEIGHT and not separationCompleted:
             detach_drone()
