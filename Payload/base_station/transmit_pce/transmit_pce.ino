@@ -45,7 +45,7 @@
 
 #endif
 
-#define RF95_FREQ 434.4
+#define RF95_FREQ 915
 
 RH_RF95 rf95(RFM95_CS, RFM95_INT);
 
