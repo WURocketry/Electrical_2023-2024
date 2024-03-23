@@ -237,7 +237,7 @@ void setup() {
   int fileCount = getNumberOfPrevFlights();
   filename = "flight_" + String(fileCount) + ".txt";
   Serial.println("Writing this flights data to: " + filename);
-  logger.append(filename);
+  //logger.append(filename); moved to logData()
   
   bmeTimer = millis();
   bnoTimer = millis();
@@ -474,6 +474,9 @@ void logData(const char* componentName, float secondsSinceOn, float* data, int d
   // Construct the initial part of the string to write
   String writeto = String(componentName) + "," + String(secondsSinceOn) + ",";
 
+  // per chuan's suggestion
+  logger.append(filename); 
+
   // Write the initial part
   logger.print(writeto);
   // Iterate over the data array and append each value
@@ -483,8 +486,7 @@ void logData(const char* componentName, float secondsSinceOn, float* data, int d
         logger.print(",");  // Add comma if it's not the last element
       }
   }
-  // per chuan's suggestion
-  logger.append(filename);
+
   // End line after all data values are written
   logger.println();
   // Save changes
