@@ -189,6 +189,7 @@ def main(status):
         print("Altitude: %s" % vehicle.location.global_relative_frame.alt)
         print("Payload defined Status: %s" % status)
         print("Last heartbeat: %s" % vehicle.last_heartbeat)
+        transmit_packets(status)
         #this will check if we have RSO permission.
         status = process_packets(status)
 
