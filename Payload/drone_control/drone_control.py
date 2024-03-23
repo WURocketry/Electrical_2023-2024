@@ -40,7 +40,8 @@ rfm9x.tx_power = 23
 
 rsoPermission = False
 detachCompleted = False
-connection_port = '/dev/ttyAMA0' # ttyAMA0 on old github not sure if this port works -- ttyACM0
+# ttyACM0 for flight, tested friday night, worked
+connection_port = '/dev/ttyACM0' # ttyAMA0 on old github not sure if this port works -- ttyACM0
 DETACH_HEIGHT = 122
 HEARTBEAT_SECONDS_RECONNECTION = 5
 DETACH_SECONDS = 30
@@ -157,7 +158,7 @@ def write_to_file(status):
         f.write("Last heartbeat: %s\n" % vehicle.last_heartbeat)
 
 def main(status):
-
+    last_write_time = 0
     establish_connection()
     while(vehicle is None):
         print("The first connection attempt failed, entering 5 second reconnection loop")
