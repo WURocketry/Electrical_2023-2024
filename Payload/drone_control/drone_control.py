@@ -19,7 +19,6 @@ class PacketStatus(Enum):
     DETACHED = "DETACHED"
     ARMED = "ARMED"
 
-pause_script = False
 # Define radio parameters.
 
 RADIO_FREQ_MHZ = 915  # Frequency of the radio in Mhz. Must match your module! Can be a value like 915.0, 433.0, etc.
@@ -38,14 +37,11 @@ rfm9x = adafruit_rfm9x.RFM9x(spi, CS, RESET, RADIO_FREQ_MHZ)
 # high power radios like the RFM95 can go up to 23 dB:
 rfm9x.tx_power = 23
 
-rsoPermission = False
-detachCompleted = False
 # ttyACM0 for flight, tested friday night, worked
 connection_port = '/dev/ttyACM0' # ttyAMA0 on old github not sure if this port works -- ttyACM0
 DETACH_HEIGHT = 122
 HEARTBEAT_SECONDS_RECONNECTION = 5
 DETACH_SECONDS = 30
-last_write_time = 0
 
 # Setup GPIO
 GPIO.setmode(GPIO.BCM)  # BCM numbering double check that
