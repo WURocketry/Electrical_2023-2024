@@ -69,6 +69,7 @@ void setup()
     myLog.println("This is recorded to the end of testFile.txt");
     randomSeed(analogRead(A0));
 
+    int charsToWrite = random(300, 500);
     //Write 300 to 500 random characters to the file
     for (int x = 0 ; x < charsToWrite ; x++)
     {
