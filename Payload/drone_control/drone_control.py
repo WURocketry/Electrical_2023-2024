@@ -162,6 +162,7 @@ def write_to_file(status):
 
 def main(status):
     last_write_time = 0
+    separationCompleted = False
     establish_connection()
     while(vehicle is None):
         print("The first connection attempt failed, entering 5 second reconnection loop")
