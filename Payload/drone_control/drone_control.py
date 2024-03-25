@@ -1,6 +1,6 @@
 import time
 import RPi.GPIO as GPIO
-from dronekit import connect, VehicleMode, APIException
+from dronekit import connect, VehicleMode, APIException, SerialException
 from enum import Enum
 import board
 import busio
@@ -10,6 +10,7 @@ from datetime import datetime
 # Enum for GPIO pin setup
 class Pin(Enum):
     SEPARATION_PIN = 18  # Example pin for H-bridge control
+    DETACH_PIN = 19 # Modify the number to match the actual GPIO pin number we are using
 
 class PacketStatus(Enum):
     INITIAL = "INITIAL"
@@ -63,6 +64,12 @@ def establish_connection():
     except APIException as e:
         print(f"Connection failed: {e}")
         vehicle = None
+        #catch an exception
+    except SerialException as f:
+        print(f"SerialException occured: {f}")
+        vehicle = None
+    except FileNotFoundError as g:
+        print(f"File is not found: {g}")
 
 def arm_drone_and_land():
     """
