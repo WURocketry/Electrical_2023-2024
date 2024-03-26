@@ -10,7 +10,7 @@ from datetime import datetime
 # Enum for GPIO pin setup
 class Pin(Enum):
     SEPARATION_PIN = 18  # Example pin for H-bridge control
-    DETACH_PIN = 19 # Modify the number to match the actual GPIO pin number we are using
+    DETACH_PIN = 17 # Modify the number to match the actual GPIO pin number we are using
 
 class PacketStatus(Enum):
     INITIAL = "INITIAL"
