@@ -19,6 +19,8 @@ class PacketStatus(Enum):
     FORCE_ARM = "EMERGENCY_ARM"
     DETACHED = "DETACHED"
     ARMED = "ARMED"
+    DRONE_DISCONNECTED = "DRONE_DISCONNECTED"
+    DETACH_FAIL = "CANNOT_SPIN_MOTOR"
 
 # Define radio parameters.
 
@@ -83,15 +85,23 @@ def arm_drone_and_land():
     vehicle.mode = VehicleMode("LAND")
     print("Drone is armed and in LAND mode")
 
-def detach_drone():
+def detach_drone(status):
     """
     Activates the GPIO pin to control the H bridge for drone detach.
     """
     print("Separating the drone")
-    GPIO.output(Pin.DETACH_PIN.value, GPIO.HIGH)
-    time.sleep(DETACH_SECONDS)  # Simulate the separation process
-    GPIO.output(Pin.DETACH_PIN.value, GPIO.LOW)
-    print("Drone separated")
+    try:
+        GPIO.output(Pin.DETACH_PIN.value, GPIO.HIGH)
+        time.sleep(DETACH_SECONDS)  # Simulate the separation process
+        GPIO.output(Pin.DETACH_PIN.value, GPIO.LOW)
+    except AttributeError as e:
+        print("Error:", e)
+        print("Failed to detach the drone. GPIO pin not configured.")
+        status = PacketStatus.DETACH_FAIL
+        transmit_packets(status)
+    else:
+        status = PacketStatus.DETACHED
+        print("Drone separated")
     
 def process_packets(status):
     """
@@ -128,23 +138,36 @@ def process_packets(status):
         print("Received signal strength: {0} dB".format(rssi))
     return status
 
-# TODO: test 
+
 def transmit_packets(status):
-    info_string = (
-        "Status: {0}\n"
-        "Battery: {1}\n"
-        "Mode: {2}\n"
-        "Altitude: {3}\n"
-        "Payload defined Status: {4}\n"
-        "Last heartbeat: {5}"
-    ).format(
-        vehicle.system_status.state,
-        vehicle.battery,
-        vehicle.mode.name,
-        vehicle.location.global_relative_frame.alt,
-        status,
-        vehicle.last_heartbeat
-    )
+    info_string = ""
+    if vehicle is None:
+        info_string = (
+            "Status: None\n"
+            "Battery: None\n"
+            "Mode: None\n"
+            "Altitude: None\n"
+            "Payload defined Status: {0}\n"
+            "Last heartbeat: None"
+        ).format(
+            status
+        )
+    else:
+        info_string = (
+            "Status: {0}\n"
+            "Battery: {1}\n"
+            "Mode: {2}\n"
+            "Altitude: {3}\n"
+            "Payload defined Status: {4}\n"
+            "Last heartbeat: {5}"
+        ).format(
+            vehicle.system_status.state,
+            vehicle.battery,
+            vehicle.mode.name,
+            vehicle.location.global_relative_frame.alt,
+            status,
+            vehicle.last_heartbeat
+        )
     
     info_bytes = info_string.encode("utf-8")
     rfm9x.send(info_bytes)
@@ -199,16 +222,14 @@ def main(status):
 
         #if we have rso, and have not  separated yet, do the process.
         if status == PacketStatus.RSO_RECEIVED and vehicle.location.global_relative_frame.alt < DETACH_HEIGHT and not separationCompleted:
-            detach_drone()
-            status = PacketStatus.DETACHED
+            detach_drone(status)
             arm_drone_and_land()
             separationCompleted = True
             status = PacketStatus.ARMED
     
         #Backup if something goes wrong, force arm or force separate.
         if status == PacketStatus.FORCE_DETACH:
-            detach_drone()
-            status = PacketStatus.DETACHED
+            detach_drone(status)
         if status == PacketStatus.FORCE_ARM:
             arm_drone_and_land()
             status = PacketStatus.ARMED
