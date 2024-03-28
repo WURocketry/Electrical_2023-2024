@@ -22,16 +22,15 @@ Q1 = args.q1                # Q1 asserted
 Q2 = args.q2                # Q2 asserted
 
 if Q2:
-    ASSEMBLE_PIN = Pin.ASSERT_Q2
+    ASSEMBLE_PIN = Pin.ASSERT_Q2.value
 elif Q1:
-    ASSEMBLE_PIN = Pin.ASSERT_Q1
+    ASSEMBLE_PIN = Pin.ASSERT_Q1.value
 
 GPIO.setmode(GPIO.BCM)              # Board numbering mode
 
 if Q1 or Q2:
     GPIO.setup(ASSEMBLE_PIN, GPIO.OUT)  
-
-GPIO.output(ASSEMBLE_PIN, GPIO.LOW) # pull this low to make sure that motor circuit is open
+    GPIO.output(ASSEMBLE_PIN, GPIO.LOW) # pull this low to make sure that motor circuit is open
 
 def main():
     # error handling
