@@ -31,6 +31,8 @@ GPIO.setmode(GPIO.BCM)              # Board numbering mode
 if Q1 or Q2:
     GPIO.setup(ASSEMBLE_PIN, GPIO.OUT)  
 
+GPIO.output(ASSEMBLE_PIN, GPIO.LOW) # pull this low to make sure that motor circuit is open
+
 def main():
     # error handling
     STOP = False

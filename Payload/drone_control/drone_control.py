@@ -184,6 +184,8 @@ def write_to_file(status):
         f.write("Last heartbeat: %s\n" % vehicle.last_heartbeat)
 
 def main(status):
+    GPIO.output(Pin.DETACH_PIN.value, GPIO.LOW) #pull this pin low on startup to make sure sep. circuit is open
+
     last_write_time = 0
     separationCompleted = False
     establish_connection()
