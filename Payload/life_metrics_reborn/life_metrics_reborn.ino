@@ -56,7 +56,6 @@ void setup() {
   // Try to initialize the BNO08x sensor over I2C
   if (!bno08x.begin_I2C()) {
     ErrorLEDLoop("Failed to find BNO08x IMU, Halting");
-    Serial.println(F("Failed to find BNO08x chip"));
     while (1) {
       delay(10); // Infinite loop if the sensor is not found
     }
@@ -64,13 +63,12 @@ void setup() {
 
   // Enable the accelerometer report
   if (!bno08x.enableReport(SH2_ACCELEROMETER)) {
-    Serial.println(F("Could not enable accelerometer report"));
     ErrorLEDLoop("Failed to enable the accelerometer, Halting");
   }
 
   // Initialize SGP30
   if (!sgp.begin()){
-    Serial.println(F("SGP30 sensor not found :("));
+    ErrorLEDLoop("Failed to initialize SGP30 , Halting");
     while (1);
   }
   Serial.print(F("Found SGP30 serial #"));
@@ -81,7 +79,6 @@ void setup() {
   // Initialize BMP3XX
   if (!bmp.begin_I2C()) {   // hardware I2C mode, can pass in address & alt Wire
     ErrorLEDLoop("Failed to find BMP sensor, Halting");
-    Serial.println(F("Could not find a valid BMP3XX sensor, check wiring!"));
     while (1);
   }
   
@@ -91,18 +88,19 @@ void setup() {
   bmp.setIIRFilterCoeff(BMP3_IIR_FILTER_COEFF_3);
   bmp.setOutputDataRate(BMP3_ODR_50_HZ);
 
-  Serial.println(F("Sensors initialized successfully."));
+  Serial.println("Sensors initialized successfully.");
 }
 
 void ErrorLEDLoop(const char* error_msg){
   pixels.begin();
-  pixels.setBrightness(255);
+  pixels.setPixelColor(0, pixels.Color(255, 0, 0));
+  pixels.show();
   while(true){
     Serial.println(error_msg);
-    pixels.setPixelColor(0, pixels.Color(255, 0, 0));
+    pixels.setBrightness(255);
     pixels.show();
     delay(1000);                      
-    pixels.setPixelColor(0, pixels.Color(0, 0, 0));
+    pixels.setBrightness(0);
     pixels.show();
     delay(1000);    
   }                
@@ -117,7 +115,6 @@ void loop() {
 
     // Perform BMP3XX reading
     if (!bmp.performReading()) {
-      Serial.println("BMP3XX: Failed to perform reading :(");
       ErrorLEDLoop("Failed to find perform reading on BMP");
 
       return;
@@ -142,9 +139,8 @@ void loop() {
     sgp.setHumidity(getAbsoluteHumidity(temperature, humidity));
 
     // Perform SGP30 reading
-    if (! sgp.IAQmeasure()) {
+    if (!sgp.IAQmeasure()) {
       ErrorLEDLoop("Failed to read SGP30 sensor, Halting");
-      Serial.println(F("SGP30: Measurement failed"));
       return;
     }
     myLog.print(millis()/1000.0);
