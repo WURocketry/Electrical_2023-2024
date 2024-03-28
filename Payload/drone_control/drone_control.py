@@ -1,6 +1,6 @@
 import time
 import RPi.GPIO as GPIO
-from dronekit import connect, VehicleMode, APIException
+from dronekit import connect, VehicleMode, APIException, SerialException
 from enum import Enum
 import board
 import busio
@@ -10,6 +10,7 @@ from datetime import datetime
 # Enum for GPIO pin setup
 class Pin(Enum):
     SEPARATION_PIN = 18  # Example pin for H-bridge control
+    DETACH_PIN = 19 # Modify the number to match the actual GPIO pin number we are using
 
 class PacketStatus(Enum):
     INITIAL = "INITIAL"
@@ -18,8 +19,9 @@ class PacketStatus(Enum):
     FORCE_ARM = "EMERGENCY_ARM"
     DETACHED = "DETACHED"
     ARMED = "ARMED"
+    DRONE_DISCONNECTED = "DRONE_DISCONNECTED"
+    DETACH_FAIL = "CANNOT_SPIN_MOTOR"
 
-pause_script = False
 # Define radio parameters.
 
 RADIO_FREQ_MHZ = 915  # Frequency of the radio in Mhz. Must match your module! Can be a value like 915.0, 433.0, etc.
@@ -38,14 +40,11 @@ rfm9x = adafruit_rfm9x.RFM9x(spi, CS, RESET, RADIO_FREQ_MHZ)
 # high power radios like the RFM95 can go up to 23 dB:
 rfm9x.tx_power = 23
 
-rsoPermission = False
-detachCompleted = False
 # ttyACM0 for flight, tested friday night, worked
 connection_port = '/dev/ttyACM0' # ttyAMA0 on old github not sure if this port works -- ttyACM0
 DETACH_HEIGHT = 122
 HEARTBEAT_SECONDS_RECONNECTION = 5
 DETACH_SECONDS = 30
-last_write_time = 0
 
 # Setup GPIO
 GPIO.setmode(GPIO.BCM)  # BCM numbering double check that
@@ -67,6 +66,12 @@ def establish_connection():
     except APIException as e:
         print(f"Connection failed: {e}")
         vehicle = None
+        #catch an exception
+    except SerialException as f:
+        print(f"SerialException occured: {f}")
+        vehicle = None
+    except FileNotFoundError as g:
+        print(f"File is not found: {g}")
 
 def arm_drone_and_land():
     """
@@ -80,15 +85,23 @@ def arm_drone_and_land():
     vehicle.mode = VehicleMode("LAND")
     print("Drone is armed and in LAND mode")
 
-def detach_drone():
+def detach_drone(status):
     """
     Activates the GPIO pin to control the H bridge for drone detach.
     """
     print("Separating the drone")
-    GPIO.output(Pin.DETACH_PIN.value, GPIO.HIGH)
-    time.sleep(DETACH_SECONDS)  # Simulate the separation process
-    GPIO.output(Pin.DETACH_PIN.value, GPIO.LOW)
-    print("Drone separated")
+    try:
+        GPIO.output(Pin.DETACH_PIN.value, GPIO.HIGH)
+        time.sleep(DETACH_SECONDS)  # Simulate the separation process
+        GPIO.output(Pin.DETACH_PIN.value, GPIO.LOW)
+    except AttributeError as e:
+        print("Error:", e)
+        print("Failed to detach the drone. GPIO pin not configured.")
+        status = PacketStatus.DETACH_FAIL
+        transmit_packets(status)
+    else:
+        status = PacketStatus.DETACHED
+        print("Drone separated")
     
 def process_packets(status):
     """
@@ -125,23 +138,36 @@ def process_packets(status):
         print("Received signal strength: {0} dB".format(rssi))
     return status
 
-# TODO: test 
+
 def transmit_packets(status):
-    info_string = (
-        "Status: {0}\n"
-        "Battery: {1}\n"
-        "Mode: {2}\n"
-        "Altitude: {3}\n"
-        "Payload defined Status: {4}\n"
-        "Last heartbeat: {5}"
-    ).format(
-        vehicle.system_status.state,
-        vehicle.battery,
-        vehicle.mode.name,
-        vehicle.location.global_relative_frame.alt,
-        status,
-        vehicle.last_heartbeat
-    )
+    info_string = ""
+    if vehicle is None:
+        info_string = (
+            "Status: None\n"
+            "Battery: None\n"
+            "Mode: None\n"
+            "Altitude: None\n"
+            "Payload defined Status: {0}\n"
+            "Last heartbeat: None"
+        ).format(
+            status
+        )
+    else:
+        info_string = (
+            "Status: {0}\n"
+            "Battery: {1}\n"
+            "Mode: {2}\n"
+            "Altitude: {3}\n"
+            "Payload defined Status: {4}\n"
+            "Last heartbeat: {5}"
+        ).format(
+            vehicle.system_status.state,
+            vehicle.battery,
+            vehicle.mode.name,
+            vehicle.location.global_relative_frame.alt,
+            status,
+            vehicle.last_heartbeat
+        )
     
     info_bytes = info_string.encode("utf-8")
     rfm9x.send(info_bytes)
@@ -159,6 +185,7 @@ def write_to_file(status):
 
 def main(status):
     last_write_time = 0
+    separationCompleted = False
     establish_connection()
     while(vehicle is None):
         print("The first connection attempt failed, entering 5 second reconnection loop")
@@ -189,21 +216,20 @@ def main(status):
         print("Altitude: %s" % vehicle.location.global_relative_frame.alt)
         print("Payload defined Status: %s" % status)
         print("Last heartbeat: %s" % vehicle.last_heartbeat)
+        transmit_packets(status)
         #this will check if we have RSO permission.
         status = process_packets(status)
 
         #if we have rso, and have not  separated yet, do the process.
         if status == PacketStatus.RSO_RECEIVED and vehicle.location.global_relative_frame.alt < DETACH_HEIGHT and not separationCompleted:
-            detach_drone()
-            status = PacketStatus.DETACHED
+            detach_drone(status)
             arm_drone_and_land()
             separationCompleted = True
             status = PacketStatus.ARMED
     
         #Backup if something goes wrong, force arm or force separate.
         if status == PacketStatus.FORCE_DETACH:
-            detach_drone()
-            status = PacketStatus.DETACHED
+            detach_drone(status)
         if status == PacketStatus.FORCE_ARM:
             arm_drone_and_land()
             status = PacketStatus.ARMED
