@@ -4,6 +4,7 @@
 #include "Adafruit_BMP3XX.h"
 #include <Adafruit_BNO08x.h>
 #include "SparkFun_Qwiic_OpenLog_Arduino_Library.h"
+#include <Adafruit_NeoPixel.h>
 
 // Global variables for time tracking
 unsigned long lastEnvSensorPoll = 0;
@@ -25,6 +26,12 @@ Adafruit_SGP30 sgp;
 #define SEALEVELPRESSURE_HPA (1013.25)
 Adafruit_BMP3XX bmp;
 
+
+//Neopixel Definitions
+const int pin = 4;
+const int numPixels = 1;
+Adafruit_NeoPixel pixels = Adafruit_NeoPixel(numPixels, pin, NEO_GRB + NEO_KHZ800);
+
 /* return absolute humidity [mg/m^3] with approximation formula
 * @param temperature [°C]
 * @param humidity [%RH]
@@ -39,6 +46,8 @@ uint32_t getAbsoluteHumidity(float temperature, float humidity) {
 void setup() {
   Serial.begin(115200);
   while (!Serial); // Wait for serial console to open!
+  pinMode(LED_BUILTIN, OUTPUT);
+
 
   //Init Openlog
   Wire.begin();
@@ -46,7 +55,8 @@ void setup() {
 
   // Try to initialize the BNO08x sensor over I2C
   if (!bno08x.begin_I2C()) {
-    Serial.println("Failed to find BNO08x chip");
+    ErrorLEDLoop("Failed to find BNO08x IMU, Halting");
+    Serial.println(F("Failed to find BNO08x chip"));
     while (1) {
       delay(10); // Infinite loop if the sensor is not found
     }
@@ -54,22 +64,24 @@ void setup() {
 
   // Enable the accelerometer report
   if (!bno08x.enableReport(SH2_ACCELEROMETER)) {
-    Serial.println("Could not enable accelerometer report");
+    Serial.println(F("Could not enable accelerometer report"));
+    ErrorLEDLoop("Failed to enable the accelerometer, Halting");
   }
 
   // Initialize SGP30
   if (!sgp.begin()){
-    Serial.println("SGP30 sensor not found :(");
+    Serial.println(F("SGP30 sensor not found :("));
     while (1);
   }
-  Serial.print("Found SGP30 serial #");
+  Serial.print(F("Found SGP30 serial #"));
   Serial.print(sgp.serialnumber[0], HEX);
   Serial.print(sgp.serialnumber[1], HEX);
   Serial.println(sgp.serialnumber[2], HEX);
 
   // Initialize BMP3XX
   if (!bmp.begin_I2C()) {   // hardware I2C mode, can pass in address & alt Wire
-    Serial.println("Could not find a valid BMP3XX sensor, check wiring!");
+    ErrorLEDLoop("Failed to find BMP sensor, Halting");
+    Serial.println(F("Could not find a valid BMP3XX sensor, check wiring!"));
     while (1);
   }
   
@@ -79,7 +91,21 @@ void setup() {
   bmp.setIIRFilterCoeff(BMP3_IIR_FILTER_COEFF_3);
   bmp.setOutputDataRate(BMP3_ODR_50_HZ);
 
-  Serial.println("Sensors initialized successfully.");
+  Serial.println(F("Sensors initialized successfully."));
+}
+
+void ErrorLEDLoop(const char* error_msg){
+  pixels.begin();
+  pixels.setBrightness(255);
+  while(true){
+    Serial.println(error_msg);
+    pixels.setPixelColor(0, pixels.Color(255, 0, 0));
+    pixels.show();
+    delay(1000);                      
+    pixels.setPixelColor(0, pixels.Color(0, 0, 0));
+    pixels.show();
+    delay(1000);    
+  }                
 }
 
 void loop() {
@@ -92,6 +118,8 @@ void loop() {
     // Perform BMP3XX reading
     if (!bmp.performReading()) {
       Serial.println("BMP3XX: Failed to perform reading :(");
+      ErrorLEDLoop("Failed to find perform reading on BMP");
+
       return;
     }
     //Time for Gas
@@ -115,7 +143,8 @@ void loop() {
 
     // Perform SGP30 reading
     if (! sgp.IAQmeasure()) {
-      Serial.println("SGP30: Measurement failed");
+      ErrorLEDLoop("Failed to read SGP30 sensor, Halting");
+      Serial.println(F("SGP30: Measurement failed"));
       return;
     }
     myLog.print(millis()/1000.0);
