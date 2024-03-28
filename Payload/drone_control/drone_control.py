@@ -1,16 +1,18 @@
 import time
 import RPi.GPIO as GPIO
-from dronekit import connect, VehicleMode, APIException, SerialException
+from dronekit import connect, VehicleMode, APIException
+import socket
 from enum import Enum
 import board
 import busio
 import digitalio
 import adafruit_rfm9x
+#from dronekit import APIException, SerialException
 from datetime import datetime
 # Enum for GPIO pin setup
 class Pin(Enum):
-    SEPARATION_PIN = 18  # Example pin for H-bridge control
-    DETACH_PIN = 19 # Modify the number to match the actual GPIO pin number we are using
+    SEPARATION_PIN = 12  # Example pin for H-bridge control
+    DETACH_PIN = 13 # Modify the number to match the actual GPIO pin number we are using
 
 class PacketStatus(Enum):
     INITIAL = "INITIAL"
@@ -21,6 +23,7 @@ class PacketStatus(Enum):
     ARMED = "ARMED"
     DRONE_DISCONNECTED = "DRONE_DISCONNECTED"
     DETACH_FAIL = "CANNOT_SPIN_MOTOR"
+
 
 # Define radio parameters.
 
@@ -60,7 +63,8 @@ separationCompleted = False
 
 def establish_connection():
     global vehicle
-    try:
+    '''
+    try: 
         vehicle = connect(connection_port, wait_ready=True, heartbeat_timeout=30)
         print("Vehicle connected!")
     except APIException as e:
@@ -72,6 +76,19 @@ def establish_connection():
         vehicle = None
     except FileNotFoundError as g:
         print(f"File is not found: {g}")
+    '''
+
+    try:
+        vehicle = connect(connection_port, wait_ready=True, heartbeat_timeout=30)
+    # Bad TCP connection
+    except socket.error:
+        print('No server exists!')
+    # API Error
+    except APIException:
+        print('Timeout!')
+    # Other error
+    except Exception as e:
+         print(f"Some other error: {e}")
 
 def arm_drone_and_land():
     """
@@ -173,7 +190,7 @@ def transmit_packets(status):
     rfm9x.send(info_bytes)
 
 def write_to_file(status):
-    with open('status_log.txt', 'a') as f:
+    with open('/home/pce/status_log.txt', 'a') as f:
         current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         f.write("Time: %s\n" % current_time)
         f.write("Status: %s\n" % vehicle.system_status.state)
@@ -190,6 +207,8 @@ def main(status):
     while(vehicle is None):
         print("The first connection attempt failed, entering 5 second reconnection loop")
         time.sleep(5)
+        status = PacketStatus.DRONE_DISCONNECTED
+        transmit_packets(status)
         establish_connection()
 
     while(True):
@@ -216,9 +235,9 @@ def main(status):
         print("Altitude: %s" % vehicle.location.global_relative_frame.alt)
         print("Payload defined Status: %s" % status)
         print("Last heartbeat: %s" % vehicle.last_heartbeat)
-        transmit_packets(status)
+        #transmit_packets(status)
         #this will check if we have RSO permission.
-        status = process_packets(status)
+        #status = process_packets(status)
 
         #if we have rso, and have not  separated yet, do the process.
         if status == PacketStatus.RSO_RECEIVED and vehicle.location.global_relative_frame.alt < DETACH_HEIGHT and not separationCompleted:
@@ -237,9 +256,10 @@ def main(status):
 
 if __name__ == "__main__":
     try:
-        with open('status_log.txt', 'a') as f:
+        with open('/home/pce/status_log.txt', 'a') as f:
             f.write("NEW FLIGHT\n")
         status = PacketStatus.INITIAL
+        vehicle = None
         main(status)
     except KeyboardInterrupt:
         print("Program terminated by user")
