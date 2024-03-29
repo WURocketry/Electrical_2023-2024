@@ -11,6 +11,30 @@
 unsigned long lastEnvSensorPoll = 0;
 const long envSensorInterval = 500;
 
+
+enum LiveUpdateFields {
+  XACCEL_BNO,
+  YACCEL_BNO,
+  ZACCEL_BNO,
+  TEMPERATURE_BME,
+  ALTITUDE_BME,
+  PERCENT_BATERRY,
+  VOLATILE_COMPONENT,
+  LIVE_RADIO_SIZE,
+};
+const char* LIVE_DATA_NAMES[] = {
+  "XACCEL_BNO",
+  "YACCEL_BNO",
+  "ZACCEL_BNO",
+  "TEMPERATURE_BME",
+  "ALTITUDE_BME",
+  "PERCENT_BATERRY",
+  "VOLATILE_COMPONENT"
+  "LIVE_RADIO_SIZE",
+};
+
+float LIVE_DATA[LIVE_RADIO_SIZE];
+
 //Openlog
 OpenLog myLog;
 long randomNumber = random(0, 2147483647);
@@ -27,6 +51,17 @@ Adafruit_SGP30 sgp;
 #define SEALEVELPRESSURE_HPA (1013.25)
 Adafruit_BMP3XX bmp;
 
+
+//LoRa Defintions
+#define FREQ 915
+#define TRANSMIT_PWR 20
+#define RFM95_CS    16  // Chip select pin
+#define RFM95_RST   17  // Reset pin
+#define RFM95_IRQ   21  // Interrupt pin, connected to DIO0
+#define RFM95_GPIO  22  // Additional GPIO, connected to DIO1
+SX1276 radio = new Module(RFM95_CS, RFM95_IRQ, RFM95_RST, RFM95_GPIO);
+float rfTime = 756;
+unsigned long rfTimer = 0;
 
 //Neopixel Definitions
 const int pin = 4;
@@ -53,6 +88,48 @@ void setup() {
   //Init Openlog
   Wire.begin();
   myLog.begin();
+
+
+  //LoRa Setup
+  pinMode(RFM95_RST, OUTPUT);
+  digitalWrite(RFM95_RST, HIGH);
+
+  //LoRa Manual Reset
+  digitalWrite(RFM95_RST, LOW);
+  delay(10);
+  digitalWrite(RFM95_RST, HIGH);
+  delay(10);
+  
+  //Turn Radio On
+  int state = radio.begin();
+  if (state == RADIOLIB_ERR_NONE) {
+    // no error
+    Serial.println(F("Initialization successful!"));
+  } else {
+    ErrorLEDLoop("Failed to Init LoRa - Halting");
+  }
+
+  //Set Radio Transmit Power
+  state = radio.setOutputPower(TRANSMIT_PWR, false);
+  if(state == RADIOLIB_ERR_NONE) {
+    Serial.print(F("Transmit Power set to: "));
+    Serial.print(TRANSMIT_PWR);
+    Serial.println(F(" dBm"));
+  } else {
+    Serial.print(F("Setting Output Power Failed:, code "));
+    Serial.println(state);
+  }
+
+  //Set Radio Frequency 
+  state = radio.setFrequency(FREQ);
+  if(state == RADIOLIB_ERR_NONE) {
+    Serial.print(F("Frequency set to: "));
+    Serial.print(FREQ);
+    Serial.println(F(" MHz"));
+  } else {
+    Serial.print(F("Setting frequency failed, code "));
+    Serial.println(state);
+  }
 
   // Try to initialize the BNO08x sensor over I2C
   if (!bno08x.begin_I2C()) {
@@ -107,10 +184,44 @@ void ErrorLEDLoop(const char* error_msg){
   }                
 }
 
+
+void transmitCurrentComponentReadings() {
+  // Prepare a buffer to hold the transmitted message
+  char radiopacket[256] = {0};  
+  // Iterate through the DATA_COMPONENT_READINGS=> LIVE_DATA array and build the message
+  for (int i = 0; i < LIVE_RADIO_SIZE; i++) {
+    char buffer[32];  // Temporary buffer to hold each value
+
+    // dtostrf(DATA_COMPONENT_READINGS[i], 6, 2, buffer);  // Convert double to string, adjust field width and decimal places as necessary
+    dtostrf(LIVE_DATA[i], 8, 6, buffer);  // Convert float to string, adjust field width and decimal places as necessary
+
+    // Append the value to radiopacket
+    strcat(radiopacket, buffer);
+
+    // If not the last element, append a comma
+    if (i < LIVE_RADIO_SIZE - 1) {
+      strcat(radiopacket, ",");
+      }
+    }
+
+    unsigned long currentMillis = millis();
+    if (currentMillis >= rfTime + rfTimer) {
+      rfTimer += rfTime;
+      
+      int state = radio.transmit((uint8_t *)radiopacket, strlen(radiopacket) + 1);  // +1 to include the null terminator
+
+      if (state == RADIOLIB_ERR_NONE) {
+        Serial.println("success!");
+      } else {
+        Serial.print("failed, error code: ");
+        Serial.println(state);
+      }
+    }
+}
+
 void loop() {
   unsigned long currentMillis = millis();
   myLog.append(fileName);
-
   if (currentMillis - lastEnvSensorPoll >= envSensorInterval) {
     lastEnvSensorPoll = currentMillis;
 
@@ -134,6 +245,9 @@ void loop() {
     myLog.print(bmp.readAltitude(SEALEVELPRESSURE_HPA));
     myLog.println(" m");
 
+    LIVE_DATA[TEMPERATURE_BME] = bmp.temperature;
+    LIVE_DATA[ALTITUDE_BME] = bmp.readAltitude(SEALEVELPRESSURE_HPA);
+
     // Use temperature to adjust SGP30 readings
     float temperature = bmp.temperature; // Assume temperature from BMP3XX is the ambient temperature
     float humidity = 50.0; // Assume a default humidity value, as BMP3XX does not measure humidity
@@ -149,10 +263,12 @@ void loop() {
 
     myLog.print("TVOC: ");
     myLog.print(sgp.TVOC);
+    LIVE_DATA[VOLATILE_COMPONENT] = sgp.TVOC;
     myLog.print("ppb, ");
     myLog.print("eCO2: ");
     myLog.print(sgp.eCO2);
     myLog.println("ppm");
+
   }
 
   sh2_SensorValue_t sensorValue; // Variable to hold sensor data
@@ -169,8 +285,13 @@ void loop() {
       myLog.print(sensorValue.un.accelerometer.y);
       myLog.print(", Z: ");
       myLog.println(sensorValue.un.accelerometer.z);
+
+      LIVE_DATA[XACCEL_BNO] = sensorValue.un.accelerometer.x;
+      LIVE_DATA[YACCEL_BNO] = sensorValue.un.accelerometer.y;
+      LIVE_DATA[ZACCEL_BNO] = sensorValue.un.accelerometer.z;
+      Serial.println(LIVE_DATA[ZACCEL_BNO]);
     }
   }
-
+  transmitCurrentComponentReadings();
   myLog.syncFile();
 }

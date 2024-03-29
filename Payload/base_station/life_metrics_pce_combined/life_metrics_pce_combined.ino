@@ -1,36 +1,6 @@
 //#include <RadioLib.h>
 #include <RH_RF95.h>
-// Define the pin mapping for the RFM95 LoRa module
-//#define RFM95_CS    16  // Chip select pin
-//#define RFM95_RST   17  // Reset pin
-//#define RFM95_IRQ   21  // Interrupt pin, connected to DIO0
-//#define RFM95_GPIO  22  // Additional GPIO, connected to DIO1
-//SX1276 radio = new Module(RFM95_CS, RFM95_IRQ, RFM95_RST, RFM95_GPIO);
-/*
-const char* ENUM_NAMES[] = {
-//  "BNO_YAW",
-//  "BNO_PITCH",
-//  "BNO_ROLL",
-  "BNO_XACCEL",
-  "BNO_YACCEL",
-  "BNO_ZACCEL",
-//  "SECONDS_SINCE_ON",
-  "BME_TEMPERATURE",
-//  "BME_PRESSURE",
-//  "BME_HUMIDITY",
-//  "BME_GAS",
-  "BME_ALTITUDE",
- // "GPS_HOUR",
- // "GPS_MINUTE",
- // "GPS_SPEED",
-  "GPS_LATITUDE",
-  "GPS_LONGITUDE",
-//  "GPS_ALTITUDE",
-  "BATTERY_PERCENT",
-//  "BATTERY_VOLTAGE",
-//  "BATTERY_DISCHARGE_RATE_%_PER_HOUR",
-};
-*/
+
 #if defined(__AVR_ATmega32U4__)  // Feather 32u4 w/Radio
 #define RFM95_CS 8
 #define RFM95_INT 7
@@ -90,18 +60,29 @@ char RSOPermission[] = "RSO";
 char armMessage[] = "ARM";
 char detachMessage[] = "DETACH";
 
-const char* ENUM_NAMES[] = {
+
+enum LiveUpdateFields {
+  XACCEL_BNO,
+  YACCEL_BNO,
+  ZACCEL_BNO,
+  TEMPERATURE_BME,
+  ALTITUDE_BME,
+  PERCENT_BATTERY,
+  VOLATILE_COMPONENT,
+  LIVE_RADIO_SIZE,
+};
+
+const char* LIVE_DATA_NAMES[] = {
   "XACCEL_BNO",
   "YACCEL_BNO",
   "ZACCEL_BNO",
   "TEMPERATURE_BME",
   "ALTITUDE_BME",
-  "LATITUDE_GPS",
-  "LONGITUDE_GPS",
-  "PERCENT_BATERRY",
-
+  "PERCENT_BATTERY",
+  "VOLATILE_COMPONENT",
 };
-//LIVE_RADIO_SIZE,
+float LIVE_DATA[LIVE_RADIO_SIZE];
+
 
 void setup() {
   // put your setup code here, to run once:
@@ -188,11 +169,12 @@ char input = 'a';
 char listen = 'b';
 
 void loop() {
+  Serial.println("ever in loop?");
   if (rf95.available()) {
     // A message was received!
     uint8_t buf[RH_RF95_MAX_MESSAGE_LEN];
     uint8_t len = sizeof(buf);
-
+    Serial.println("some message received in loop?")
     if (rf95.recv(buf, &len)) {
       Serial.println("Received message: '");
       if (strncmp((char*)buf, "Status: ", 8) == 0) {
@@ -200,6 +182,7 @@ void loop() {
         Serial.write(buf, len);
       } else {
         // Split the received data using the comma as a delimiter
+        /*
         char* token = strtok((char*)buf, ",");
         int index = 0;
 
@@ -212,6 +195,24 @@ void loop() {
           // Move on to the next token
           token = strtok(NULL, ",");
           index++;
+        }
+        */
+        Serial.println("received life metrics data");
+        // Convert the received message into individual components
+        int index = 0;
+        char* token = strtok((char*)buf, ",");
+        while (token != NULL && index < LIVE_RADIO_SIZE) {
+          // Convert the token to float and store it in the LIVE_DATA array
+          LIVE_DATA[index] = atof(token);
+          index++;
+          token = strtok(NULL, ",");
+        }
+
+        // Print the received data for debugging
+        for (int i = 0; i < LIVE_RADIO_SIZE; i++) {
+          Serial.print(LIVE_DATA_NAMES[i]);
+          Serial.print(": ");
+          Serial.println(LIVE_DATA[i], 6); // Print with 6 decimal places
         }
       }
     }
