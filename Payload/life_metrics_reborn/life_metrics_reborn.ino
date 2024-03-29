@@ -5,6 +5,7 @@
 #include <Adafruit_BNO08x.h>
 #include "SparkFun_Qwiic_OpenLog_Arduino_Library.h"
 #include <Adafruit_NeoPixel.h>
+#include <RadioLib.h>
 
 // Global variables for time tracking
 unsigned long lastEnvSensorPoll = 0;
