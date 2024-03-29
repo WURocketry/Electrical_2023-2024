@@ -18,7 +18,6 @@ enum LiveUpdateFields {
   ZACCEL_BNO,
   TEMPERATURE_BME,
   ALTITUDE_BME,
-  PERCENT_BATERRY,
   VOLATILE_COMPONENT,
   LIVE_RADIO_SIZE,
 };
@@ -28,7 +27,6 @@ const char* LIVE_DATA_NAMES[] = {
   "ZACCEL_BNO",
   "TEMPERATURE_BME",
   "ALTITUDE_BME",
-  "PERCENT_BATERRY",
   "VOLATILE_COMPONENT"
   "LIVE_RADIO_SIZE",
 };
@@ -211,6 +209,10 @@ void transmitCurrentComponentReadings() {
       int state = radio.transmit((uint8_t *)radiopacket, strlen(radiopacket) + 1);  // +1 to include the null terminator
 
       if (state == RADIOLIB_ERR_NONE) {
+        // Print the content of radiopacket
+        Serial.print("Content to transmit: ");
+        Serial.println(radiopacket);
+
         Serial.println("success!");
       } else {
         Serial.print("failed, error code: ");

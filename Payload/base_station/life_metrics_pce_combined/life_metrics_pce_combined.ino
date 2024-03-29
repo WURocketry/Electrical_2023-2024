@@ -169,12 +169,11 @@ char input = 'a';
 char listen = 'b';
 
 void loop() {
-  Serial.println("ever in loop?");
   if (rf95.available()) {
     // A message was received!
     uint8_t buf[RH_RF95_MAX_MESSAGE_LEN];
     uint8_t len = sizeof(buf);
-    Serial.println("some message received in loop?")
+    Serial.println("some message received in loop?");
     if (rf95.recv(buf, &len)) {
       Serial.println("Received message: '");
       if (strncmp((char*)buf, "Status: ", 8) == 0) {
