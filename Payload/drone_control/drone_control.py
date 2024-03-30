@@ -7,7 +7,6 @@ import board
 import busio
 import digitalio
 import adafruit_rfm9x
-#from dronekit import APIException, SerialException
 from datetime import datetime
 # Enum for GPIO pin setup
 class H_Bridge_Pin(Enum):
@@ -47,7 +46,7 @@ connection_port = '/dev/ttyACM0' # ttyAMA0 on old github not sure if this port w
 DETACH_HEIGHT = 122
 HEARTBEAT_SECONDS_RECONNECTION = 5
 DETACH_SECONDS = 30
-
+# detach for ~ seconds then after some seconds the drone arm -> land 
 # Setup GPIO
 GPIO.setmode(GPIO.BCM)  # BCM numbering double check that
 GPIO.setup(H_Bridge_Pin.SEPARATION_PIN.value, GPIO.OUT)
@@ -61,6 +60,7 @@ def establish_connection():
     global vehicle
     try:
         vehicle = connect(connection_port, wait_ready=True, heartbeat_timeout=30)
+        
     # Bad TCP connection
     except socket.error:
         print('No server exists!')
@@ -71,11 +71,13 @@ def establish_connection():
     except Exception as e:
          print(f"Some other error: {e}")
 
+# tested
 def arm_drone_and_land():
     """
     Arms the vehicle and changes its flight mode to LAND.
     """
     print("Arming drone")
+    vehicle.mode = VehicleMode("STABILIZE") # stabilize
     vehicle.armed = True
     while not vehicle.armed:
         print(" Waiting for arming...")
@@ -83,6 +85,7 @@ def arm_drone_and_land():
     vehicle.mode = VehicleMode("LAND")
     print("Drone is armed and in LAND mode")
 
+# tested -- on Q1, need to set pin 12 to low, 13 (detach pin) to high, subject to change during assembly
 def detach_drone(status):
     """
     Activates the GPIO pin to control the H bridge for drone detach.
@@ -245,7 +248,7 @@ if __name__ == "__main__":
     try:
         with open('/home/pce/status_log.txt', 'a') as f:
             f.write("NEW FLIGHT\n")
-        status = PacketStatus.INITIAL
+        status = PacketStatus.RSO_RECEIVED
         vehicle = None
         main(status)
     except KeyboardInterrupt:
