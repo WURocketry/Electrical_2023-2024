@@ -10,8 +10,8 @@ import adafruit_rfm9x
 from datetime import datetime
 # Enum for GPIO pin setup
 class H_Bridge_Pin(Enum):
-    SEPARATION_PIN = 12  # Example pin for H-bridge control
-    DETACH_PIN = 13 # Modify the number to match the actual GPIO pin number we are using
+    Q1 = 12  # Example pin for H-bridge control
+    Q2 = 13 # Modify the number to match the actual GPIO pin number we are using
 
 class PacketStatus(Enum):
     INITIAL = "INITIAL"
@@ -49,8 +49,8 @@ DETACH_SECONDS = 30
 # detach for ~ seconds then after some seconds the drone arm -> land 
 # Setup GPIO
 GPIO.setmode(GPIO.BCM)  # BCM numbering double check that
-GPIO.setup(H_Bridge_Pin.SEPARATION_PIN.value, GPIO.OUT)
-GPIO.setup(H_Bridge_Pin.DETACH_PIN.value, GPIO.OUT)
+GPIO.setup(H_Bridge_Pin.Q1.value, GPIO.OUT)
+GPIO.setup(H_Bridge_Pin.Q2.value, GPIO.OUT)
 
 
 # fail safe
@@ -92,9 +92,9 @@ def detach_drone(status):
     """
     print("Separating the drone")
     try:
-        GPIO.output(H_Bridge_Pin.DETACH_PIN.value, GPIO.HIGH)
+        GPIO.output(H_Bridge_Pin.Q2.value, GPIO.HIGH)
         time.sleep(DETACH_SECONDS)  # Simulate the separation process
-        GPIO.output(H_Bridge_Pin.DETACH_PIN.value, GPIO.LOW)
+        GPIO.output(H_Bridge_Pin.Q2.value, GPIO.LOW)
     except AttributeError as e:
         print("Error:", e)
         print("Failed to detach the drone. GPIO pin not configured.")
@@ -186,7 +186,7 @@ def write_to_file(status):
         f.write("Last heartbeat: %s\n" % vehicle.last_heartbeat)
 
 def main(status):
-    GPIO.output(H_Bridge_Pin.DETACH_PIN.value, GPIO.LOW) #pull this pin low on startup to make sure sep. circuit is open
+    GPIO.output(H_Bridge_Pin.Q2.value, GPIO.LOW) #pull this pin low on startup to make sure sep. circuit is open
 
     last_write_time = 0
     separationCompleted = False
