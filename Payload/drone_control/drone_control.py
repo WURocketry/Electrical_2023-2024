@@ -10,8 +10,8 @@ import adafruit_rfm9x
 from datetime import datetime
 # Enum for GPIO pin setup
 class H_Bridge_Pin(Enum):
-    SEPARATION_PIN = 12  # Example pin for H-bridge control
-    DETACH_PIN = 13 # Modify the number to match the actual GPIO pin number we are using
+    Q1 = 12  # Example pin for H-bridge control
+    Q2 = 13 # Modify the number to match the actual GPIO pin number we are using
 
 class PacketStatus(Enum):
     INITIAL = "INITIAL"
@@ -49,8 +49,8 @@ DETACH_SECONDS = 30
 # detach for ~ seconds then after some seconds the drone arm -> land 
 # Setup GPIO
 GPIO.setmode(GPIO.BCM)  # BCM numbering double check that
-GPIO.setup(H_Bridge_Pin.SEPARATION_PIN.value, GPIO.OUT)
-GPIO.setup(H_Bridge_Pin.DETACH_PIN.value, GPIO.OUT)
+GPIO.setup(H_Bridge_Pin.Q1.value, GPIO.OUT)
+GPIO.setup(H_Bridge_Pin.Q2.value, GPIO.OUT)
 
 
 # fail safe
@@ -77,6 +77,8 @@ def arm_drone_and_land():
     Arms the vehicle and changes its flight mode to LAND.
     """
     print("Arming drone")
+    
+    GPIO.output(H_Bridge_Pin.Q2.value, GPIO.LOW) # pull this pin low to make sure sep. circuit is open **IF ARMING PROCESS IS CHANGED TO RUN DURING DETACH CHANGE THIS**
     vehicle.mode = VehicleMode("STABILIZE") # stabilize
     vehicle.armed = True
     while not vehicle.armed:
@@ -92,9 +94,9 @@ def detach_drone(status):
     """
     print("Separating the drone")
     try:
-        GPIO.output(H_Bridge_Pin.DETACH_PIN.value, GPIO.HIGH)
-        time.sleep(DETACH_SECONDS)  # Simulate the separation process
-        GPIO.output(H_Bridge_Pin.DETACH_PIN.value, GPIO.LOW)
+        GPIO.output(H_Bridge_Pin.Q2.value, GPIO.HIGH)
+        time.sleep(DETACH_SECONDS)
+        GPIO.output(H_Bridge_Pin.Q2.value, GPIO.LOW)
     except AttributeError as e:
         print("Error:", e)
         print("Failed to detach the drone. GPIO pin not configured.")
@@ -186,7 +188,6 @@ def write_to_file(status):
         f.write("Last heartbeat: %s\n" % vehicle.last_heartbeat)
 
 def main(status):
-    GPIO.output(H_Bridge_Pin.DETACH_PIN.value, GPIO.LOW) #pull this pin low on startup to make sure sep. circuit is open
 
     last_write_time = 0
     separationCompleted = False
@@ -199,6 +200,7 @@ def main(status):
         establish_connection()
 
     while(True):
+        GPIO.output(H_Bridge_Pin.Q2.value, GPIO.LOW) #pull this pin low on startup to make sure sep. circuit is open
 
         if(vehicle.last_heartbeat > HEARTBEAT_SECONDS_RECONNECTION):
             print("The connection has been detected as lost, entering the reconnection loop")
@@ -248,7 +250,7 @@ if __name__ == "__main__":
     try:
         with open('/home/pce/status_log.txt', 'a') as f:
             f.write("NEW FLIGHT\n")
-        status = PacketStatus.RSO_RECEIVED
+        status = PacketStatus.INITIAL
         vehicle = None
         main(status)
     except KeyboardInterrupt:
