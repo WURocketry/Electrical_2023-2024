@@ -41,6 +41,10 @@ String fileName = "flight_" + String(randomNumber) + ".txt";
 //BNO08x
 #define BNO08X_RESET -1 
 Adafruit_BNO08x bno08x(BNO08X_RESET);
+//BNO Defintions
+sh2_SensorValue_t sensorValue;
+sh2_SensorId_t reportType = SH2_ARVR_STABILIZED_RV;
+long reportIntervalUs = 5000;
 
 // SGP30
 Adafruit_SGP30 sgp;
@@ -125,11 +129,17 @@ void setup() {
   // Try to initialize the BNO08x sensor over I2C
   if (!bno08x.begin_I2C()) {
     ErrorLEDLoop("Failed to find BNO08x IMU, Halting");
+    /*
     while (1) {
       delay(10); // Infinite loop if the sensor is not found
     }
+    */
   }
-
+  if (bno08x.wasReset()) {
+      Serial.print("sensor was reset ");
+      bno08x.enableReport(reportType, reportIntervalUs);
+  }
+    
   // Enable the accelerometer report
   if (!bno08x.enableReport(SH2_ACCELEROMETER)) {
     ErrorLEDLoop("Failed to enable the accelerometer, Halting");
@@ -170,12 +180,11 @@ void ErrorLEDLoop(const char* error_msg){
   pixels.show();
   while(true){
     Serial.println(error_msg);
-    pixels.setBrightness(255);
-    pixels.show();
-    delay(1000);                      
     pixels.setBrightness(0);
     pixels.show();
-    delay(1000);    
+    // delay(1000);       // i want this to flash as fast as possible forever               
+    pixels.setBrightness(255);
+    pixels.show();
   }                
 }
 
