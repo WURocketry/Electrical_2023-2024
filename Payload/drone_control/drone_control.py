@@ -248,7 +248,7 @@ if __name__ == "__main__":
     try:
         with open('/home/pce/status_log.txt', 'a') as f:
             f.write("NEW FLIGHT\n")
-        status = PacketStatus.RSO_RECEIVED
+        status = PacketStatus.INITIAL
         vehicle = None
         main(status)
     except KeyboardInterrupt:
