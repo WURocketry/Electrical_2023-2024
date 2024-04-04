@@ -81,12 +81,6 @@ void setup() {
   Serial.begin(115200);
   pinMode(LED_BUILTIN, OUTPUT);
 
-
-  //Init Openlog
-  Wire.begin();
-  myLog.begin();
-
-
   //LoRa Setup
   pinMode(RFM95_RST, OUTPUT);
   digitalWrite(RFM95_RST, HIGH);
@@ -164,6 +158,10 @@ void setup() {
   bmp.setOutputDataRate(BMP3_ODR_50_HZ);
 
   Serial.println("Sensors initialized successfully.");
+
+  //Init Openlog
+  Wire.begin();
+  myLog.begin();
 }
 
 void ErrorLEDLoop(const char* error_msg){
