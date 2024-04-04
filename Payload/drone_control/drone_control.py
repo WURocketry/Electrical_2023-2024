@@ -77,6 +77,8 @@ def arm_drone_and_land():
     Arms the vehicle and changes its flight mode to LAND.
     """
     print("Arming drone")
+    
+    GPIO.output(H_Bridge_Pin.Q2.value, GPIO.LOW) # pull this pin low to make sure sep. circuit is open **IF ARMING PROCESS IS CHANGED TO RUN DURING DETACH CHANGE THIS**
     vehicle.mode = VehicleMode("STABILIZE") # stabilize
     vehicle.armed = True
     while not vehicle.armed:
@@ -93,7 +95,7 @@ def detach_drone(status):
     print("Separating the drone")
     try:
         GPIO.output(H_Bridge_Pin.Q2.value, GPIO.HIGH)
-        time.sleep(DETACH_SECONDS)  # Simulate the separation process
+        time.sleep(DETACH_SECONDS)
         GPIO.output(H_Bridge_Pin.Q2.value, GPIO.LOW)
     except AttributeError as e:
         print("Error:", e)
@@ -186,7 +188,6 @@ def write_to_file(status):
         f.write("Last heartbeat: %s\n" % vehicle.last_heartbeat)
 
 def main(status):
-    GPIO.output(H_Bridge_Pin.Q2.value, GPIO.LOW) #pull this pin low on startup to make sure sep. circuit is open
 
     last_write_time = 0
     separationCompleted = False
@@ -199,6 +200,7 @@ def main(status):
         establish_connection()
 
     while(True):
+        GPIO.output(H_Bridge_Pin.Q2.value, GPIO.LOW) #pull this pin low on startup to make sure sep. circuit is open
 
         if(vehicle.last_heartbeat > HEARTBEAT_SECONDS_RECONNECTION):
             print("The connection has been detected as lost, entering the reconnection loop")
