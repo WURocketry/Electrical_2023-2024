@@ -6,6 +6,7 @@
 #include "SparkFun_Qwiic_OpenLog_Arduino_Library.h"
 #include <Adafruit_NeoPixel.h>
 #include <RadioLib.h>
+#include <Adafruit_ADXL345_U.h> // our new accelerometer
 
 // Global variables for time tracking
 unsigned long lastEnvSensorPoll = 0;
@@ -45,6 +46,9 @@ Adafruit_BNO08x bno08x(BNO08X_RESET);
 sh2_SensorValue_t sensorValue;
 sh2_SensorId_t reportType = SH2_ARVR_STABILIZED_RV;
 long reportIntervalUs = 5000;
+
+/* Assign a unique ID to this accelerometer at the same time */
+Adafruit_ADXL345_Unified accel = Adafruit_ADXL345_Unified(12345);
 
 // SGP30
 Adafruit_SGP30 sgp;
@@ -125,20 +129,27 @@ void setup() {
     Serial.print(F("Setting frequency failed, code "));
     Serial.println(state);
   }
-
+  /* no longer using BNO
   // Try to initialize the BNO08x sensor over I2C
   if (!bno08x.begin_I2C()) {
     ErrorLEDLoop("Failed to find BNO08x IMU, Halting");
-    /*
-    while (1) {
-      delay(10); // Infinite loop if the sensor is not found
-    }
-    */
   }
   if (bno08x.wasReset()) {
       Serial.print("sensor was reset ");
       bno08x.enableReport(reportType, reportIntervalUs);
   }
+  */
+
+   /* Initialise the accelerometer */
+  if(!accel.begin())
+  {
+    /* There was a problem detecting the ADXL345 ... check your connections */
+    ErrorLEDLoop("Failed to enable the ADXL345, Halting");
+  }
+  /* Set the range for accelerometer */
+  accel.setRange(ADXL345_RANGE_16_G); 
+  // accel.setRange(ADXL345_RANGE_8_G);
+  accel.setDataRate(ADXL345_DATARATE_25_HZ); // sampling rate: 25 Hz
     
   // Enable the accelerometer report
   if (!bno08x.enableReport(SH2_ACCELEROMETER)) {
@@ -169,10 +180,29 @@ void setup() {
 
   Serial.println("Sensors initialized successfully.");
 
+  // accelerometer 
+  displaySensorDetails();
   //Init Openlog
   Wire.begin();
   myLog.begin();
 }
+
+void displaySensorDetails(void)
+{
+  sensor_t sensor;
+  accel.getSensor(&sensor);
+  Serial.println("------------------------------------");
+  Serial.print  ("Sensor:       "); Serial.println(sensor.name);
+  Serial.print  ("Driver Ver:   "); Serial.println(sensor.version);
+  Serial.print  ("Unique ID:    "); Serial.println(sensor.sensor_id);
+  Serial.print  ("Max Value:    "); Serial.print(sensor.max_value); Serial.println(" m/s^2");
+  Serial.print  ("Min Value:    "); Serial.print(sensor.min_value); Serial.println(" m/s^2");
+  Serial.print  ("Resolution:   "); Serial.print(sensor.resolution); Serial.println(" m/s^2");  
+  Serial.println("------------------------------------");
+  Serial.println("");
+  delay(500);
+}
+
 
 void ErrorLEDLoop(const char* error_msg){
   pixels.begin();
@@ -280,7 +310,7 @@ void loop() {
   }
 
   sh2_SensorValue_t sensorValue; // Variable to hold sensor data
-
+  /*
   // Check if new accelerometer data is available
   if (bno08x.getSensorEvent(&sensorValue)) {
     if (sensorValue.sensorId == SH2_ACCELEROMETER) {
@@ -299,6 +329,24 @@ void loop() {
       LIVE_DATA[ZACCEL_BNO] = sensorValue.un.accelerometer.z;
       Serial.println(LIVE_DATA[ZACCEL_BNO]);
     }
+  }
+  */
+   sensors_event_t event; 
+  // units: m/s^2
+  if(accel.getEvent(&event)){
+    float x_accel = event.acceleration.x;
+    float y_accel = event.acceleration.y;
+    float z_accel = event.acceleration.z;
+    myLog.print("X: ");
+    myLog.print(x_accel);
+    myLog.print(", Y: ");
+    myLog.print(y_accel); 
+    myLog.print(", Z: ");
+    myLog.print(z_accel); 
+    LIVE_DATA[XACCEL_BNO] = x_accel;
+    LIVE_DATA[YACCEL_BNO] = y_accel;
+    LIVE_DATA[ZACCEL_BNO] = z_accel;
+    Serial.println(LIVE_DATA[ZACCEL_BNO]);
   }
   transmitCurrentComponentReadings();
   myLog.syncFile();
