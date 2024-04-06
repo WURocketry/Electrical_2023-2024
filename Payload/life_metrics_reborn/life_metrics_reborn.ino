@@ -149,7 +149,7 @@ void setup() {
   {
     /* There was a problem detecting the ADXL345 ... check your connections */
     ErrorLEDLoop("Failed to enable the ADXL345, Halting");
-    accel = Adafruit_ADXL345_Unified(random(0, 2147483647));
+    accel = Adafruit_ADXL345_Unified(11111);
   }
   /* Set the range for accelerometer */
   accel.setRange(ADXL345_RANGE_16_G); 
