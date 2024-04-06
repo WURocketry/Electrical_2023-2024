@@ -79,12 +79,12 @@ def arm_drone_and_land():
     print("Arming drone")
     
     GPIO.output(H_Bridge_Pin.Q2.value, GPIO.LOW) # pull this pin low to make sure sep. circuit is open **IF ARMING PROCESS IS CHANGED TO RUN DURING DETACH CHANGE THIS**
-    vehicle.mode = VehicleMode("STABILIZE") # stabilize
+    vehicle.mode = VehicleMode("THROW") # throw
     vehicle.armed = True
     while not vehicle.armed:
         print(" Waiting for arming...")
     print("Turning on Land Mode")
-    vehicle.mode = VehicleMode("LAND")
+    #vehicle.mode = VehicleMode("LAND")
     print("Drone is armed and in LAND mode")
 
 # tested -- on Q1, need to set pin 12 to low, 13 (detach pin) to high, subject to change during assembly

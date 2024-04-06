@@ -105,7 +105,11 @@ void setup() {
     // no error
     Serial.println(F("Initialization successful!"));
   } else {
-    ErrorLEDLoop("Failed to Init LoRa - Halting");
+    // keep trying then blink LED
+    while(state != RADIOLIB_ERR_NONE){
+      int state = radio.begin();
+      ErrorLEDLoop("Failed to Init LoRa - Halting");
+    }
   }
 
   //Set Radio Transmit Power
@@ -141,10 +145,11 @@ void setup() {
   */
 
    /* Initialise the accelerometer */
-  if(!accel.begin())
+  while(!accel.begin())
   {
     /* There was a problem detecting the ADXL345 ... check your connections */
     ErrorLEDLoop("Failed to enable the ADXL345, Halting");
+    accel = Adafruit_ADXL345_Unified(random(0, 2147483647));
   }
   /* Set the range for accelerometer */
   accel.setRange(ADXL345_RANGE_16_G); 
@@ -152,14 +157,14 @@ void setup() {
   accel.setDataRate(ADXL345_DATARATE_25_HZ); // sampling rate: 25 Hz
     
   // Enable the accelerometer report
-  if (!bno08x.enableReport(SH2_ACCELEROMETER)) {
+  while (!bno08x.enableReport(SH2_ACCELEROMETER)) {
     ErrorLEDLoop("Failed to enable the accelerometer, Halting");
   }
 
   // Initialize SGP30
-  if (!sgp.begin()){
+  while (!sgp.begin()){
+    sgp.begin();
     ErrorLEDLoop("Failed to initialize SGP30 , Halting");
-    while (1);
   }
   Serial.print(F("Found SGP30 serial #"));
   Serial.print(sgp.serialnumber[0], HEX);
@@ -167,9 +172,9 @@ void setup() {
   Serial.println(sgp.serialnumber[2], HEX);
 
   // Initialize BMP3XX
-  if (!bmp.begin_I2C()) {   // hardware I2C mode, can pass in address & alt Wire
+  while (!bmp.begin_I2C()) {   // hardware I2C mode, can pass in address & alt Wire
     ErrorLEDLoop("Failed to find BMP sensor, Halting");
-    while (1);
+    bmp.begin_I2C();
   }
   
   // Set up oversampling and filter initialization for BMP3XX
@@ -208,14 +213,14 @@ void ErrorLEDLoop(const char* error_msg){
   pixels.begin();
   pixels.setPixelColor(0, pixels.Color(255, 0, 0));
   pixels.show();
-  while(true){
+  //while(true){
     Serial.println(error_msg);
     pixels.setBrightness(0);
     pixels.show();
     // delay(1000);       // i want this to flash as fast as possible forever               
     pixels.setBrightness(255);
     pixels.show();
-  }                
+  //}                
 }
 
 
