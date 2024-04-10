@@ -35,8 +35,8 @@ float LIVE_DATA[LIVE_RADIO_SIZE];
 
 //Openlog
 OpenLog myLog;
-long randomNumber = random(0, 2147483647);
-String fileName = "flight_" + String(randomNumber) + ".txt";
+long randomNumber;
+String fileName;
 
 //BNO08x
 #define BNO08X_RESET -1 
@@ -79,14 +79,19 @@ uint32_t getAbsoluteHumidity(float temperature, float humidity) {
 
 void setup() {
   Serial.begin(115200);
-  while (!Serial); // Wait for serial console to open!
   pinMode(LED_BUILTIN, OUTPUT);
 
 
   //Init Openlog
   Wire.begin();
   myLog.begin();
-
+  randomSeed(analogRead(A3));
+  Serial.println(analogRead(A3));
+  randomNumber = random(0, 2147483647);
+  randomNumber = random(0, 2147483647);
+  Serial.println(randomNumber);
+  fileName = "flight_" + String(randomNumber) + ".txt";
+  Serial.println(fileName);
 
   //LoRa Setup
   pinMode(RFM95_RST, OUTPUT);
@@ -173,10 +178,10 @@ void ErrorLEDLoop(const char* error_msg){
   pixels.show();
   while(true){
     Serial.println(error_msg);
-    pixels.setBrightness(255);
+    pixels.setBrightness(0);
     pixels.show();
     delay(1000);                      
-    pixels.setBrightness(0);
+    pixels.setBrightness(255);
     pixels.show();
     delay(1000);    
   }                
