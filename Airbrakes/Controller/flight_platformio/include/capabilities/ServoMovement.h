@@ -1,5 +1,7 @@
+#pragma once
+
 #include <Arduino.h>
-#include <Servo.h>
+#include "Servo.h"
 #include <Measurement.h>
 
 // Servo defines
