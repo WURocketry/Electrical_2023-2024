@@ -152,6 +152,8 @@ void setup() {
     ErrorLEDLoop("Failed to initialize SGP30 , Halting");
     while (1);
   }
+  // If you have a baseline measurement from before you can assign it to start, to 'self-calibrate'
+  sgp.setIAQBaseline(0x8CDB, 0x8F41); 
   Serial.print(F("Found SGP30 serial #"));
   Serial.print(sgp.serialnumber[0], HEX);
   Serial.print(sgp.serialnumber[1], HEX);
