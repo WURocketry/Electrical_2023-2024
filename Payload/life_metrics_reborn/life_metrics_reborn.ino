@@ -51,11 +51,11 @@ Adafruit_BMP3XX bmp;
 
 
 float rf_channel = 4;
-float currentFrequency = 437.550 + rf_channel * 0.1;
+float currentFrequency = 915 + rf_channel * 0.1;
 
 //LoRa Defintions
 #define FREQ currentFrequency
-#define TRANSMIT_PWR 20
+#define TRANSMIT_PWR 23
 #define RFM95_CS    16  // Chip select pin
 #define RFM95_RST   17  // Reset pin
 #define RFM95_IRQ   21  // Interrupt pin, connected to DIO0
