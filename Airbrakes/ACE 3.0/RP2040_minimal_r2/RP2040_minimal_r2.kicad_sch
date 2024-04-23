@@ -11759,7 +11759,7 @@
 		)
 		(uuid "6fa3bcb0-ad07-4cb6-9a30-dc613a914bee")
 	)
-	(label "GPIO17"
+	(label "INT_MAG"
 		(at 358.14 152.4 0)
 		(fields_autoplaced yes)
 		(effects
@@ -11825,7 +11825,7 @@
 		)
 		(uuid "81d1399f-1d52-4080-8a13-08ffc53efe62")
 	)
-	(label "GPIO4"
+	(label "SDA"
 		(at 339.09 134.62 180)
 		(fields_autoplaced yes)
 		(effects
@@ -11968,7 +11968,7 @@
 		)
 		(uuid "aa871ee6-e2af-48ea-af9e-86b8a650c152")
 	)
-	(label "GPIO12"
+	(label "INT1_ACCEL"
 		(at 339.09 154.94 180)
 		(fields_autoplaced yes)
 		(effects
@@ -11990,7 +11990,7 @@
 		)
 		(uuid "ac6422e5-d4c4-4d0d-b626-674bbf4d403c")
 	)
-	(label "GPIO5"
+	(label "SCL"
 		(at 339.09 137.16 180)
 		(fields_autoplaced yes)
 		(effects
@@ -12309,7 +12309,7 @@
 		)
 		(uuid "efc8a0b1-250a-460b-8441-aa53df1bc5b2")
 	)
-	(label "GPIO15"
+	(label "INT4_GYRO"
 		(at 339.09 162.56 180)
 		(fields_autoplaced yes)
 		(effects
@@ -12320,7 +12320,7 @@
 		)
 		(uuid "effc80f4-8435-4edb-8962-4a6552dcc617")
 	)
-	(label "GPIO16"
+	(label "INT_BARO"
 		(at 358.14 154.94 0)
 		(fields_autoplaced yes)
 		(effects
@@ -12342,7 +12342,7 @@
 		)
 		(uuid "f3d7c991-6d9d-4f19-aac2-c72c5ab6d9e5")
 	)
-	(label "GPIO13"
+	(label "INT2_ACCEL"
 		(at 339.09 157.48 180)
 		(fields_autoplaced yes)
 		(effects
@@ -12397,7 +12397,7 @@
 		)
 		(uuid "fb11c56a-0cbb-471c-8cdc-21e68c51a034")
 	)
-	(label "GPIO14"
+	(label "INT3_GYRO"
 		(at 339.09 160.02 180)
 		(fields_autoplaced yes)
 		(effects
