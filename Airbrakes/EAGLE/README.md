@@ -2,6 +2,6 @@
 
 ## Use Fusion360 or alternatives
 
-The team is currently likely using Altium and KiCad for 2025.
+### The archived PACE was moved to the `EAGLE/` folder at the root of the 2023-2024 Electrical repo.
 
-This is an old version of the PACE on EAGLE. Do not develop on it!
+The team is likely using Altium and KiCad for 2025.
