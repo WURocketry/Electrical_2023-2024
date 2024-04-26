@@ -6,7 +6,6 @@
 #include "SparkFun_Qwiic_OpenLog_Arduino_Library.h"
 #include <Adafruit_NeoPixel.h>
 #include <RadioLib.h>
-#include <Adafruit_ADXL345_U.h> // our new accelerometer
 
 // Global variables for time tracking
 unsigned long lastEnvSensorPoll = 0;
@@ -36,19 +35,12 @@ float LIVE_DATA[LIVE_RADIO_SIZE];
 
 //Openlog
 OpenLog myLog;
-long randomNumber = random(0, 2147483647);
-String fileName = "flight_" + String(randomNumber) + ".txt";
+long randomNumber;
+String fileName;
 
 //BNO08x
 #define BNO08X_RESET -1 
 Adafruit_BNO08x bno08x(BNO08X_RESET);
-//BNO Defintions
-sh2_SensorValue_t sensorValue;
-sh2_SensorId_t reportType = SH2_ARVR_STABILIZED_RV;
-long reportIntervalUs = 5000;
-
-/* Assign a unique ID to this accelerometer at the same time */
-Adafruit_ADXL345_Unified accel = Adafruit_ADXL345_Unified(12345);
 
 // SGP30
 Adafruit_SGP30 sgp;
@@ -58,9 +50,12 @@ Adafruit_SGP30 sgp;
 Adafruit_BMP3XX bmp;
 
 
+float rf_channel = 4;
+float currentFrequency = 915 + rf_channel * 0.1;
+
 //LoRa Defintions
-#define FREQ 915
-#define TRANSMIT_PWR 20
+#define FREQ currentFrequency
+#define TRANSMIT_PWR 23
 #define RFM95_CS    16  // Chip select pin
 #define RFM95_RST   17  // Reset pin
 #define RFM95_IRQ   21  // Interrupt pin, connected to DIO0
@@ -89,6 +84,18 @@ void setup() {
   Serial.begin(115200);
   pinMode(LED_BUILTIN, OUTPUT);
 
+
+  //Init Openlog
+  Wire.begin();
+  myLog.begin();
+  randomSeed(analogRead(A3));
+  Serial.println(analogRead(A3));
+  randomNumber = random(0, 2147483647);
+  randomNumber = random(0, 2147483647);
+  Serial.println(randomNumber);
+  fileName = "flight_" + String(randomNumber) + ".txt";
+  Serial.println(fileName);
+
   //LoRa Setup
   pinMode(RFM95_RST, OUTPUT);
   digitalWrite(RFM95_RST, HIGH);
@@ -105,11 +112,7 @@ void setup() {
     // no error
     Serial.println(F("Initialization successful!"));
   } else {
-    // keep trying then blink LED
-    while(state != RADIOLIB_ERR_NONE){
-      int state = radio.begin();
-      ErrorLEDLoop("Failed to Init LoRa - Halting");
-    }
+    ErrorLEDLoop("Failed to Init LoRa - Halting");
   }
 
   //Set Radio Transmit Power
@@ -133,48 +136,36 @@ void setup() {
     Serial.print(F("Setting frequency failed, code "));
     Serial.println(state);
   }
-  /* no longer using BNO
+
   // Try to initialize the BNO08x sensor over I2C
   if (!bno08x.begin_I2C()) {
     ErrorLEDLoop("Failed to find BNO08x IMU, Halting");
+    while (1) {
+      delay(10); // Infinite loop if the sensor is not found
+    }
   }
-  if (bno08x.wasReset()) {
-      Serial.print("sensor was reset ");
-      bno08x.enableReport(reportType, reportIntervalUs);
-  }
-  */
 
-   /* Initialise the accelerometer */
-  while(!accel.begin())
-  {
-    /* There was a problem detecting the ADXL345 ... check your connections */
-    ErrorLEDLoop("Failed to enable the ADXL345, Halting");
-    accel = Adafruit_ADXL345_Unified(random(0, 2147483647));
-  }
-  /* Set the range for accelerometer */
-  accel.setRange(ADXL345_RANGE_16_G); 
-  // accel.setRange(ADXL345_RANGE_8_G);
-  accel.setDataRate(ADXL345_DATARATE_25_HZ); // sampling rate: 25 Hz
-    
   // Enable the accelerometer report
-  while (!bno08x.enableReport(SH2_ACCELEROMETER)) {
+  if (!bno08x.enableReport(SH2_ACCELEROMETER)) {
     ErrorLEDLoop("Failed to enable the accelerometer, Halting");
   }
 
   // Initialize SGP30
-  while (!sgp.begin()){
-    sgp.begin();
+  if (!sgp.begin()){
     ErrorLEDLoop("Failed to initialize SGP30 , Halting");
+    while (1);
   }
+  // If you have a baseline measurement from before you can assign it to start, to 'self-calibrate'
+  sgp.setIAQBaseline(0x8CDB, 0x8F41); 
   Serial.print(F("Found SGP30 serial #"));
   Serial.print(sgp.serialnumber[0], HEX);
   Serial.print(sgp.serialnumber[1], HEX);
   Serial.println(sgp.serialnumber[2], HEX);
 
   // Initialize BMP3XX
-  while (!bmp.begin_I2C()) {   // hardware I2C mode, can pass in address & alt Wire
+  if (!bmp.begin_I2C()) {   // hardware I2C mode, can pass in address & alt Wire
     ErrorLEDLoop("Failed to find BMP sensor, Halting");
-    bmp.begin_I2C();
+    while (1);
   }
   
   // Set up oversampling and filter initialization for BMP3XX
@@ -184,43 +175,21 @@ void setup() {
   bmp.setOutputDataRate(BMP3_ODR_50_HZ);
 
   Serial.println("Sensors initialized successfully.");
-
-  // accelerometer 
-  displaySensorDetails();
-  //Init Openlog
-  Wire.begin();
-  myLog.begin();
 }
-
-void displaySensorDetails(void)
-{
-  sensor_t sensor;
-  accel.getSensor(&sensor);
-  Serial.println("------------------------------------");
-  Serial.print  ("Sensor:       "); Serial.println(sensor.name);
-  Serial.print  ("Driver Ver:   "); Serial.println(sensor.version);
-  Serial.print  ("Unique ID:    "); Serial.println(sensor.sensor_id);
-  Serial.print  ("Max Value:    "); Serial.print(sensor.max_value); Serial.println(" m/s^2");
-  Serial.print  ("Min Value:    "); Serial.print(sensor.min_value); Serial.println(" m/s^2");
-  Serial.print  ("Resolution:   "); Serial.print(sensor.resolution); Serial.println(" m/s^2");  
-  Serial.println("------------------------------------");
-  Serial.println("");
-  delay(500);
-}
-
 
 void ErrorLEDLoop(const char* error_msg){
   pixels.begin();
   pixels.setPixelColor(0, pixels.Color(255, 0, 0));
   pixels.show();
-  //while(true){
+  while(true){
     Serial.println(error_msg);
     pixels.setBrightness(0);
     pixels.show();
-    // delay(1000);       // i want this to flash as fast as possible forever               
+    delay(1000);                      
     pixels.setBrightness(255);
     pixels.show();
-  //}                
+    delay(1000);    
+  }                
 }
 
 
@@ -315,7 +284,7 @@ void loop() {
   }
 
   sh2_SensorValue_t sensorValue; // Variable to hold sensor data
-  /*
+
   // Check if new accelerometer data is available
   if (bno08x.getSensorEvent(&sensorValue)) {
     if (sensorValue.sensorId == SH2_ACCELEROMETER) {
@@ -334,24 +303,6 @@ void loop() {
       LIVE_DATA[ZACCEL_BNO] = sensorValue.un.accelerometer.z;
       Serial.println(LIVE_DATA[ZACCEL_BNO]);
     }
-  }
-  */
-   sensors_event_t event; 
-  // units: m/s^2
-  if(accel.getEvent(&event)){
-    float x_accel = event.acceleration.x;
-    float y_accel = event.acceleration.y;
-    float z_accel = event.acceleration.z;
-    myLog.print("X: ");
-    myLog.print(x_accel);
-    myLog.print(", Y: ");
-    myLog.print(y_accel); 
-    myLog.print(", Z: ");
-    myLog.print(z_accel); 
-    LIVE_DATA[XACCEL_BNO] = x_accel;
-    LIVE_DATA[YACCEL_BNO] = y_accel;
-    LIVE_DATA[ZACCEL_BNO] = z_accel;
-    Serial.println(LIVE_DATA[ZACCEL_BNO]);
   }
   transmitCurrentComponentReadings();
   myLog.syncFile();

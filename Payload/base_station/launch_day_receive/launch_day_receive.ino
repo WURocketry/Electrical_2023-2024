@@ -17,7 +17,8 @@ void setup() {
   Serial.begin(115200);
   pinMode(LED_BUILTIN, OUTPUT);
   float transmitPower = 20;
-  float currentFrequency = 915;
+  float rf_channel = 4;
+  float currentFrequency = 437.550 + rf_channel * 0.1;
   //LoRa Setup
   pinMode(RFM95_RST, OUTPUT);
   digitalWrite(RFM95_RST, HIGH);
