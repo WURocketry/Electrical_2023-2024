@@ -1,0 +1,204 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE eagle SYSTEM "eagle.dtd">
+<eagle version="9.6.2">
+<drawing>
+<settings>
+<setting alwaysvectorfont="no"/>
+<setting verticaltext="up"/>
+</settings>
+<grid distance="50" unitdist="mil" unit="mil" style="lines" multiple="1" display="yes" altdistance="5" altunitdist="mil" altunit="mil"/>
+<layers>
+<layer number="1" name="Top" color="4" fill="1" visible="yes" active="yes"/>
+<layer number="16" name="Bottom" color="1" fill="1" visible="yes" active="yes"/>
+<layer number="17" name="Pads" color="2" fill="1" visible="yes" active="yes"/>
+<layer number="18" name="Vias" color="2" fill="1" visible="yes" active="yes"/>
+<layer number="19" name="Unrouted" color="6" fill="1" visible="yes" active="yes"/>
+<layer number="20" name="Dimension" color="24" fill="1" visible="yes" active="yes"/>
+<layer number="21" name="tPlace" color="7" fill="1" visible="yes" active="yes"/>
+<layer number="22" name="bPlace" color="7" fill="1" visible="yes" active="yes"/>
+<layer number="23" name="tOrigins" color="15" fill="1" visible="yes" active="yes"/>
+<layer number="24" name="bOrigins" color="15" fill="1" visible="yes" active="yes"/>
+<layer number="25" name="tNames" color="7" fill="1" visible="yes" active="yes"/>
+<layer number="26" name="bNames" color="7" fill="1" visible="yes" active="yes"/>
+<layer number="27" name="tValues" color="7" fill="1" visible="yes" active="yes"/>
+<layer number="28" name="bValues" color="7" fill="1" visible="yes" active="yes"/>
+<layer number="29" name="tStop" color="7" fill="3" visible="no" active="yes"/>
+<layer number="30" name="bStop" color="7" fill="6" visible="no" active="yes"/>
+<layer number="31" name="tCream" color="7" fill="4" visible="no" active="yes"/>
+<layer number="32" name="bCream" color="7" fill="5" visible="no" active="yes"/>
+<layer number="33" name="tFinish" color="6" fill="3" visible="no" active="yes"/>
+<layer number="34" name="bFinish" color="6" fill="6" visible="no" active="yes"/>
+<layer number="35" name="tGlue" color="7" fill="4" visible="no" active="yes"/>
+<layer number="36" name="bGlue" color="7" fill="5" visible="no" active="yes"/>
+<layer number="37" name="tTest" color="7" fill="1" visible="no" active="yes"/>
+<layer number="38" name="bTest" color="7" fill="1" visible="no" active="yes"/>
+<layer number="39" name="tKeepout" color="4" fill="11" visible="yes" active="yes"/>
+<layer number="40" name="bKeepout" color="1" fill="11" visible="yes" active="yes"/>
+<layer number="41" name="tRestrict" color="4" fill="10" visible="yes" active="yes"/>
+<layer number="42" name="bRestrict" color="1" fill="10" visible="yes" active="yes"/>
+<layer number="43" name="vRestrict" color="2" fill="10" visible="yes" active="yes"/>
+<layer number="44" name="Drills" color="7" fill="1" visible="no" active="yes"/>
+<layer number="45" name="Holes" color="7" fill="1" visible="no" active="yes"/>
+<layer number="46" name="Milling" color="3" fill="1" visible="no" active="yes"/>
+<layer number="47" name="Measures" color="7" fill="1" visible="yes" active="yes"/>
+<layer number="48" name="Document" color="7" fill="1" visible="yes" active="yes"/>
+<layer number="49" name="Reference" color="7" fill="1" visible="yes" active="yes"/>
+<layer number="51" name="tDocu" color="7" fill="1" visible="yes" active="yes"/>
+<layer number="52" name="bDocu" color="7" fill="1" visible="yes" active="yes"/>
+<layer number="88" name="SimResults" color="9" fill="1" visible="yes" active="yes"/>
+<layer number="89" name="SimProbes" color="9" fill="1" visible="yes" active="yes"/>
+<layer number="90" name="Modules" color="5" fill="1" visible="yes" active="yes"/>
+<layer number="91" name="Nets" color="2" fill="1" visible="yes" active="yes"/>
+<layer number="92" name="Busses" color="1" fill="1" visible="yes" active="yes"/>
+<layer number="93" name="Pins" color="2" fill="1" visible="yes" active="yes"/>
+<layer number="94" name="Symbols" color="4" fill="1" visible="yes" active="yes"/>
+<layer number="95" name="Names" color="7" fill="1" visible="yes" active="yes"/>
+<layer number="96" name="Values" color="7" fill="1" visible="yes" active="yes"/>
+<layer number="97" name="Info" color="7" fill="1" visible="yes" active="yes"/>
+<layer number="98" name="Guide" color="6" fill="1" visible="yes" active="yes"/>
+</layers>
+<library>
+<packages>
+<package name="ADAFRUIT_BNO08X_FOOTPRINT">
+<description>Layout footprint for the Adafruit BNO08x</description>
+<text x="7.62" y="2.159" size="1.016" layer="21" font="vector" ratio="14" align="center">VIN</text>
+<text x="10.16" y="5.461" size="1.016" layer="21" font="vector" ratio="14" align="center">3Vo</text>
+<text x="12.7" y="2.159" size="1.016" layer="21" font="vector" ratio="14" align="center">GND</text>
+<text x="15.24" y="5.461" size="1.016" layer="21" font="vector" ratio="14" align="center">SCL</text>
+<text x="17.78" y="2.159" size="1.016" layer="21" font="vector" ratio="14" align="center">SDA</text>
+<text x="20.701" y="2.159" size="1.016" layer="21" font="vector" ratio="14" align="center">INT</text>
+<text x="13.97" y="19.05" size="1.4732" layer="21" font="vector" ratio="15" align="center">BNO08x 9-DoF</text>
+<text x="12.319" y="23.368" size="1.016" layer="21" font="vector" ratio="14" align="center">P1</text>
+<text x="7.2136" y="23.3172" size="1.016" layer="21" font="vector" ratio="14" align="center">BT</text>
+<text x="9.6266" y="23.3172" size="1.016" layer="21" font="vector" ratio="14" align="center">P0</text>
+<text x="16.129" y="23.368" size="1.016" layer="21" font="vector" ratio="14" align="center">RST</text>
+<text x="18.6055" y="23.368" size="1.016" layer="21" font="vector" ratio="14" align="center">DI</text>
+<text x="21.1455" y="23.368" size="1.016" layer="21" font="vector" ratio="14" align="center">CS</text>
+<text x="18.665" y="9.5895" size="1.27" layer="21" font="vector" ratio="20">Y</text>
+<text x="22.61" y="7.6825" size="1.27" layer="21" font="vector" ratio="20" rot="R180">X</text>
+<text x="18.665" y="6.4145" size="1.27" layer="21" font="vector" ratio="20">Z</text>
+<polygon width="0.254" layer="21">
+<vertex x="20.197" y="6.9205"/>
+<vertex x="20.197" y="7.1745"/>
+<vertex x="20.832" y="7.1745"/>
+<vertex x="20.832" y="7.4285"/>
+<vertex x="21.34" y="7.0475"/>
+<vertex x="20.832" y="6.6665"/>
+<vertex x="20.832" y="6.9205"/>
+</polygon>
+<polygon width="0.254" layer="21">
+<vertex x="19.3" y="8.0655"/>
+<vertex x="19.046" y="8.0655"/>
+<vertex x="19.046" y="8.7005"/>
+<vertex x="18.792" y="8.7005"/>
+<vertex x="19.173" y="9.2085"/>
+<vertex x="19.554" y="8.7005"/>
+<vertex x="19.3" y="8.7005"/>
+</polygon>
+<wire x1="20.197" y1="7.0475" x2="19.181" y2="6.0315" width="0.254" layer="21" curve="-90"/>
+<wire x1="19.181" y1="6.0315" x2="18.165" y2="7.0475" width="0.254" layer="21" curve="-90"/>
+<wire x1="18.165" y1="7.0475" x2="19.181" y2="8.0635" width="0.254" layer="21" curve="-90"/>
+<wire x1="19.181" y1="8.0635" x2="20.197" y2="7.0475" width="0.254" layer="21" curve="-92"/>
+<pad name="BT" x="7.62" y="21.59" drill="1" diameter="1.778"/>
+<pad name="P0" x="10.16" y="21.59" drill="1" diameter="1.778"/>
+<pad name="P1" x="12.7" y="21.59" drill="1" diameter="1.778"/>
+<pad name="RST" x="15.24" y="21.59" drill="1" diameter="1.778"/>
+<pad name="DI" x="17.78" y="21.59" drill="1" diameter="1.778"/>
+<pad name="CS" x="20.32" y="21.59" drill="1" diameter="1.778"/>
+<pad name="VIN" x="7.62" y="3.81" drill="1" diameter="1.778"/>
+<pad name="3VO" x="10.16" y="3.81" drill="1" diameter="1.778"/>
+<pad name="GND" x="12.7" y="3.81" drill="1" diameter="1.778"/>
+<pad name="SCL" x="15.24" y="3.81" drill="1" diameter="1.778"/>
+<pad name="SDA" x="17.78" y="3.81" drill="1" diameter="1.778"/>
+<pad name="INT" x="20.32" y="3.81" drill="1" diameter="1.778"/>
+<wire x1="3.81" y1="24.13" x2="24.13" y2="24.13" width="0.1524" layer="21"/>
+<wire x1="26.67" y1="21.59" x2="26.67" y2="3.81" width="0.1524" layer="21"/>
+<wire x1="24.13" y1="1.27" x2="3.81" y2="1.27" width="0.1524" layer="21"/>
+<wire x1="1.27" y1="21.59" x2="1.27" y2="3.81" width="0.1524" layer="21"/>
+<wire x1="1.27" y1="3.81" x2="3.81" y2="1.27" width="0.1524" layer="21" curve="90"/>
+<wire x1="3.81" y1="24.13" x2="1.27" y2="21.59" width="0.1524" layer="21" curve="90"/>
+<wire x1="24.13" y1="24.13" x2="26.67" y2="21.59" width="0.1524" layer="21" curve="-90"/>
+<wire x1="26.67" y1="3.81" x2="24.13" y2="1.27" width="0.1524" layer="21" curve="-90"/>
+</package>
+</packages>
+<symbols>
+<symbol name="ADAFRUIT_BNO08X_PINOUT">
+<description>Pinout schematic capture for the Adafruit BNO08x</description>
+<wire x1="2.54" y1="17.78" x2="2.54" y2="0" width="0.1524" layer="94"/>
+<wire x1="2.54" y1="0" x2="10.16" y2="0" width="0.1524" layer="94"/>
+<wire x1="10.16" y1="0" x2="10.16" y2="17.78" width="0.1524" layer="94"/>
+<wire x1="10.16" y1="17.78" x2="2.54" y2="17.78" width="0.1524" layer="94"/>
+<wire x1="27.94" y1="17.78" x2="27.94" y2="0" width="0.1524" layer="94"/>
+<wire x1="27.94" y1="0" x2="35.56" y2="0" width="0.1524" layer="94"/>
+<wire x1="35.56" y1="0" x2="35.56" y2="17.78" width="0.1524" layer="94"/>
+<wire x1="35.56" y1="17.78" x2="27.94" y2="17.78" width="0.1524" layer="94"/>
+<pin name="VCC" x="7.62" y="15.24" visible="off" length="short" rot="R180"/>
+<pin name="3.3V" x="7.62" y="12.7" visible="off" length="short" rot="R180"/>
+<pin name="GND" x="7.62" y="10.16" visible="off" length="short" rot="R180"/>
+<pin name="SCL" x="7.62" y="7.62" visible="off" length="short" rot="R180"/>
+<pin name="SDA" x="7.62" y="5.08" visible="off" length="short" rot="R180"/>
+<pin name="INT" x="7.62" y="2.54" visible="off" length="short" rot="R180"/>
+<pin name="BOOT" x="33.02" y="15.24" visible="off" length="short" rot="R180"/>
+<pin name="PS0" x="33.02" y="12.7" visible="off" length="short" rot="R180"/>
+<pin name="PS1" x="33.02" y="10.16" visible="off" length="short" rot="R180"/>
+<pin name="RST" x="33.02" y="7.62" visible="off" length="short" rot="R180"/>
+<pin name="MOSI" x="33.02" y="5.08" visible="off" length="short" rot="R180"/>
+<pin name="CS" x="33.02" y="2.54" visible="off" length="short" rot="R180"/>
+<wire x1="5.08" y1="15.24" x2="-2.54" y2="15.24" width="0.1524" layer="91"/>
+<wire x1="5.08" y1="12.7" x2="-2.54" y2="12.7" width="0.1524" layer="91"/>
+<wire x1="5.08" y1="10.16" x2="-2.54" y2="10.16" width="0.1524" layer="91"/>
+<wire x1="5.08" y1="7.62" x2="-2.54" y2="7.62" width="0.1524" layer="91"/>
+<wire x1="5.08" y1="5.08" x2="-2.54" y2="5.08" width="0.1524" layer="91"/>
+<wire x1="5.08" y1="2.54" x2="-2.54" y2="2.54" width="0.1524" layer="91"/>
+<text x="-2.54" y="15.24" size="1.778" layer="95">VCC</text>
+<text x="-2.54" y="12.7" size="1.778" layer="95">3.3V</text>
+<text x="-2.54" y="7.62" size="1.778" layer="95">SCL</text>
+<text x="-2.54" y="5.08" size="1.778" layer="95">SDA</text>
+<text x="-2.54" y="2.54" size="1.778" layer="95">INT</text>
+<text x="-2.54" y="10.16" size="1.778" layer="95">GND</text>
+<wire x1="30.48" y1="15.24" x2="22.86" y2="15.24" width="0.1524" layer="91"/>
+<wire x1="30.48" y1="12.7" x2="22.86" y2="12.7" width="0.1524" layer="91"/>
+<wire x1="30.48" y1="10.16" x2="22.86" y2="10.16" width="0.1524" layer="91"/>
+<wire x1="30.48" y1="7.62" x2="22.86" y2="7.62" width="0.1524" layer="91"/>
+<wire x1="30.48" y1="5.08" x2="22.86" y2="5.08" width="0.1524" layer="91"/>
+<wire x1="30.48" y1="2.54" x2="22.86" y2="2.54" width="0.1524" layer="91"/>
+<text x="22.86" y="15.24" size="1.778" layer="95">BOOT</text>
+<text x="22.86" y="12.7" size="1.778" layer="95">PS0</text>
+<text x="22.86" y="7.62" size="1.778" layer="95">RST</text>
+<text x="22.86" y="5.08" size="1.778" layer="95">MOSI</text>
+<text x="22.86" y="2.54" size="1.778" layer="95">CS</text>
+<text x="22.86" y="10.16" size="1.778" layer="95">PS1</text>
+</symbol>
+</symbols>
+<devicesets>
+<deviceset name="ADAFRUIT_BNO08X">
+<description>Adafruit BNO08x Device</description>
+<gates>
+<gate name="G$1" symbol="ADAFRUIT_BNO08X_PINOUT" x="0" y="0"/>
+</gates>
+<devices>
+<device name="" package="ADAFRUIT_BNO08X_FOOTPRINT">
+<connects>
+<connect gate="G$1" pin="3.3V" pad="3VO"/>
+<connect gate="G$1" pin="BOOT" pad="BT"/>
+<connect gate="G$1" pin="CS" pad="CS"/>
+<connect gate="G$1" pin="GND" pad="GND"/>
+<connect gate="G$1" pin="INT" pad="INT"/>
+<connect gate="G$1" pin="MOSI" pad="DI"/>
+<connect gate="G$1" pin="PS0" pad="P0"/>
+<connect gate="G$1" pin="PS1" pad="P1"/>
+<connect gate="G$1" pin="RST" pad="RST"/>
+<connect gate="G$1" pin="SCL" pad="SCL"/>
+<connect gate="G$1" pin="SDA" pad="SDA"/>
+<connect gate="G$1" pin="VCC" pad="VIN"/>
+</connects>
+<technologies>
+<technology name=""/>
+</technologies>
+</device>
+</devices>
+</deviceset>
+</devicesets>
+</library>
+</drawing>
+</eagle>

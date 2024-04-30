@@ -12,5 +12,6 @@ The "main" Electrical repository is organized into 2 subteam development branche
 
 * "dev/avionics"
 * "dev/payload"
+* "dev/airbrakes"
 
 Subteam changes should be pushed and pull requests made only to the respective development subteam branch!
