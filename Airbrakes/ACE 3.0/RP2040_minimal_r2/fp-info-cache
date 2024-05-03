@@ -1,4 +1,4 @@
-23142134689002445
+23152254361900061
 Audio_Module
 Reverb_BTDR-1H
 Digital Reverberation Unit, http://www.belton.co.kr/inc/downfile.php?seq=17&file=pdf (footprint from http://www.uk-electronic.de/PDF/BTDR-1.pdf)
@@ -13,55 +13,6 @@ audio belton reverb
 0
 7
 7
-BMI088
-PQFN50P450X300X100-16N
-
-
-0
-16
-16
-BMM350
-BGA9_BMM350_BOS
-
-BMM350 
-0
-9
-9
-BMM350
-BGA9_BMM350_BOS-L
-
-BMM350 
-0
-9
-9
-BMM350
-BGA9_BMM350_BOS-M
-
-BMM350 
-0
-9
-9
-BMP581
-QFN10_BMP581_BOS
-
-BMP581 
-0
-10
-10
-BMP581
-QFN10_BMP581_BOS-L
-
-BMP581 
-0
-10
-10
-BMP581
-QFN10_BMP581_BOS-M
-
-BMP581 
-0
-10
-10
 Battery
 BatteryClip_Keystone_54_D16-19mm
 Battery clip for batteries with a diameter between 16-19 mm: https://www.keyelco.com/product.cfm/product_id/826
@@ -2572,13 +2523,6 @@ Buzzer_Beeper
 Speaker_CUI_CMR-1206S-67
 Speaker, 30mW, 300-7000Hz, IP67 face, 12x6x2,25mm, https://www.cuidevices.com/product/resource/cmr-12062s-67.pdf
 speaker CUI
-0
-2
-2
-CGB4B3X7R0J225K055AB
-CAPC2012X55N
-
-
 0
 2
 2

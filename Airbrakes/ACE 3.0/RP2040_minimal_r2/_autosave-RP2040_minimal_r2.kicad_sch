@@ -731,7 +731,7 @@
 				)
 			)
 		)
-		(symbol "104031-0811:104031-0811"
+		(symbol "104031-0811-molex_sd_connector:104031-0811"
 			(pin_names
 				(offset 1.016)
 			)
@@ -16778,151 +16778,6 @@
 		)
 	)
 	(symbol
-		(lib_id "104031-0811:104031-0811")
-		(at 321.31 107.95 0)
-		(unit 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(dnp no)
-		(fields_autoplaced yes)
-		(uuid "65e285b3-b56f-4ca8-a009-3b46561bfa49")
-		(property "Reference" "J5"
-			(at 321.31 90.17 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Value" "104031-0811"
-			(at 321.31 92.71 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Footprint" "1040310811-molex_usb:MOLEX_104031-0811"
-			(at 321.31 107.95 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify bottom)
-				(hide yes)
-			)
-		)
-		(property "Datasheet" ""
-			(at 321.31 107.95 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Description" ""
-			(at 321.31 107.95 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "PARTREV" "B2"
-			(at 321.31 107.95 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify bottom)
-				(hide yes)
-			)
-		)
-		(property "STANDARD" "Manufacturer Recommendations"
-			(at 321.31 107.95 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify bottom)
-				(hide yes)
-			)
-		)
-		(property "MAXIMUM_PACKAGE_HEIGHT" "1.57mm"
-			(at 321.31 107.95 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify bottom)
-				(hide yes)
-			)
-		)
-		(property "MANUFACTURER" "Molex"
-			(at 321.31 107.95 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify bottom)
-				(hide yes)
-			)
-		)
-		(pin "1"
-			(uuid "67cae25d-b685-4a74-b4a6-6d65ea4eada6")
-		)
-		(pin "G4"
-			(uuid "8e9ff667-3fb0-467f-b9fc-359c3ae873a7")
-		)
-		(pin "6"
-			(uuid "daafa0ea-2f19-4680-a648-76247c02ee4a")
-		)
-		(pin "G3"
-			(uuid "1964c151-3fb7-4674-8324-69045856f46a")
-		)
-		(pin "9"
-			(uuid "7aedd4b4-9490-4e54-a752-d986aeb7da8e")
-		)
-		(pin "4"
-			(uuid "86c16b27-77c4-4aaf-825c-b94afa97dec5")
-		)
-		(pin "5"
-			(uuid "fdb18b86-7914-401b-a1f1-bd9dd4a23c46")
-		)
-		(pin "10"
-			(uuid "2cf97461-cae1-4cf4-a4ad-9ca66e2a6f64")
-		)
-		(pin "3"
-			(uuid "77f7a01b-d6d2-43f2-809c-ab28b02aebec")
-		)
-		(pin "8"
-			(uuid "a1c4cf0a-a15c-4f0f-a1b1-a43cc83a419e")
-		)
-		(pin "G2"
-			(uuid "82e0de5e-7f97-4919-b7e4-eb5411e08487")
-		)
-		(pin "2"
-			(uuid "f54dfad9-be30-4f27-ad17-d1b3b15793ac")
-		)
-		(pin "G1"
-			(uuid "db961931-38ca-4def-b2c7-0a41e099eaa6")
-		)
-		(pin "7"
-			(uuid "516f5c78-94ab-4883-a54d-348cb29c183a")
-		)
-		(instances
-			(project "RP2040_minimal_r2"
-				(path "/8c0b3d8b-46d3-4173-ab1e-a61765f77d61"
-					(reference "J5")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(symbol
 		(lib_id "Device:C")
 		(at 304.8 204.47 0)
 		(unit 1)
@@ -17055,151 +16910,6 @@
 			(project "RP2040_minimal_r2"
 				(path "/8c0b3d8b-46d3-4173-ab1e-a61765f77d61"
 					(reference "C18")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(symbol
-		(lib_id "104031-0811:104031-0811")
-		(at 293.37 148.59 0)
-		(unit 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(dnp no)
-		(fields_autoplaced yes)
-		(uuid "849cd1aa-cac0-4122-98db-668575d9ef3a")
-		(property "Reference" "J3"
-			(at 293.37 130.81 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Value" "104031-0811"
-			(at 293.37 133.35 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Footprint" "1040310811-molex_usb:MOLEX_104031-0811"
-			(at 293.37 148.59 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify bottom)
-				(hide yes)
-			)
-		)
-		(property "Datasheet" ""
-			(at 293.37 148.59 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Description" ""
-			(at 293.37 148.59 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "PARTREV" "B2"
-			(at 293.37 148.59 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify bottom)
-				(hide yes)
-			)
-		)
-		(property "STANDARD" "Manufacturer Recommendations"
-			(at 293.37 148.59 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify bottom)
-				(hide yes)
-			)
-		)
-		(property "MAXIMUM_PACKAGE_HEIGHT" "1.57mm"
-			(at 293.37 148.59 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify bottom)
-				(hide yes)
-			)
-		)
-		(property "MANUFACTURER" "Molex"
-			(at 293.37 148.59 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify bottom)
-				(hide yes)
-			)
-		)
-		(pin "1"
-			(uuid "dca8d16a-5013-445d-ad4e-cdfddcf8b5f3")
-		)
-		(pin "G4"
-			(uuid "d141ca4b-88fe-4810-85ee-3cac296ee784")
-		)
-		(pin "6"
-			(uuid "34e2520d-2a9e-4cda-9ae0-eee155f7ceca")
-		)
-		(pin "G3"
-			(uuid "ebb7a96a-bb22-48ec-9acf-329b31412612")
-		)
-		(pin "9"
-			(uuid "c828fc56-087b-4e89-9a01-f0a7de44de5b")
-		)
-		(pin "4"
-			(uuid "00498bfe-a66c-472b-a655-5e916aa45330")
-		)
-		(pin "5"
-			(uuid "d55f77e4-6386-4535-8921-96ca8024a680")
-		)
-		(pin "10"
-			(uuid "f6c0c911-9f07-4da7-a74b-579bad6f81bc")
-		)
-		(pin "3"
-			(uuid "34b5c16e-6019-442c-aa63-bd6f43c442f6")
-		)
-		(pin "8"
-			(uuid "6984cb3c-b644-4bc8-be57-0afbd1045cec")
-		)
-		(pin "G2"
-			(uuid "80a439a3-722d-41ff-9585-2739577cd285")
-		)
-		(pin "2"
-			(uuid "71280761-4740-48f7-b983-113a88669744")
-		)
-		(pin "G1"
-			(uuid "9bf4c9a1-53c1-4710-9616-a9246dfbac18")
-		)
-		(pin "7"
-			(uuid "40888194-2435-4f02-823a-c8feaa3d56c2")
-		)
-		(instances
-			(project "RP2040_minimal_r2"
-				(path "/8c0b3d8b-46d3-4173-ab1e-a61765f77d61"
-					(reference "J3")
 					(unit 1)
 				)
 			)
@@ -18036,6 +17746,151 @@
 			(project "RP2040_minimal_r2"
 				(path "/8c0b3d8b-46d3-4173-ab1e-a61765f77d61"
 					(reference "#PWR038")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "104031-0811-molex_sd_connector:104031-0811")
+		(at 287.02 148.59 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(uuid "c89f3f2a-1012-49bd-9877-1a96e4d3512d")
+		(property "Reference" "J3"
+			(at 287.02 130.81 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "104031-0811"
+			(at 287.02 133.35 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" "1040310811-molex_usb:MOLEX_104031-0811"
+			(at 287.02 148.59 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify bottom)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" ""
+			(at 287.02 148.59 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" ""
+			(at 287.02 148.59 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "PARTREV" "B2"
+			(at 287.02 148.59 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify bottom)
+				(hide yes)
+			)
+		)
+		(property "STANDARD" "Manufacturer Recommendations"
+			(at 287.02 148.59 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify bottom)
+				(hide yes)
+			)
+		)
+		(property "MAXIMUM_PACKAGE_HEIGHT" "1.57mm"
+			(at 287.02 148.59 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify bottom)
+				(hide yes)
+			)
+		)
+		(property "MANUFACTURER" "Molex"
+			(at 287.02 148.59 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify bottom)
+				(hide yes)
+			)
+		)
+		(pin "5"
+			(uuid "bf80201a-c201-46ea-8763-6e7f7c828d42")
+		)
+		(pin "9"
+			(uuid "5caddda7-e445-48bc-a57e-97f031cd3c7c")
+		)
+		(pin "8"
+			(uuid "be9a4c61-5de1-4e15-b3a5-43276343e4f3")
+		)
+		(pin "7"
+			(uuid "77cc5514-1fcc-4a69-a4f1-c7443c82cb7b")
+		)
+		(pin "1"
+			(uuid "8cec2348-1be4-4430-a2b7-02a752394672")
+		)
+		(pin "10"
+			(uuid "62b60a6d-1c1f-4dbb-8c7e-2299506e63fa")
+		)
+		(pin "2"
+			(uuid "0b94abf4-3f82-4bf6-a9a4-64ded0e629fb")
+		)
+		(pin "4"
+			(uuid "21f6f426-0ed9-4253-8006-3d0548806109")
+		)
+		(pin "6"
+			(uuid "1459c406-c210-4efe-bc18-ac6779ceeb97")
+		)
+		(pin "G3"
+			(uuid "3fe7a090-5e3d-410c-90b0-c8db35e01645")
+		)
+		(pin "G2"
+			(uuid "8f68d737-3afa-4a46-90f2-a59341ed38af")
+		)
+		(pin "G1"
+			(uuid "31bca0d5-bf11-4e2e-8c74-24abd6dd6039")
+		)
+		(pin "G4"
+			(uuid "437f96e6-dfb0-475d-aa69-0b30161a49da")
+		)
+		(pin "3"
+			(uuid "df5cd505-62a3-47c9-970b-072c522ef21e")
+		)
+		(instances
+			(project "RP2040_minimal_r2"
+				(path "/8c0b3d8b-46d3-4173-ab1e-a61765f77d61"
+					(reference "J3")
 					(unit 1)
 				)
 			)
