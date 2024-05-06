@@ -17732,14 +17732,13 @@
 				)
 			)
 		)
-		(property "Footprint" "BGA9_BMM350_BOS"
+		(property "Footprint" "BMM350:BGA9_BMM350_BOS"
 			(at 336.55 209.55 0)
 			(effects
 				(font
 					(size 1.27 1.27)
 					(italic yes)
 				)
-				(hide yes)
 			)
 		)
 		(property "Datasheet" "BMM350"
@@ -18369,7 +18368,6 @@
 					(size 1.27 1.27)
 				)
 				(justify bottom)
-				(hide yes)
 			)
 		)
 		(property "Datasheet" ""
@@ -19097,14 +19095,13 @@
 				)
 			)
 		)
-		(property "Footprint" "QFN10_BMP581_BOS"
+		(property "Footprint" "BMP581:QFN10_BMP581_BOS"
 			(at 256.54 213.36 0)
 			(effects
 				(font
 					(size 1.27 1.27)
 					(italic yes)
 				)
-				(hide yes)
 			)
 		)
 		(property "Datasheet" "BMP581"
