@@ -6,7 +6,6 @@
 
 ## KiCad
 *.lck
-fp-info-cache
 
 ## Solidworks CAD generated files
 *.cwr
