@@ -1,4 +1,4 @@
-23155684335438980
+23171118409175573
 1040310811-molex_usb
 MOLEX_104031-0811
 
@@ -20,6 +20,62 @@ audio belton reverb
 0
 7
 7
+BMI088
+PQFN50P450X300X100-16N
+
+
+0
+16
+16
+BMM350
+BGA9_BMM350_BOS
+
+BMM350 
+0
+9
+9
+BMM350
+BGA9_BMM350_BOS-L
+
+BMM350 
+0
+9
+9
+BMM350
+BGA9_BMM350_BOS-M
+
+BMM350 
+0
+9
+9
+BMP581
+QFN10_BMP581_BOS
+
+BMP581 
+0
+10
+10
+BMP581
+QFN10_BMP581_BOS-L
+
+BMP581 
+0
+10
+10
+BMP581
+QFN10_BMP581_BOS-M
+
+BMP581 
+0
+10
+10
+BOOT_button footprint
+B3U-1000P
+
+B3U-1000P 
+0
+2
+2
 Battery
 BatteryClip_Keystone_54_D16-19mm
 Battery clip for batteries with a diameter between 16-19 mm: https://www.keyelco.com/product.cfm/product_id/826
@@ -63489,6 +63545,13 @@ Yellow 5381 Series LED
 0
 2
 2
+MSD-1-A-footprints
+CONN9_MSD-1_CUD
+
+MSD-1-A 
+0
+13
+13
 Module
 A20_OLINUXINO_LIME2
 A20 Olinuxino LIME2, 1.2GHz, 512-1024MB RAM, Micro-SD, NAND or eMMC, 1000Mbit Ethernet
@@ -85119,6 +85182,13 @@ USB USB_B USB_micro USB_OTG
 0
 17
 6
+RPi QFN Footprint
+RP2040-QFN-56
+QFN, 56 Pin (http://www.cypress.com/file/416486/download#page=40), generated with kicad-footprint-generator ipc_dfn_qfn_generator.py
+QFN DFN_QFN
+0
+70
+57
 Relay_SMD
 Relay_2P2T_10x6mm_TE_IMxxG
 Signal Relay, 10x6mm, 2 Form C, Gull Wings, https://www.te.com/commerce/DocumentDelivery/DDEController?Action=showdoc&DocId=Data+Sheet%7F108-98001%7FZ.1%7Fpdf%7FEnglish%7FENG_DS_108-98001_Z.1.pdf
@@ -94758,10 +94828,3 @@ Varistor VF
 0
 2
 2
-WURocketry_Logo
-WURocketry_logo
-
-
-0
-0
-0
