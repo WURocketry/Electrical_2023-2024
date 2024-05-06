@@ -4,8 +4,9 @@
 ## Compressed files
 *.zip
 
-## KiCad lock files
+## KiCad
 *.lck
+fp-info-cache
 
 ## Solidworks CAD generated files
 *.cwr
