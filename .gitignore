@@ -1,6 +1,9 @@
 ### WURocketry .gitignore
 ### 2023-2024
 
+## Compressed files
+*.zip
+
 ## KiCad lock files
 *.lck
 
