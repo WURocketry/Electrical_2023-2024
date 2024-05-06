@@ -192,7 +192,7 @@
 			(pin input line
 				(at 11.43 2.54 180)
 				(length 2.54)
-				(name "SDA"
+				(name "INT2"
 					(effects
 						(font
 							(size 1.27 1.27)
@@ -210,7 +210,7 @@
 			(pin input line
 				(at 11.43 0 180)
 				(length 2.54)
-				(name "INT2"
+				(name "SDA"
 					(effects
 						(font
 							(size 1.27 1.27)

@@ -9,24 +9,24 @@
 			(exclude_from_sim no)
 			(in_bom yes)
 			(on_board yes)
-			(property "Reference" "K"
-				(at 0.508 10.16 0)
+			(property "Reference" "K1"
+				(at 0.635 12.7 0)
 				(effects
 					(font
 						(size 1.27 1.27)
 					)
 				)
 			)
-			(property "Value" ""
-				(at 8.89 0 0)
+			(property "Value" "~"
+				(at 0.635 10.16 0)
 				(effects
 					(font
 						(size 1.27 1.27)
 					)
 				)
 			)
-			(property "Footprint" ""
-				(at 8.89 0 0)
+			(property "Footprint" "12PinFootprint:12_Pin_Edge_Connector"
+				(at 1.016 -13.208 0)
 				(effects
 					(font
 						(size 1.27 1.27)
@@ -195,7 +195,7 @@
 				(pin input line
 					(at 11.43 2.54 180)
 					(length 2.54)
-					(name "SDA"
+					(name "INT2"
 						(effects
 							(font
 								(size 1.27 1.27)
@@ -213,7 +213,7 @@
 				(pin input line
 					(at 11.43 0 180)
 					(length 2.54)
-					(name "INT2"
+					(name "SDA"
 						(effects
 							(font
 								(size 1.27 1.27)
@@ -292,12 +292,13 @@
 					(hide yes)
 				)
 			)
-			(property "Description" ""
+			(property "Description" "Accelerometer, Gyroscope, 6 Axis Sensor I²C, SPI Output"
 				(at 0 0 0)
 				(effects
 					(font
 						(size 1.27 1.27)
 					)
+					(justify bottom)
 					(hide yes)
 				)
 			)
@@ -352,16 +353,6 @@
 				)
 			)
 			(property "AVAILABILITY" "In Stock"
-				(at 0 0 0)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-					(justify bottom)
-					(hide yes)
-				)
-			)
-			(property "DESCRIPTION" "Accelerometer, Gyroscope, 6 Axis Sensor I²C, SPI Output"
 				(at 0 0 0)
 				(effects
 					(font
@@ -3203,7 +3194,7 @@
 			)
 		)
 		(property "Footprint" "12PinFootprint:12_Pin_Edge_Connector"
-			(at 167.64 114.3 0)
+			(at 159.766 127.508 0)
 			(effects
 				(font
 					(size 1.27 1.27)
