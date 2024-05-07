@@ -1,0 +1,185 @@
+<!--This work is licensed under a Creative Commons Attribution-ShareAlike 4.0 International License (CC BY-SA) with Design Exception 1.0-->
+<eagle version="7.1.0">
+<drawing>
+<settings>
+<setting alwaysvectorfont="no"/>
+<setting verticaltext="up"/>
+</settings>
+<grid distance="0.1" unitdist="inch" unit="inch" style="lines" multiple="1" display="no" altdistance="0.01" altunitdist="inch" altunit="inch"/>
+<layers>
+<layer number="1" name="Top" color="4" fill="1" visible="yes" active="yes"/>
+<layer number="16" name="Bottom" color="1" fill="1" visible="yes" active="yes"/>
+<layer number="17" name="Pads" color="2" fill="1" visible="yes" active="yes"/>
+<layer number="18" name="Vias" color="2" fill="1" visible="yes" active="yes"/>
+<layer number="19" name="Unrouted" color="6" fill="1" visible="yes" active="yes"/>
+<layer number="20" name="Dimension" color="15" fill="1" visible="yes" active="yes"/>
+<layer number="21" name="tPlace" color="7" fill="1" visible="yes" active="yes"/>
+<layer number="22" name="bPlace" color="7" fill="1" visible="yes" active="yes"/>
+<layer number="23" name="tOrigins" color="15" fill="1" visible="yes" active="yes"/>
+<layer number="24" name="bOrigins" color="15" fill="1" visible="yes" active="yes"/>
+<layer number="25" name="tNames" color="7" fill="1" visible="yes" active="yes"/>
+<layer number="26" name="bNames" color="7" fill="1" visible="yes" active="yes"/>
+<layer number="27" name="tValues" color="7" fill="1" visible="yes" active="yes"/>
+<layer number="28" name="bValues" color="7" fill="1" visible="yes" active="yes"/>
+<layer number="29" name="tStop" color="7" fill="3" visible="yes" active="yes"/>
+<layer number="30" name="bStop" color="7" fill="6" visible="no" active="yes"/>
+<layer number="31" name="tCream" color="7" fill="4" visible="yes" active="yes"/>
+<layer number="32" name="bCream" color="7" fill="5" visible="no" active="yes"/>
+<layer number="33" name="tFinish" color="6" fill="3" visible="no" active="yes"/>
+<layer number="34" name="bFinish" color="6" fill="6" visible="no" active="yes"/>
+<layer number="35" name="tGlue" color="7" fill="4" visible="no" active="yes"/>
+<layer number="36" name="bGlue" color="7" fill="5" visible="no" active="yes"/>
+<layer number="37" name="tTest" color="7" fill="1" visible="no" active="yes"/>
+<layer number="38" name="bTest" color="7" fill="1" visible="no" active="yes"/>
+<layer number="39" name="tKeepout" color="4" fill="11" visible="yes" active="yes"/>
+<layer number="40" name="bKeepout" color="1" fill="11" visible="yes" active="yes"/>
+<layer number="41" name="tRestrict" color="4" fill="10" visible="yes" active="yes"/>
+<layer number="42" name="bRestrict" color="1" fill="10" visible="yes" active="yes"/>
+<layer number="43" name="vRestrict" color="2" fill="10" visible="yes" active="yes"/>
+<layer number="44" name="Drills" color="7" fill="1" visible="no" active="yes"/>
+<layer number="45" name="Holes" color="7" fill="1" visible="no" active="yes"/>
+<layer number="46" name="Milling" color="3" fill="1" visible="no" active="yes"/>
+<layer number="47" name="Measures" color="7" fill="1" visible="no" active="yes"/>
+<layer number="48" name="Document" color="7" fill="1" visible="yes" active="yes"/>
+<layer number="49" name="Reference" color="7" fill="1" visible="yes" active="yes"/>
+<layer number="51" name="tDocu" color="7" fill="1" visible="yes" active="yes"/>
+<layer number="52" name="bDocu" color="7" fill="1" visible="yes" active="yes"/>
+<layer number="90" name="Modules" color="5" fill="1" visible="yes" active="yes"/>
+<layer number="91" name="Nets" color="2" fill="1" visible="yes" active="yes"/>
+<layer number="92" name="Busses" color="1" fill="1" visible="yes" active="yes"/>
+<layer number="93" name="Pins" color="2" fill="1" visible="yes" active="yes"/>
+<layer number="94" name="Symbols" color="4" fill="1" visible="yes" active="yes"/>
+<layer number="95" name="Names" color="7" fill="1" visible="yes" active="yes"/>
+<layer number="96" name="Values" color="7" fill="1" visible="yes" active="yes"/>
+<layer number="97" name="Info" color="7" fill="1" visible="yes" active="yes"/>
+<layer number="98" name="Guide" color="6" fill="1" visible="yes" active="yes"/>
+</layers>
+<library>
+<packages>
+<package name="USB-C">
+<wire x1="-4.7" y1="-2.6" x2="4.7" y2="-2.6" width="0.127" layer="21"/>
+<smd name="A1" x="-2.75" y="0" dx="1.4" dy="0.3" layer="1" rot="R90"/>
+<smd name="A2" x="-2.25" y="0" dx="1.4" dy="0.3" layer="1" rot="R90"/>
+<smd name="A3" x="-1.75" y="0" dx="1.4" dy="0.3" layer="1" rot="R90"/>
+<smd name="A4" x="-1.25" y="0" dx="1.4" dy="0.3" layer="1" rot="R90"/>
+<smd name="A5" x="-0.75" y="0" dx="1.4" dy="0.3" layer="1" rot="R90"/>
+<smd name="A6" x="-0.25" y="0" dx="1.4" dy="0.3" layer="1" rot="R90"/>
+<smd name="A7" x="0.25" y="0" dx="1.4" dy="0.3" layer="1" rot="R90"/>
+<smd name="A8" x="0.75" y="0" dx="1.4" dy="0.3" layer="1" rot="R90"/>
+<smd name="A9" x="1.25" y="0" dx="1.4" dy="0.3" layer="1" rot="R90"/>
+<smd name="A10" x="1.75" y="0" dx="1.4" dy="0.3" layer="1" rot="R90"/>
+<smd name="A11" x="2.25" y="0" dx="1.4" dy="0.3" layer="1" rot="R90"/>
+<smd name="A12" x="2.75" y="0" dx="1.4" dy="0.3" layer="1" rot="R90"/>
+<smd name="P1" x="-3.6" y="0" dx="1.4" dy="0.7" layer="1" rot="R90"/>
+<smd name="P2" x="3.6" y="0" dx="1.4" dy="0.7" layer="1" rot="R90"/>
+<smd name="B1" x="2.75" y="0" dx="1.4" dy="0.3" layer="16" rot="R90"/>
+<smd name="B2" x="2.25" y="0" dx="1.4" dy="0.3" layer="16" rot="R90"/>
+<smd name="B3" x="1.75" y="0" dx="1.4" dy="0.3" layer="16" rot="R90"/>
+<smd name="B4" x="1.25" y="0" dx="1.4" dy="0.3" layer="16" rot="R90"/>
+<smd name="B5" x="0.75" y="0" dx="1.4" dy="0.3" layer="16" rot="R90"/>
+<smd name="B6" x="0.25" y="0" dx="1.4" dy="0.3" layer="16" rot="R90"/>
+<smd name="B7" x="-0.25" y="0" dx="1.4" dy="0.3" layer="16" rot="R90"/>
+<smd name="B8" x="-0.75" y="0" dx="1.4" dy="0.3" layer="16" rot="R90"/>
+<smd name="B9" x="-1.25" y="0" dx="1.4" dy="0.3" layer="16" rot="R90"/>
+<smd name="B10" x="-1.75" y="0" dx="1.4" dy="0.3" layer="16" rot="R90"/>
+<smd name="B11" x="-2.25" y="0" dx="1.4" dy="0.3" layer="16" rot="R90"/>
+<smd name="B12" x="-2.75" y="0" dx="1.4" dy="0.3" layer="16" rot="R90"/>
+<smd name="P3" x="3.6" y="0" dx="1.4" dy="0.7" layer="16" rot="R90"/>
+<smd name="P4" x="-3.6" y="0" dx="1.4" dy="0.7" layer="16" rot="R90"/>
+</package>
+</packages>
+<symbols>
+<symbol name="USB-C">
+<wire x1="-13" y1="16" x2="-13" y2="-16" width="0.254" layer="94"/>
+<wire x1="-13" y1="-16" x2="13" y2="-16" width="0.254" layer="94"/>
+<wire x1="13" y1="-16" x2="13" y2="16" width="0.254" layer="94"/>
+<wire x1="13" y1="16" x2="-13" y2="16" width="0.254" layer="94"/>
+<pin name="A12/GND" x="-18" y="11" length="middle"/>
+<pin name="A11/RX2+" x="-18" y="9" length="middle"/>
+<pin name="A10/RX2-" x="-18" y="7" length="middle"/>
+<pin name="A9/VBUS" x="-18" y="5" length="middle"/>
+<pin name="A8/SBU1" x="-18" y="3" length="middle"/>
+<pin name="A7/D-" x="-18" y="1" length="middle"/>
+<pin name="A6/D+" x="-18" y="-1" length="middle"/>
+<pin name="A5/CC" x="-18" y="-3" length="middle"/>
+<pin name="A4/VBUS" x="-18" y="-5" length="middle"/>
+<pin name="A3/TX1-" x="-18" y="-7" length="middle"/>
+<pin name="A2/TX1+" x="-18" y="-9" length="middle"/>
+<pin name="A1/GND" x="-18" y="-11" length="middle"/>
+<pin name="B1/GND" x="18" y="11" length="middle" rot="R180"/>
+<pin name="B2/TX2+" x="18" y="9" length="middle" rot="R180"/>
+<pin name="B3/TX2-" x="18" y="7" length="middle" rot="R180"/>
+<pin name="B4/VBUS" x="18" y="5" length="middle" rot="R180"/>
+<pin name="B5/VCONN" x="18" y="3" length="middle" rot="R180"/>
+<pin name="B6" x="18" y="1" length="middle" rot="R180"/>
+<pin name="B7" x="18" y="-1" length="middle" rot="R180"/>
+<pin name="B8/SBU2" x="18" y="-3" length="middle" rot="R180"/>
+<pin name="B9/VBUS" x="18" y="-5" length="middle" rot="R180"/>
+<pin name="B10/RX1-" x="18" y="-7" length="middle" rot="R180"/>
+<pin name="B11/RX1+" x="18" y="-9" length="middle" rot="R180"/>
+<pin name="B12/GND" x="18" y="-11" length="middle" rot="R180"/>
+<pin name="P2" x="-18" y="14" length="middle"/>
+<pin name="P3" x="18" y="14" length="middle" rot="R180"/>
+<pin name="P4" x="18" y="-14" length="middle" rot="R180"/>
+<pin name="P1" x="-18" y="-14" length="middle"/>
+</symbol>
+</symbols>
+<devicesets>
+<deviceset name="USB-C">
+<description> &lt;a href="https://pricing.snapeda.com/parts/USB-C/Adam%20Technologies/view-part?ref=eda"&gt;Check availability&lt;/a&gt;</description>
+<gates>
+<gate name="G$1" symbol="USB-C" x="0" y="0"/>
+</gates>
+<devices>
+<device name="" package="USB-C">
+<connects>
+<connect gate="G$1" pin="A1/GND" pad="A1"/>
+<connect gate="G$1" pin="A10/RX2-" pad="A10"/>
+<connect gate="G$1" pin="A11/RX2+" pad="A11"/>
+<connect gate="G$1" pin="A12/GND" pad="A12"/>
+<connect gate="G$1" pin="A2/TX1+" pad="A2"/>
+<connect gate="G$1" pin="A3/TX1-" pad="A3"/>
+<connect gate="G$1" pin="A4/VBUS" pad="A4"/>
+<connect gate="G$1" pin="A5/CC" pad="A5"/>
+<connect gate="G$1" pin="A6/D+" pad="A6"/>
+<connect gate="G$1" pin="A7/D-" pad="A7"/>
+<connect gate="G$1" pin="A8/SBU1" pad="A8"/>
+<connect gate="G$1" pin="A9/VBUS" pad="A9"/>
+<connect gate="G$1" pin="B1/GND" pad="B1"/>
+<connect gate="G$1" pin="B10/RX1-" pad="B10"/>
+<connect gate="G$1" pin="B11/RX1+" pad="B11"/>
+<connect gate="G$1" pin="B12/GND" pad="B12"/>
+<connect gate="G$1" pin="B2/TX2+" pad="B2"/>
+<connect gate="G$1" pin="B3/TX2-" pad="B3"/>
+<connect gate="G$1" pin="B4/VBUS" pad="B4"/>
+<connect gate="G$1" pin="B5/VCONN" pad="B5"/>
+<connect gate="G$1" pin="B6" pad="B6"/>
+<connect gate="G$1" pin="B7" pad="B7"/>
+<connect gate="G$1" pin="B8/SBU2" pad="B8"/>
+<connect gate="G$1" pin="B9/VBUS" pad="B9"/>
+<connect gate="G$1" pin="P1" pad="P1"/>
+<connect gate="G$1" pin="P2" pad="P2"/>
+<connect gate="G$1" pin="P3" pad="P3"/>
+<connect gate="G$1" pin="P4" pad="P4"/>
+</connects>
+<technologies>
+<technology name="">
+<attribute name="MF" value="Adam Technologies"/>
+<attribute name="Description" value="
+USB-C (USB TYPE-C) USB 3.2 Gen 2 (USB 3.1 Gen 2, Superspeed + (USB 3.1)) Receptacle Connector 24 Position Surface Mount, Through Hole
+"/>
+<attribute name="Package" value="None"/>
+<attribute name="Price" value="None"/>
+<attribute name="SnapEDA_Link" value="https://www.snapeda.com/parts/USB-C/Adam+Tech/view-part/?ref=snap"/>
+<attribute name="MP" value="USB-C"/>
+<attribute name="Availability" value="Not in stock"/>
+<attribute name="Check_prices" value="https://www.snapeda.com/parts/USB-C/Adam+Tech/view-part/?ref=eda"/>
+</technology>
+</technologies>
+</device>
+</devices>
+</deviceset>
+</devicesets>
+</library>
+</drawing>
+</eagle>

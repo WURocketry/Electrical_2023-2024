@@ -1,323 +1,451 @@
-#include <BasicLinearAlgebra.h>
 
+// Note: Important to keep order of includes correct to maintain consistent linking
+// 1. External 3rd party library includes
+// 2. Global definitions (may be used across our project)
+// 3. Local includes
+// 4. Local defines (used only in main.cpp)
+// 5. Static variables
+
+
+/* LIBRARY INCLUDES */
+#include <Arduino.h>
+#include <BasicLinearAlgebra.h>
+#include <Wire.h>
+
+/* GLOBAL DEFINES */
 // Loop rates (Hz)
 #define ONE_SEC_MICROS 1000000
-#define SAMPLE_LOOP_FREQ 400
-#define KALMAN_LOOP_FREQ 100 
-#define CONTROL_LOOP_FREQ 1
+#define SAMPLE_LOOP_FREQ 50 // Sample loop freq in Hz
+#define KALMAN_LOOP_FREQ_PER_SAMPLES 1  // Compute per n=1 samples
+#define CONTROL_LOOP_FREQ 20  // Control loop freq in Hz
 
-using namespace BLA;
+/* LOCAL INCLUDES */
+#include <Measurement.h>
+// #include <accelReplace.h>  // Not using saturated IMU sim
+#include <simulation.h>
+#include <kalman.h>
 
+#include <FlightMonitor.h>
+#include <FSM.h>
+#include <PID_Controller.h>
+#include <AdafruitBMP388.h>
+#include <AdafruitBNO085.h>
+#include <AdafruitADXL345.h>
+#include <SparkFunOpenLog.h>
+#include <ServoMovement.h>
+
+/**********************************************
+ *** CHECK CONFIG CONSTANTS PRIOR TO LAUNCH ***
+ **********************************************/
+#include <IMPORTANT_CONFIG.h>
+/**********************************************
+ **********************************************/
+
+/* LOCAL DEFINES */
+
+/* STATIC VARIABLES */
 // Delta timing variables
-unsigned long currentTime;
-unsigned long previousSampleTime;
-unsigned long previousComputeTime;
-unsigned long previousControlTime;
+static unsigned long currentTime;
+static unsigned long previousFilterReset;
+static unsigned long previousSampleTime;
+static unsigned int  previousComputeCounts; // counter for when compute should occur after n=1 samples
+static unsigned long previousControlTime;
 
-const long sampleLoopMicros  = ONE_SEC_MICROS/SAMPLE_LOOP_FREQ;
-const long computeLoopMicros = ONE_SEC_MICROS/KALMAN_LOOP_FREQ;
-const long controlLoopMicros = ONE_SEC_MICROS/CONTROL_LOOP_FREQ;
+static const long sampleLoopMicros  = ONE_SEC_MICROS/SAMPLE_LOOP_FREQ;
+// @note: DEPRECATED - compute loop is determined by counter instead of sample loop micros (previousComputeCounts)
+// static const long computeLoopMicros = KALMAN_LOOP_FREQ_PER_SAMPLES * sampleLoopMicros;
+static const long controlLoopMicros = ONE_SEC_MICROS/CONTROL_LOOP_FREQ;
 
-// Kalman filter variables
-const float kdt          = 1/KALMAN_LOOP_FREQ; //seconds
-const float processVar   = pow(0.5,2);
-const float altimeterVar = pow(.1,2);
-const float accelXVar    = pow(2,2);
-const float accelYVar    = pow(2,2);
-const float accelZVar    = pow(2,2);
+// Flight monitor and sensor objects/variables
+static AdafruitBMP388 alt_sensor;
+static AdafruitBNO085 imu_sensor;
+static AdafruitADXL345 acc_sensor;
+static ServoMovement srvMovement;
+static FlightMonitor fm_ace;
+static FlightState currentState;
+static bool measurementDataValid;
+static Sample::Measurement currentMeasurement;  // Struct for holding current measurement
 
-BLA::Matrix<9> stateVec;
+#if ENABLE_STATUS_LED
+// Status LED pin
+static int STATUS_LED_PIN = 9;
+#endif
 
-BLA::Matrix<9,9> Fkalman;
+// Kalman filter external variables
+extern BLA::Matrix<3> measuredAccel;
+extern BLA::Matrix<3> inertialAccel;
+extern BLA::Matrix<4> quaternions;
 
-BLA::Matrix<4,9> Hkalman;
+// PID controller object and global control
+static PID_Controller pid(ACE_TARGET_APOGEE);
+static double currentPIDControl = 0;
 
-BLA::Matrix<9,9> Pkalman;
+// OpenLog objects/variables
+static SparkFunOpenLog logger;
+static bool didWriteData = false;
 
-BLA::Matrix<9,9> Qkalman;
+// SDRAM configuration
+#define RING_BUFFER_COLS 11
+#ifdef RP2040_PLATFORM
+  #warning "CONFIG: Configuring ringBuffer for RP2040 platform"
+  #define RING_BUFFER_LENGTH 4000
 
-BLA::Matrix<4,4> Rkalman;
+  static float ringBuffer[RING_BUFFER_LENGTH][RING_BUFFER_COLS]; //contrains time,stateVec, and control value
+#elif PORTENTA_H7_M7_PLATFORM
+  #warning "CONFIG: Configuring ringBuffer for Portenta_H7 platform"
+  #include <SDRAM.h>
+  #define RING_BUFFER_LENGTH 30000
 
-BLA::Matrix<4> measurementVec;
+  static SDRAMClass ram;
+  // float (*ringBuffer)[RING_BUFFER_LENGTH]; // Not currently using
+  static float* SDRAM_base = (float*)0x60000000;  // Base pointer to DRAM start address
+#endif
+static int ringBufferIndex = 0;
 
-BLA::Matrix<4> innovation;
+// IMPORTANT CONFIG: Development debug variables
+#if IS_DEVELOPMENT_MODE
+// Debug variables
+static int stateVecPrintCounter = 0;
+static int counterSample = 0;
+static float simSample[2] {0.0, 0.0};
+#endif
 
-BLA::Matrix<4,4> innovationCov;
+// IMPORTANT CONFIG: Forced airbrakes actuation flight demonstration
+#if FORCED_EXTENSION_CONTROL_CYCLES
+static int numForcedExtensionControlCycles = FORCED_EXTENSION_CONTROL_CYCLES;
+#endif
 
-BLA::Matrix<9,4> Kkalman;
-
-// Peripheral helper functions/structs
-
-struct Measurement {
-  /** 
-   * UFS NOTE: This struct defines format for data used by
-   * this flight software -- but the sampleLoop should use
-   * UFS objects to actually sample data and then pack it into
-   * this struct
-   **/
-  float xAccel;
-  float yAccel;
-  float zAccel;
-  float altitude;
-  Measurement() {}
-  Measurement(float xAcc, float yAcc, float zAcc, float alt): 
-    xAccel(xAcc), yAccel(yAcc), zAccel(zAcc), altitude(alt) {}
-};
-
-
-struct Measurement makeMeasurement() {
-  // TODO: placeholder measurement values
-  struct Measurement collectedData(
-    .1, .1, 0, 10
-  );
-
-  return collectedData;
-}
-
-//Struct for holding current measurement
-struct Measurement currentMeasurement;
-
-//Finite State Machine Variables and State Transition Functions
-enum class FlightState {
-  unknown,
-  detectLaunch,
-  burn,
-  control,
-  coast,
-  landed
-};
-FlightState currentState;
-
-/**
- * TODO: Implement flight states of ACE FSM.
- *       Refer to "Airbrakes Controller State Machine"
- *       in GDrive
- * 
- * NOTE: These functions are state TRANSITIONS and 
- *       do not provide control. 
- **/
-FlightState detectLaunchTransition(FlightState currentState) {
-  /* Transitions: 
-   * this -> burn
-   * this -> detectLaunch 
-   */
-
-  // remain prior to launch (await launch detection)
-  // TODO: determine launchCondition (could be from Kalman)
-  if (launchCondition) {
-    return FlightState::burn;
-  }
-  return currentState;
-}
-
-FlightState burnTransition(FlightState currentState) {
-  /* Transitions:
-   * this -> control
-   * this -> burn
-   */
-  // remain until burn acceleration ended
-  // TODO: determine condition
-  if (noBurnAccelCondition) {
-    return FlightState::control;
-  }
-  
-  return currentState;
-}
-
-FlightState controlTransition(FlightState currentState) {
-  /* Transitions
-   * this -> coast
-   * this -> burn
-   */
-  // remain until apogee
-  // TODO: determine condition
-  if (apogeeReached) {
-    return FlightState::coast;
-  }
-
-  return currentState;
-}
-
-FlightState coastTransition(FlightState currentState) {
-  /* Transitions:
-   * this -> landed
-   * this -> coast
-   */
-  
-  // remain until landing
-  // TOOD: determine condition
-  if (landed) {
-    return FlightState::landed;
-  }
-  return currentState;
-}
 
 void setup() {
-
+  int aceInitFails = 0;
   Serial.begin(38400);
+
+#if IS_DEVELOPMENT_MODE
   while (!Serial) {
     ;  // wait for serial port to connect. Needed for native USB port only
   }
 
-  // prints title with ending line break
-  Serial.println(F("Starting program"));
-  Serial.println(kdt);
+
+  Serial.println("> Initialized Serial comms!");
+  Serial.println("\n\n\n\n\n\n\n");
+  Serial.println("==== NOTE ====");
+  Serial.println("THE ACE IS IN DEVELOPMENT MODE - PLEASE CONFIGURE FOR FLIGHT IN IMPORTANT_CONFIG.h");
+  Serial.println("\n\n\n\n\n\n\n");
+#endif
+  
+#ifdef PORTENTA_H7_M7_PLATFORM
+  // Initialize SDRAM
+  Serial.print("| Init SDRAM...");
+  if (!ram.begin()) {
+    ++aceInitFails;
+    Serial.println("NOT OK!");
+  } else {
+    delay(100);
+    Serial.println("OK!");
+  }
+#endif
 
   // Initialize FSM state
+  Serial.print("| Init program state...");
   currentState = FlightState::detectLaunch;
+  Serial.println("OK!");
+
+  // Initialize sensor hardware
+  if (!imu_sensor.init()) {
+    ++aceInitFails;
+  }
+  if (!alt_sensor.init()) {
+    ++aceInitFails;
+  }
+  if (!acc_sensor.init()) {
+    ++aceInitFails;
+  }
+  
+
+#if DO_SERVO_ACTUATE_INIT_CHECK
+  Serial.println("> Notice: Performing servo actuation status check in 3 seconds...");
+
+  int testState = 0;
+  unsigned long servoInitCheckTime = micros();
+  while (testState < 3) {
+
+    currentTime = micros();
+    if (currentTime >= servoInitCheckTime + 3000000) {
+      servoInitCheckTime += 3000000;
+
+      if (testState == 0) {
+        Serial.print("> Extending to OPEN (SRV_MAX_EXTENSION_ANGLE): ");
+        Serial.println(SRV_MAX_EXTENSION_ANGLE);
+        srvMovement.setServoPosition(SRV_MAX_EXTENSION_ANGLE);
+      }
+      else if (testState == 1){
+        Serial.println("> Retracting to CLOSE (stowAirbrakes)");
+        srvMovement.stowAirbrakes();
+      }
+      testState++;
+    }
+
+    // Update srv as fast as possible for actuation test
+    srvMovement.updateServoPosition();
+    
+  }
+#endif
 
   // Initialize vectors/matrices
-  stateVec = {0,0,0,0,0,0,0,0,0};
+  Serial.print("| Init Kalman state...");
+  if (!initializeKalmanFilter()) {
+    ++aceInitFails;
+    Serial.println("NOT OK!");
+  } else {
+    Serial.println("OK!");
+  }
 
-  Fkalman = {1,0,0,kdt,0,0,1/2*kdt*kdt,0,0,
-             0,1,0,0,kdt,0,0,1/2*kdt*kdt,0,
-             0,0,1,0,0,kdt,0,0,1/2*kdt*kdt,
-             0,0,0,1,0,0,kdt,0,0,
-             0,0,0,0,1,0,0,kdt,0,
-             0,0,0,0,0,1,0,0,kdt,
-             0,0,0,0,0,0,1,0,0,
-             0,0,0,0,0,0,0,1,0,
-             0,0,0,0,0,0,0,0,1};
+  // Initialize OpenLog
+  if (!logger.init()) {
+    ++aceInitFails;
+  }
 
-  Hkalman = {0,0,1,0,0,0,0,0,0,
-             0,0,0,0,0,0,1,0,0,
-             0,0,0,0,0,0,0,1,0,
-             0,0,0,0,0,0,0,0,1};
+#if ENABLE_STATUS_LED
+  // Initialize Status LED
+  pinMode(STATUS_LED_PIN, OUTPUT);
+#endif
 
-  Qkalman = {processVar*pow(kdt,4)/4,0,0,processVar*pow(kdt,3)/2,0,0,processVar*pow(kdt,2)/2,0,0,
-             0,processVar*pow(kdt,4)/4,0,0,processVar*pow(kdt,3)/2,0,0,processVar*pow(kdt,2)/2,0,
-             0,0,processVar*pow(kdt,4)/4,0,0,processVar*pow(kdt,3)/2,0,0,processVar*pow(kdt,2)/2,
-             processVar*pow(kdt,3)/2,0,0,processVar*pow(kdt,2),0,0,processVar*kdt,0,0,
-             0,processVar*pow(kdt,3)/2,0,0,processVar*pow(kdt,2),0,0,processVar*kdt,0,
-             0,0,processVar*pow(kdt,3)/2,0,0,processVar*pow(kdt,2),0,0,processVar*kdt,
-             processVar*pow(kdt,2)/2,0,0,processVar*kdt,0,0,processVar,0,0,
-             0,processVar*pow(kdt,2)/2,0,0,processVar*kdt,0,0,processVar,0,
-             0,0,processVar*pow(kdt,2)/2,0,0,processVar*kdt,0,0,processVar};
+  // ACE initialization summary status check
+  if (!aceInitFails) {
+    Serial.println("> Init ACE OK! Starting program...");
+  } else {
+    Serial.println("\n\n\n");
+    Serial.print("WARNING: ACE did not initialize successfully! There were ");
+    Serial.print(aceInitFails);
+    Serial.println(" fails!");
+    Serial.println("> Refer to above output to view failures...");
+#if CHECK_STRICT_INITIALIZATION
+    // Spin infinitely on failed init
+    for ( ; ; ) {
+      delay(5000);
+      Serial.print("ACE INIT FAILED WITH ");
+      Serial.print(aceInitFails);
+      Serial.println(" ERRORS");
+    } 
+#endif
+    Serial.println("\n\n\n!!! WARNING: ACE IS CONTINUING WITH FAILED INITIALIZATIONS !!!!\n");
+  }
+  delay(5000);
 
-  Rkalman = {altimeterVar,0,0,0,
-             0,accelXVar,0,0,
-             0,0,accelYVar,0,
-             0,0,0,accelZVar};
-
-  Pkalman = {10,0,0,0,0,0,0,0,0,
-             0,10,0,0,0,0,0,0,0,
-             0,0,10,0,0,0,0,0,0,
-             0,0,0,10,0,0,0,0,0,
-             0,0,0,0,10,0,0,0,0,
-             0,0,0,0,0,10,0,0,0,
-             0,0,0,0,0,0,10,0,0,
-             0,0,0,0,0,0,0,10,0,
-             0,0,0,0,0,0,0,0,10};
-
-  measurementVec = {0,0,0,0};
-
-  innovationCov = {0,0,0,0,
-                   0,0,0,0,
-                   0,0,0,0,
-                   0,0,0,0};
-
-  Kkalman = {0,0,0,0,
-             0,0,0,0,
-             0,0,0,0,
-             0,0,0,0,
-             0,0,0,0,
-             0,0,0,0,
-             0,0,0,0,
-             0,0,0,0,
-             0,0,0,0};
+  // Update all delta timing timer variables with offset to REAL core loop start time
+  previousComputeCounts = 0;
+  previousFilterReset = micros();
+  previousSampleTime = micros();
+  previousControlTime = micros();
 }
 
+
 void loop() {
+  
+  /* SAMPLE LOOP (50Hz) */
+  currentTime = micros();
+  if (currentState!=FlightState::landed && currentTime >= previousSampleTime + sampleLoopMicros) {
+    previousSampleTime += sampleLoopMicros;
+    ++previousComputeCounts;
 
-  /* Switch statement for FSM of ACE system modes */
-  switch(currentState) {
-    case FlightState::detectLaunch:
-      //if one second has elapsed and not launched, reset kalman filter
-      //if conditions met, transition to burn
-      currentState = detectLaunchTransition(currentState);
-      break;
-    case FlightState::burn:
-      //if rocket is decelerating, transition to control state
-      currentState = burnTransition(currentState);
-      break;
-    case FlightState::control:
-      //wait until apogee is reached, store airbrakes, transition to coast state
-      currentState = controlTransition(currentState);
-      break;
-    case FlightState::coast:
-      //if z velocity is very close to zero and altitude is low, then we are landed
-      //transition to landed
-      currentState = coastTransition(currentState);
-      break;
-    case FlightState::landed:
-      //if you have gotten here wait forever
-      break;
-    default:
-      // should not reach this state
-      break;
+#if IS_DEVELOPMENT_MODE
+    // Temporary test of simulated OR data
+    getSimulatedData(currentTime/1000000.0+15.96, simSample);
+#endif
+
+#if IS_DEVELOPMENT_MODE
+    // Debug prints
+    if(counterSample%100==0){
+      Serial.print("Interp pos: ");
+      Serial.println(simSample[0]);
+      Serial.print("Interp acc: ");
+      Serial.println(simSample[1]);
+    }
+    counterSample++;
+#endif
+
+    measurementDataValid = readMeasurement(&currentMeasurement, imu_sensor, alt_sensor, acc_sensor);  // Reads all SAMPLE loop sensors
   }
 
-  /* SAMPLE LOOP (400Hz) */
-  currentTime = micros();
-  if (currentTime >= previousSampleTime + sampleLoopMicros) {
-    previousSampleTime = currentTime;
-    
-    /**
-     * TODO: 
-     *  1. Perform sensor samples here (UFS core)
-     *  2. Update sample buffers
-     *  3. Pack into static Measurement struct
-     **/
-    
-  }
+  /* COMPUTE LOOP (per 1 SAMPLEs : 50Hz) */
+  if (currentState!=FlightState::landed && previousComputeCounts >= KALMAN_LOOP_FREQ_PER_SAMPLES) {
+    previousComputeCounts = 0; // Reset compute counter
 
-  /* COMPUTE LOOP (100Hz) */
-  currentTime = micros();
-  if (currentTime >= previousComputeTime + computeLoopMicros) {
+    /* Acceleration transformation (to Earth frame) */
+    quaternions = {currentMeasurement.qr,currentMeasurement.qi,currentMeasurement.qj,currentMeasurement.qk};
+    measuredAccel = {currentMeasurement.xAccel,
+                     currentMeasurement.yAccel,
+                     currentMeasurement.zAccel};
+    getInertialAccel(); // Transforms acceleration
+    getOrientation(); // Updates rocket vertical orientation
 
-    previousComputeTime = currentTime;
-
-    currentMeasurement = makeMeasurement();
-
+#if IS_DEVELOPMENT_MODE
+    // Development injected simulated data
+    measurementVec = {currentMeasurement.altitude + simSample[0],
+                      inertialAccel(0),
+                      inertialAccel(1),
+                      inertialAccel(2) + simSample[1]};
+#else
     measurementVec = {currentMeasurement.altitude,
-                      currentMeasurement.xAccel,
-                      currentMeasurement.yAccel,
-                      currentMeasurement.zAccel};
+                      inertialAccel(0),
+                      inertialAccel(1),
+                      inertialAccel(2)};
+#endif
 
-    //kalman filter steps
-    stateVec = Fkalman*stateVec;
+    /* Kalman filter */
+    kalmanPredict();
+    if(measurementDataValid){
+      kalmanUpdate();
+    }
 
-    Pkalman = Fkalman*(Pkalman*~Fkalman) + Qkalman;
+#if IS_DEVELOPMENT_MODE
+    // Debug prints
+    if(stateVecPrintCounter%25==0){
+      Serial.print("FLIGHT STATE: ");
+      Serial.println((int)currentState);
+      Serial.print("Statevec: ");
+      {
+        using namespace BLA;
+        Serial << stateVec << "\n";
+      }
+    }
+    stateVecPrintCounter++;
+#endif
 
-    innovation = measurementVec - Hkalman*stateVec;
+    /* SDRAM data logging */
+#ifdef PORTENTA_H7_M7_PLATFORM
+    // Write timestamp data to SDRAM[0]
+    *(SDRAM_base + ((ringBufferIndex%RING_BUFFER_LENGTH)*RING_BUFFER_COLS)) = (float)currentTime; // Last currentTime should be from sample loops
 
-    innovationCov = Hkalman*(Pkalman*~Hkalman) + Rkalman;
+    // Write stateVec data to SDRAM[1-9]
+    for (int i=1; i<RING_BUFFER_COLS-1; ++i) {
+        *(SDRAM_base + ((ringBufferIndex%RING_BUFFER_LENGTH)*RING_BUFFER_COLS + i)) = (float)stateVec(i-1); // i-1 to write from beginning of stateVec
+    }
 
-    //invert matrix inplace for next step
-    Invert(innovationCov);
+    // Write current control value to SDRAM[10]
+    *(SDRAM_base + ((ringBufferIndex%RING_BUFFER_LENGTH)*RING_BUFFER_COLS + 10)) = currentPIDControl;
+#endif
+    ++ringBufferIndex;
+    
+    /* FSM transition */
+    switch(currentState) {
+      case FlightState::detectLaunch:
+        currentTime = micros();
+        if (currentTime >= previousFilterReset + ONE_SEC_MICROS){
+          // If one second has elapsed and not launched, reset kalman filter
 
-    Kkalman = Pkalman*(~Hkalman*innovationCov);
+          // THIS RESET IS VERY IMPORTANT: ensures velocity behaves well
+          Pkalman = {10,0,0,0,0,0,0,0,0,
+                    0,10,0,0,0,0,0,0,0,
+                    0,0,10,0,0,0,0,0,0,
+                    0,0,0,10,0,0,0,0,0,
+                    0,0,0,0,10,0,0,0,0,
+                    0,0,0,0,0,10,0,0,0,
+                    0,0,0,0,0,0,10,0,0,
+                    0,0,0,0,0,0,0,10,0,
+                    0,0,0,0,0,0,0,0,10};
+          stateVec = {0,0,0,0,0,0,0,0,0};
 
-    stateVec = stateVec + Kkalman*innovation;
-
+          // Clear data logs
+          ringBufferIndex = 0;
+          previousFilterReset = currentTime;
+        }
+        // Next transition: acceleration detected (motor burn) --> burn
+        currentState = Flight_FSM::detectLaunchTransition(&fm_ace, currentState);
+        break;
+      case FlightState::burn:
+        // Next transition: deceleration detected (motor burnout) --> control
+        currentState = Flight_FSM::burnTransition(&fm_ace, currentState);
+        break;
+      case FlightState::control:
+        // Next transition: reaching apogee --> stow --> separate --> coast
+        currentState = Flight_FSM::controlTransition(&fm_ace, currentState, &srvMovement);
+        break;
+      case FlightState::controlStandby:
+        // Next transition: re-stabilized --> control
+        currentState = Flight_FSM::controlStandbyTransition(&fm_ace, currentState, &srvMovement);
+        break;
+      case FlightState::coast:
+        // Next transition: z velocity apprx. 0 and altitude is low --> landed
+        currentState = Flight_FSM::coastTransition(&fm_ace, currentState);
+        break;
+      case FlightState::landed:
+        // Next transition: none, continuously write data to storage
+        break;
+      default:
+        // Error state
+#if IS_DEVELOPMENT_MODE
+        Serial.println("FATAL-ERROR: FSM reached unknown state, resetting to standby");
+#endif
+        currentState = FlightState::controlStandby;
+        break;
+    }
   }
 
-  /* CONTROL LOOP (xHz) */
+  /* CONTROL LOOP (1Hz) */
   currentTime = micros();
   if (currentTime >= previousControlTime + controlLoopMicros) {
-    previousControlTime = currentTime;
+    previousControlTime += controlLoopMicros;
 
-    /**
-     * TODO: 
-     *  1. Obtain current altitude and current velocity (prediction from 
-     *     K-filter)
-     *  2. Index into VLT for target velocity
-     *  2. Perform PID control to match current velocity to target velocity 
-     *     over timesteps
-     *  3. Send corresponding PWM to servo
-     *     a. NOTE: PWM should be capable of set-and-forget, this loop should
-     *        not be blocking
-     */
+#if ENABLE_STATUS_LED
+    // Status LED control
+    if (currentState == FlightState::detectLaunch) {
+      digitalWrite(STATUS_LED_PIN, HIGH);
+    }
+    else {
+      digitalWrite(STATUS_LED_PIN, LOW);
+    }
+#endif
+    
+    if (currentState==FlightState::control) {
+      // Perform PID servo actuation
+      // Note: stateVec(2) --> curr_Z_Position, stateVec(5) --> curr_Z_Velocity
+      currentPIDControl = pid.control(stateVec(2), stateVec(5));
+      int angleExtension = SRV_MAX_EXTENSION_ANGLE * currentPIDControl + 0.5;  // +0.5 to round to nearest whole int
 
+#if FORCED_EXTENSION_CONTROL_CYCLES
+    // Force max extension for flight demonstration purposes
+    if (numForcedExtensionControlCycles > 0) {
+#if IS_DEVELOPMENT_MODE
+      Serial.print("CONTROL: FORCED EXTENSION CYCLE ");
+      Serial.println(numForcedExtensionControlCycles);
+#endif
+      --numForcedExtensionControlCycles;
+      angleExtension = SRV_MAX_EXTENSION_ANGLE;
+    }
+#endif
+
+
+      srvMovement.setServoPosition(angleExtension);
+      srvMovement.updateServoPosition();  // the design is a bit strange, but allows for decentralized servo position updates while centralizing actual writes
+      Serial.print("Updated angle to servo: ");
+      Serial.println((int)(angleExtension));
+    }
+
+    if (currentState==FlightState::controlStandby) {
+      srvMovement.updateServoPosition();
+    }
+  }
+
+  /* POST-FLIGHT PROCEDURE */
+  if (currentState == FlightState::landed) {
+  // Dump data upon landing
+#ifdef PORTENTA_H7_M7_PLATFORM
+        if (!didWriteData && logger.didInit) {
+          Serial.print("Dumping data to OpenLog...");
+          logger.dumpSDRAMtoFile(SDRAM_base, ringBufferIndex, RING_BUFFER_LENGTH, RING_BUFFER_COLS);
+          didWriteData = true;
+          Serial.println("OK!");
+        }
+#endif
+
+    // ACE completed
+#if ENABLE_STATUS_LED
+    digitalWrite(STATUS_LED_PIN, HIGH);
+#endif
+    for ( ; ; ) {
+      Serial.println("ACE completed! Sleeping...");
+      delay(3000);
+    }
   }
 }
