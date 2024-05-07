@@ -1806,12 +1806,6 @@
 		(uuid "22239efd-2a85-468c-b6e7-cedd04169178")
 	)
 	(junction
-		(at 271.78 48.26)
-		(diameter 0)
-		(color 0 0 0 0)
-		(uuid "27f393f6-8c92-4ecc-b9d9-4cc5459b89ec")
-	)
-	(junction
 		(at 114.3 48.26)
 		(diameter 0)
 		(color 0 0 0 0)
@@ -4782,72 +4776,6 @@
 			(project "sensor_daughter_board"
 				(path "/d11b09a8-fa1c-477d-8cab-cf1dcdbb31ee"
 					(reference "#PWR011")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(symbol
-		(lib_id "power:+3V3")
-		(at 271.78 48.26 0)
-		(unit 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(dnp no)
-		(fields_autoplaced yes)
-		(uuid "be779aab-24dd-407b-b320-b2f486761470")
-		(property "Reference" "#PWR015"
-			(at 271.78 52.07 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Value" "+3V3"
-			(at 271.78 43.18 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Footprint" ""
-			(at 271.78 48.26 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Datasheet" ""
-			(at 271.78 48.26 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Description" "Power symbol creates a global label with name \"+3V3\""
-			(at 271.78 48.26 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(pin "1"
-			(uuid "03a2a2e1-a9c7-4b8c-82cd-30ff087185da")
-		)
-		(instances
-			(project "sensor_daughter_board"
-				(path "/d11b09a8-fa1c-477d-8cab-cf1dcdbb31ee"
-					(reference "#PWR015")
 					(unit 1)
 				)
 			)
