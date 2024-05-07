@@ -71,6 +71,11 @@ static Sample::Measurement currentMeasurement;  // Struct for holding current me
 static int STATUS_LED_PIN = 9;
 #endif
 
+// Kalman filter external variables
+extern BLA::Matrix<3> measuredAccel;
+extern BLA::Matrix<3> inertialAccel;
+extern BLA::Matrix<4> quaternions;
+
 // PID controller object and global control
 static PID_Controller pid(ACE_TARGET_APOGEE);
 static double currentPIDControl = 0;

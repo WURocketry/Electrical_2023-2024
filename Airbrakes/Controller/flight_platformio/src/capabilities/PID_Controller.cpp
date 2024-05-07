@@ -23,9 +23,10 @@ double PID_Controller::control(double currAltitude, double currVelocity){
     //Serial.println(" - current Velocity Error");
 
     // Calculate integral error
-    integral_error += getErrorDecay(currAltitude, currError);
-    if (currError < I_ERROR_RESET_THRESHOLD) {
-      // If current error is now close, reset integral error history
+    integral_error += currError - getErrorDecay(currAltitude);
+
+    // If current error is now close or integral error negative, reset integral error history
+    if (currError < I_ERROR_RESET_THRESHOLD || integral_error < 0) {
       integral_error = 0;
     }
 
@@ -35,9 +36,6 @@ double PID_Controller::control(double currAltitude, double currVelocity){
 
     // Calculate the control signal
     output = Kp * currError + Ki * integral_error + Kd * derivative;
-
-    //Serial.print("Output of PID is: ");
-    //Serial.println(output,4);
 
     // Normalize output as a proportion of max error
     if (currAltitude >= maxErrorThresholds[2]) {
@@ -105,23 +103,13 @@ double PID_Controller::linearInterpolation(double x, double x0, double x1, doubl
 
 // @brief: Returns a "decaying" restriction on maximum error that is seen by Intg based on altitude
 //        (lower alt --> less strict --> larger errorDecay (to subtract from current integral error))
-double PID_Controller::getErrorDecay(int altitude, double origError) {
-  double decayedError = origError;
-
+double PID_Controller::getErrorDecay(int altitude) {
   if (altitude >= decayAltitudeThresholds[3])
-    return decayedError;  // Full error impact when above highest threshold, no decay on original error
+    return 0;  // Full error impact when above highest threshold, no decay on original error
   else if (altitude >= decayAltitudeThresholds[2]) 
-    decayedError -= decayRates[2];
+    return decayRates[2];
   else if (altitude >= decayAltitudeThresholds[1]) 
-    decayedError -= decayRates[1];
+    return decayRates[1];
   else
-    decayedError -= decayRates[0];
-
-  if (decayedError < 0) {
-    // Prevent negative error decay
-    return 0;
-  }
-  else {
-    return decayedError;
-  }
+    return decayRates[0];
 }

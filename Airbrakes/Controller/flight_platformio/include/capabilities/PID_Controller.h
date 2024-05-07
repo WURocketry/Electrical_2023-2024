@@ -28,7 +28,7 @@ class PID_Controller{
         // Internal methods
         double getDesiredVelocity(double altitude);
         double linearInterpolation(double x, double x0, double x1, double y0, double y1);
-        double getErrorDecay(int altitude, double origError);
+        double getErrorDecay(int altitude);
 
     public:
     // Default Constructor

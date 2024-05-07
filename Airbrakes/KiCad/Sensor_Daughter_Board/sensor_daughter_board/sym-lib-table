@@ -1,0 +1,4 @@
+(sym_lib_table
+  (version 7)
+  (lib (name "12PinSymbol")(type "KiCad")(uri "${KIPRJMOD}/12_Pin_Edge_Connector/12PinSymbol.kicad_sym")(options "")(descr ""))
+)
