@@ -1,8 +1,12 @@
 ### WURocketry .gitignore
 ### 2023-2024
 
-## KiCad lock files
+## Compressed files
+*.zip
+
+## KiCad
 *.lck
+\#auto_saved_files\#
 
 ## Solidworks CAD generated files
 *.cwr

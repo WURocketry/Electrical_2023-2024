@@ -1,0 +1,4 @@
+(fp_lib_table
+  (version 7)
+  (lib (name "12PinFootprint")(type "KiCad")(uri "${KIPRJMOD}/12_Pin_Edge_Connector/12PinFootprint.pretty")(options "")(descr ""))
+)
