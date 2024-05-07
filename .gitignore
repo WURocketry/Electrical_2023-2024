@@ -6,6 +6,7 @@
 
 ## KiCad
 *.lck
+\#auto_saved_files\#
 
 ## Solidworks CAD generated files
 *.cwr
